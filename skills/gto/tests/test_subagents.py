@@ -9,11 +9,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from subagents import (
-    GapFinderResult,
     HealthMetric,
     HealthReport,
     calculate_health,
-    find_gaps,
 )
 
 
@@ -59,36 +57,3 @@ class TestHealthCalculatorSubagent:
             assert hasattr(metric, "weight")
             assert 0.0 <= metric.score <= 1.0
             assert 0.0 <= metric.weight <= 1.0
-
-
-class TestGapFinderSubagent:
-    """Tests for GapFinderSubagent."""
-
-    def test_find_gaps_basic(self, tmp_path: Path) -> None:
-        """Test basic gap finding."""
-        # Create a file with some gaps
-        (tmp_path / "module.py").write_text(
-            """
-# TODO: implement feature
-def foo():
-    # FIXME: fix this
-    pass
-"""
-        )
-
-        result = find_gaps(tmp_path)
-
-        assert isinstance(result, GapFinderResult)
-        assert isinstance(result.gaps, list)
-
-    def test_gap_finding_structure(self, tmp_path: Path) -> None:
-        """Test gap finding structure."""
-        result = find_gaps(tmp_path)
-
-        for gap in result.gaps:
-            assert hasattr(gap, "id")
-            assert hasattr(gap, "type")
-            assert hasattr(gap, "severity")
-            assert hasattr(gap, "message")
-            assert hasattr(gap, "file_path")
-            assert hasattr(gap, "line_number")

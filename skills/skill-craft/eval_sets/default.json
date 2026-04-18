@@ -1,0 +1,24 @@
+{
+  "skill_name": "skill-craft",
+  "description": "Eval set for /skill-craft orchestrator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run /skill-craft on P:/.claude/skills/skill-craft — the skill-craft skill should diagnose, plan, execute, evaluate fidelity, and gate itself. Expected: exit_condition=True with 'Fidelity and cert gate both passed'.",
+      "expected_output": "CraftState with exit_condition=True, phase=DONE, cert_gate.passed=True, fidelity_score.passed=True",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Run /skill-craft on a non-existent path P:/tmp/nonexistent-skill-xyz — should handle gracefully without crashing, return a CraftState with appropriate error in execution_results.",
+      "expected_output": "CraftState returned without unhandled exception, execution_results contains error info",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Run /skill-craft on P:/.claude/skills/gto — a different skill. Expected: lifecycle completes, cert_gate validates gto's SKILL.md, findings are routed correctly.",
+      "expected_output": "CraftState with loop_count >= 1, all_findings populated, cert_gate result present",
+      "files": []
+    }
+  ]
+}

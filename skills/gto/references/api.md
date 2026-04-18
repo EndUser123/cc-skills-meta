@@ -185,22 +185,6 @@ print(markdown)
 
 ## Subagents (`subagents/`)
 
-### GapFinderSubagent
-
-```python
-from gto.__lib import GapFinderSubagent, find_gaps
-
-# Using class
-finder = GapFinderSubagent(project_root=Path("path/to/project"))
-result = finder.find_gaps()
-
-# Using convenience function
-result = find_gaps(Path("path/to/project"))
-
-# Access findings
-for gap in result.gaps:
-    print(f"{gap.file_path}:{gap.line_number} - {gap.message}")
-```
 
 ### HealthCalculatorSubagent
 
@@ -292,9 +276,6 @@ except Exception as e:
 result = checker.check()
 # Returns empty result on failure, never raises
 
-# Subagents
-result = find_gaps(project_root)
-# Returns empty result on failure, never raises
 ```
 
 ## Type Hints

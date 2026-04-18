@@ -22,7 +22,6 @@ GTO (Gap Technical Organizer) v3 is a three-layer gap analysis system:
 ┌──────────────────────────▼────────────────────────────────────┐
 │                    Layer 2: AI Subagents                     │
 │                                                               │
-│  GapFinderSubagent (line numbers)                             │
 │  HealthCalculatorSubagent (health metrics)                     │
 │  Future: ContextAnalyzer, PatternDetector                     │
 │                                                               │
@@ -74,9 +73,6 @@ All detectors follow a consistent pattern:
 ### Subagents (P2)
 AI-powered analysis with line number precision:
 
-1. **GapFinderSubagent**
-   - Scans for gap markers with precise line numbers
-   - Categorizes gaps by type (testing, docs, dependencies, code_quality)
    - Returns structured JSON for ResultsBuilder
 
 2. **HealthCalculatorSubagent**
@@ -143,7 +139,6 @@ Run all detectors (P2)
     └─ DependencyChecker
     ↓
 Invoke subagents (P2)
-    ├─ GapFinderSubagent → gaps with line numbers
     └─ HealthCalculatorSubagent → health metrics
     ↓
 ResultsBuilder consolidation (P1)

@@ -1347,7 +1347,7 @@ if __name__ == "__main__":
         "--subagents",
         action="store_true",
         default=False,
-        help="Enable AI subagents (GapFinderSubagent)",
+        help="Enable AI subagents for gap detection",
     )
     parser.add_argument(
         "--no-subagents",
@@ -1388,7 +1388,7 @@ if __name__ == "__main__":
 
     # Run analysis
     # Subagents enabled by default unless --no-subagents is passed
-    # (gap_finder is handled via Agent() in SKILL.md, but CLI needs subagents for standalone runs)
+    # (AI subagents are handled via Agent() in SKILL.md; CLI uses --subagents flag for standalone runs)
     enable_subagents = not args.no_subagents
     result = run_gto_analysis(
         project_root=project_root,

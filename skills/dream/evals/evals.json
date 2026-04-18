@@ -1,0 +1,23 @@
+{
+  "skill_name": "dream",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/dream",
+      "expected_output": "Should perform 4-phase memory consolidation: Orient (list memory files, read MEMORY.md), Gather Signal (find recent learnings), Consolidate (update/prune topic files), Prune/Index (keep MEMORY.md under 200 lines). Output should include a Dream Summary with consolidated files, pruned entries, and key learnings.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "My MEMORY.md is getting cluttered and I think some topic files have overlapping content. Can you run /dream to clean it up?",
+      "expected_output": "Should orient to current memory structure, identify duplicated content across topic files, merge duplicates, delete contradicted facts, and produce a summary of changes.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Before I start a big architecture review session, let me run /dream to make sure my memory is organized.",
+      "expected_output": "Should quickly scan memory for current state, note any urgent pruning needed (MEMORY.md approaching 200 lines), and produce a consolidation summary without exhaustive transcript reading.",
+      "files": []
+    }
+  ]
+}

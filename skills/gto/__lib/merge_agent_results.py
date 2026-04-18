@@ -36,27 +36,10 @@ def validate_finding(finding: dict[str, Any], source: str) -> bool:
     return True
 
 
-def merge_gaps(l1_data: dict, agent_data: dict[str, dict], gap_finder_data: dict | None = None) -> dict[str, Any]:
-    """Merge L1 gaps with agent findings and gap_finder results."""
+def merge_gaps(l1_data: dict, agent_data: dict[str, dict]) -> dict[str, Any]:
+    """Merge L1 gaps with agent findings."""
     gaps = l1_data.get("gaps", []).copy()
     seen_ids: set[str] = {g.get("id") for g in gaps if "id" in g}
-
-    # Merge gap_finder results (uses "gaps" key, different schema)
-    if gap_finder_data:
-        gap_finder_gaps = gap_finder_data.get("gaps", [])
-        for gap in gap_finder_gaps:
-            gap_id = gap.get("id", "")
-            if gap_id and gap_id in seen_ids:
-                print(f"WARNING: Duplicate gap ID {gap_id} from gap_finder — skipping", file=sys.stderr)
-                continue
-            severity = gap.get("severity", "")
-            if severity in SEVERITY_MAP:
-                severity = SEVERITY_MAP[severity]
-            merged_gap: dict[str, Any] = {**gap, "source": "gap_finder", "severity": severity}
-            if gap_id:
-                seen_ids.add(gap_id)
-            gaps.append(merged_gap)
-
     # Merge correctness agent results (use "findings" key)
     for agent_key, data in agent_data.items():
         findings = data.get("findings", [])
@@ -84,7 +67,6 @@ def merge_gaps(l1_data: dict, agent_data: dict[str, dict], gap_finder_data: dict
 def main() -> int:
     parser = argparse.ArgumentParser(description="Merge GTO L1 and agent results")
     parser.add_argument("--l1", required=True, help="Path to L1 output JSON")
-    parser.add_argument("--gap-finder", required=False, default=None, help="Path to gap_finder agent JSON")
     parser.add_argument("--agents", required=True, help="Glob pattern for agent JSONs")
     parser.add_argument("--output", required=True, help="Output path for merged artifact")
     parser.add_argument("--validate-schema", action="store_true")
@@ -96,16 +78,6 @@ def main() -> int:
     if "gaps" not in l1_data:
         print(f"ERROR: L1 output missing 'gaps' field: {l1_path}", file=sys.stderr)
         return 1
-
-    # Load gap_finder data (uses "gaps" key, different schema from correctness agents)
-    gap_finder_data: dict[str, Any] | None = None
-    if args.gap_finder:
-        gap_finder_path = Path(args.gap_finder)
-        if gap_finder_path.exists():
-            gap_finder_data = load_json_file(gap_finder_path)
-        else:
-            print(f"WARNING: gap_finder file not found: {gap_finder_path}", file=sys.stderr)
-
     # Load agent data
     # Resolve /tmp Unix-style paths to platform temp directory for Windows compatibility
     agents_arg = args.agents
@@ -143,7 +115,7 @@ def main() -> int:
             continue
 
     # Merge and write
-    merged = merge_gaps(l1_data, agent_data, gap_finder_data)
+    merged = merge_gaps(l1_data, agent_data)
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(merged, indent=2), encoding="utf-8")

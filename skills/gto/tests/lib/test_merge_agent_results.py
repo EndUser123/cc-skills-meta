@@ -151,35 +151,6 @@ class TestWindowsPathHandling:
         assert len(result["gaps"]) == 1
         assert result["gaps"][0]["id"] == "QUAL-001"
 
-    def test_gap_finder_output_with_windows_file_path(self) -> None:
-        """Gap finder output with Windows file paths should parse without error.
-
-        Symptom: Gap finder running on Windows writes gap files with paths like
-        C:\\Users\\brsth\\AppData\\Local\\Temp\\gto-xterm-...\\gto-gap-finder-....json.
-        The backslashes in paths can trigger JSON decode failures if written
-        as string literals with unescaped backslashes.
-        """
-        gap_finder_output = {
-            "gaps": [
-                {
-                    "id": "GAP-00000001",
-                    "type": "code_quality",
-                    "message": "TODO: Add tests",
-                    "file_path": "C:\\Users\\brsth\\AppData\\Local\\Temp\\gto-test\\test.py",
-                    "line_number": 10,
-                    "severity": "medium",
-                    "metadata": {}
-                }
-            ],
-            "files_scanned": 100,
-            "gaps_found": 1
-        }
-        l1 = {"gaps": []}
-        result = merge_gaps(l1, {}, gap_finder_output)
-        assert len(result["gaps"]) == 1
-        assert result["gaps"][0]["id"] == "GAP-00000001"
-
-
 class TestInvalidJSONHandling:
     """Tests for merge behavior when agent output files contain invalid JSON.
 

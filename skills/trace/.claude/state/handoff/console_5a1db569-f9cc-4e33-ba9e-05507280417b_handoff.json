@@ -1,0 +1,129 @@
+{
+  "resume_snapshot": {
+    "schema_version": 2,
+    "snapshot_id": "03203fa7-2bdb-48c4-88fa-fd4f10dff016",
+    "terminal_id": "console_5a1db569-f9cc-4e33-ba9e-05507280417b",
+    "source_session_id": "4e23db8a-a30d-48ba-9bb7-93c0a383daa0",
+    "created_at": "2026-04-01T23:03:08.234052+00:00",
+    "expires_at": "2026-04-01T23:23:08.234052+00:00",
+    "status": "pending",
+    "goal": "Continue current task (meta-discussion filtered)",
+    "current_task": "Continue current task (meta-discussion filtered)",
+    "progress_percent": 65,
+    "progress_state": "in_progress",
+    "blockers": [],
+    "active_files": [
+      "P:\\packages\\handoff\\scripts\\hooks\\SessionStart_handoff_restore.py",
+      "P:\\packages\\handoff\\scripts\\hooks\\__lib\\handoff_v2.py",
+      "P:\\packages\\handoff\\scripts\\checkpoint_chain.py",
+      "P:\\packages\\handoff\\scripts\\hooks\\__lib\\handoff_store.py",
+      "P:\\packages\\handoff\\scripts\\hooks\\__lib\\handoff_files.py",
+      "P:\\packages\\handoff\\scripts\\hooks\\userpromptsubmit_task_injector.py",
+      "P:\\packages\\handoff\\scripts\\config.py",
+      "P:\\packages\\handoff\\scripts\\hooks\\PreCompact_handoff_capture.py",
+      "P:/.claude/logs/handoff_restore.log",
+      "P:\\packages\\handoff\\scripts\\hooks\\__lib\\hook_input_validation.py"
+    ],
+    "pending_operations": [
+      {
+        "type": "skill",
+        "target": "skill: rca",
+        "state": "in_progress"
+      },
+      {
+        "type": "investigation",
+        "target": "search: handoff.*old|old.*handoff|stale.*handoff|handoff.*",
+        "state": "in_progress"
+      },
+      {
+        "type": "investigation",
+        "target": "files: P:/packages/handoff/**/*.py",
+        "state": "in_progress"
+      },
+      {
+        "type": "investigation",
+        "target": "search: session_chain|handoff_chain|history_chain",
+        "state": "in_progress"
+      },
+      {
+        "type": "read",
+        "target": "P:\\packages\\handoff\\scripts\\hooks\\SessionStart_handoff_restore.py",
+        "state": "in_progress"
+      }
+    ],
+    "next_step": "Resume skill on skill: rca.",
+    "decision_refs": [
+      "dec_7165fb99762c4e88bf425863482912da"
+    ],
+    "evidence_refs": [
+      "ev_7a5551200b784bc6bb2cd9f4ebec5410",
+      "ev_dc80410bd4b5415d8c7e766a4c7b238f",
+      "ev_ddb6ac653a9e4b3091f413938573b98f",
+      "ev_a93199886f7b4da292beca2f9a7f1ef3",
+      "ev_03d59eb7b1b446f6b6fcb1a6493cb0a4",
+      "ev_e95a8b8af1f2451ea2885e4c521f7469"
+    ],
+    "transcript_path": "C:\\Users\\brsth\\.claude\\projects\\P--\\4e23db8a-a30d-48ba-9bb7-93c0a383daa0.jsonl",
+    "message_intent": "question",
+    "quality_score": 0.4,
+    "tasks_snapshot": []
+  },
+  "decision_register": [
+    {
+      "id": "dec_7165fb99762c4e88bf425863482912da",
+      "kind": "anti_goal",
+      "summary": "Inline the path to avoid unused variable warning.",
+      "details": "Inline the path to avoid unused variable warning.",
+      "priority": "medium",
+      "applies_when": "Continue the current task after compact.",
+      "source_refs": [
+        "ev_7a5551200b784bc6bb2cd9f4ebec5410"
+      ]
+    }
+  ],
+  "evidence_index": [
+    {
+      "id": "ev_7a5551200b784bc6bb2cd9f4ebec5410",
+      "type": "transcript",
+      "label": "Current compact transcript",
+      "path": "C:\\Users\\brsth\\.claude\\projects\\P--\\4e23db8a-a30d-48ba-9bb7-93c0a383daa0.jsonl",
+      "content_hash": "sha256:ffd6b09e7ccd7604d5ab41eb6bc4dda1bc6e6458d627dbc877b3e7e3dee3a8b5"
+    },
+    {
+      "id": "ev_dc80410bd4b5415d8c7e766a4c7b238f",
+      "type": "file",
+      "label": "SessionStart_handoff_restore.py",
+      "path": "P:\\packages\\handoff\\scripts\\hooks\\SessionStart_handoff_restore.py",
+      "content_hash": "sha256:b40ea8e11caf286ba58de30a84077d309dfb0ed87b15ca32c52f65b913d617e7"
+    },
+    {
+      "id": "ev_ddb6ac653a9e4b3091f413938573b98f",
+      "type": "file",
+      "label": "handoff_v2.py",
+      "path": "P:\\packages\\handoff\\scripts\\hooks\\__lib\\handoff_v2.py",
+      "content_hash": "sha256:9abe63d70c61427120958a93914a1b9de52bffe63c5a8a22dcda8921829f0815"
+    },
+    {
+      "id": "ev_a93199886f7b4da292beca2f9a7f1ef3",
+      "type": "file",
+      "label": "checkpoint_chain.py",
+      "path": "P:\\packages\\handoff\\scripts\\checkpoint_chain.py",
+      "content_hash": "sha256:0a04f387520bceee0ceeb5d7413d8394437b08731edd74988ba957e5218cdbbe"
+    },
+    {
+      "id": "ev_03d59eb7b1b446f6b6fcb1a6493cb0a4",
+      "type": "file",
+      "label": "handoff_store.py",
+      "path": "P:\\packages\\handoff\\scripts\\hooks\\__lib\\handoff_store.py",
+      "content_hash": "sha256:1310258788248e0f7d3418a0d12acf0a28e9786b509fbb2521c797201b337c85"
+    },
+    {
+      "id": "ev_e95a8b8af1f2451ea2885e4c521f7469",
+      "type": "file",
+      "label": "handoff_files.py",
+      "path": "P:\\packages\\handoff\\scripts\\hooks\\__lib\\handoff_files.py",
+      "content_hash": "sha256:ffe4f3fddb430171e17ac73c328acdd9d66382421d1f97e35a3a66db1e92e2e1"
+    }
+  ],
+  "checksum": "sha256:6a8fe2b2243ceef1f9a240dcc160c3f03575d1b5d225b6b3c35713de78bff887"
+}

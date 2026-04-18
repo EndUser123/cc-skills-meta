@@ -62,7 +62,6 @@ __all__ = [
     "InitialResultsBuilder",
     "build_initial_results",
     # Subagents
-    "find_gaps",
     "GapFinding",
     "HealthCalculatorSubagent",
     "calculate_health",

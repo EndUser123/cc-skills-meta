@@ -34,11 +34,11 @@ def _is_code_marker_false_positive(content: str) -> bool:
     Filters out:
     - Regex pattern definitions (r"TODO:", r'FIXME:')
     - Regex metacharacter sequences
-    - Comment-style pattern definitions in gap_finder dictionaries
+    - Comment-style pattern definitions in code marker dictionaries
     - Bare keyword searches used in substring scanning
     - Python expression strings from .contains() calls
     - Tuple/list member patterns
-    - Short lowercase action phrases from gap_finder patterns
+    - Short lowercase action phrases from code marker patterns
     """
     stripped = content.lstrip()
 
@@ -68,7 +68,7 @@ def _is_code_marker_false_positive(content: str) -> bool:
     if stripped.startswith('"') or stripped.startswith("'"):
         return True
 
-    # Short lowercase action phrases from gap_finder pattern definitions
+    # Short lowercase action phrases from code marker pattern definitions
     words = content.split()
     if (
         1 <= len(words) <= 3
