@@ -1,0 +1,83 @@
+{
+  "findings": [
+    {
+      "id": "COMP-001",
+      "severity": "HIGH",
+      "title": "No Schema Validation",
+      "description": "Missing required field validation in _check_completion_marker",
+      "file": "gto_orchestrator.py:1240-1262"
+    },
+    {
+      "id": "COMP-002",
+      "severity": "CRITICAL",
+      "title": "Git SHA Blocks Re-runs",
+      "description": "Long-running branches lose idempotency on every commit",
+      "file": "gto_orchestrator.py:1268-1274"
+    },
+    {
+      "id": "COMP-003",
+      "severity": "HIGH",
+      "title": "24h TTL Too Short",
+      "description": "Hardcoded 24h TTL forces re-runs for long-lived branches",
+      "file": "gto_orchestrator.py:1279-1281"
+    },
+    {
+      "id": "COMP-004",
+      "severity": "MEDIUM",
+      "title": "Orphaned .tmp Files",
+      "description": "Write failures leave temp files if cleanup fails",
+      "file": "gto_orchestrator.py:1234-1238"
+    },
+    {
+      "id": "COMP-005",
+      "severity": "LOW",
+      "title": "Terminal ID Collision",
+      "description": "unknown fallback allows multi-terminal collision",
+      "file": "gto_orchestrator.py:130-158"
+    },
+    {
+      "id": "COMP-006",
+      "severity": "CRITICAL",
+      "title": "Silent Write Failures",
+      "description": "Marker write failures cause lost idempotency",
+      "file": "gto_orchestrator.py:402-417"
+    },
+    {
+      "id": "COMP-007",
+      "severity": "MEDIUM",
+      "title": "No Schema Version Check",
+      "description": "schema_version field never validated",
+      "file": "gto_orchestrator.py:1203-1238"
+    },
+    {
+      "id": "COMP-008",
+      "severity": "HIGH",
+      "title": "Arbitrary health_score",
+      "description": "Uses undocumented 5% per gap heuristic",
+      "file": "gto_orchestrator.py:1196"
+    },
+    {
+      "id": "COMP-009",
+      "severity": "LOW",
+      "title": "Weak Field Validation",
+      "description": "_load_result_from_marker accepts None values",
+      "file": "gto_orchestrator.py:1298-1304"
+    },
+    {
+      "id": "COMP-010",
+      "severity": "MEDIUM",
+      "title": "No Concurrency Tests",
+      "description": "Test suite lacks concurrent write scenarios",
+      "file": "tests/test_completion_marker.py:1-302"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "critical": 2,
+    "high": 3,
+    "medium": 3,
+    "low": 2,
+    "assessment": "CRITICAL: Git SHA blocking and silent write failures break idempotency. HIGH: Missing schema validation, arbitrary TTL, incorrect health score."
+  },
+  "status": "SUCCESS"
+}
