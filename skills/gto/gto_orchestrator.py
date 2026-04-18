@@ -329,23 +329,6 @@ class GTOOrchestrator:
             # Step 4: Build consolidated results (P1)
             results = build_initial_results(detector_results, self.project_root)
 
-            # Merge subagent results
-            if "gap_finder" in subagent_results:
-                for gap_data in subagent_results["gap_finder"]:
-                    gap = Gap(
-                        gap_id=gap_data["id"],
-                        type=gap_data["type"],
-                        severity=gap_data["severity"],
-                        message=gap_data["message"],
-                        file_path=gap_data.get("file_path"),
-                        line_number=gap_data.get("line_number"),
-                        source="GapFinderSubagent",
-                        confidence=gap_data.get("confidence", 0.8),
-                        effort_estimate_minutes=gap_data.get("effort_estimate_minutes", 5),
-                        theme=gap_data.get("theme"),
-                    )
-                    results.gaps.append(gap)
-
             # Update counts after merging
             results.total_gap_count = len(results.gaps)
             results.critical_count = sum(1 for g in results.gaps if g.severity == "critical")
