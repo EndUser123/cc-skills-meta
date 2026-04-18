@@ -62,10 +62,8 @@ __all__ = [
     "InitialResultsBuilder",
     "build_initial_results",
     # Subagents
-    "GapFinderSubagent",
     "find_gaps",
     "GapFinding",
-    "GapFinderResult",
     "HealthCalculatorSubagent",
     "calculate_health",
     "HealthMetric",
@@ -90,26 +88,20 @@ __all__ = [
 # Import subagents - handle both package and direct import
 try:
     from ..subagents import (
-        GapFinderResult,
-        GapFinderSubagent,
         GapFinding,
         HealthCalculatorSubagent,
         HealthMetric,
         HealthReport,
         calculate_health,
-        find_gaps,
     )
 except ImportError:
     # When imported directly (e.g., in tests), import from subagents
     from subagents import (
-        GapFinderResult,
-        GapFinderSubagent,
         GapFinding,
         HealthCalculatorSubagent,
         HealthMetric,
         HealthReport,
         calculate_health,
-        find_gaps,
     )
 from .chain_integrity_checker import (
     ChainIntegrityChecker,
