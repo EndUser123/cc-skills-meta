@@ -63,7 +63,7 @@ class SkillSelfHealthChecker:
             # Default to 2 levels up from this file (lib/__file__ -> skill_root)
             skill_root = Path(__file__).parent.parent
         self.skill_root = skill_root
-        self.cache_file = self.skill_root / ".state" / ".skill_cache.json"
+        self.cache_file = Path.cwd().resolve() / ".evidence" / "gto-health" / ".skill_cache.json"
 
     def check(self, force: bool = False) -> HealthCheckResult:
         """

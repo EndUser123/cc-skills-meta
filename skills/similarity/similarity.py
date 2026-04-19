@@ -531,8 +531,8 @@ def main():
             }
         )
 
-    # Create output directory in .claude/.evidence/similarity/ (skill's own directory is not for artifacts)
-    evidence_dir = Path(__file__).parent.parent.parent / ".evidence" / "similarity"
+    # Create output directory in P:/.evidence/similarity/ (not inside the package)
+    evidence_dir = Path.cwd().resolve() / ".evidence" / "similarity"
     evidence_dir.mkdir(parents=True, exist_ok=True)
     output_file = evidence_dir / f"{target_name}_report.json"
     output_file.write_text(json.dumps(output, indent=2))
