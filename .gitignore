@@ -2,4 +2,9 @@ __pycache__/
 *.pyc
 *.pyo
 .evidence/
+.state/
+*.egg-info/
+dist/
+build/
+.benchmarks/
 *.json.bak
