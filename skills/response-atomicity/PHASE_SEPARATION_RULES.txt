@@ -1,0 +1,9 @@
+STRICT PHASE SEPARATION RULES
+
+Responses MUST be one of:
+
+- Planning Phase: Text only (analysis, options, questions)
+- Execution Phase: Tool calls only (no explanatory text)
+- Results Phase: Text only (actual outcomes and analysis)
+
+NEVER combine planning text + tool calls in single response.

@@ -1,27 +1,37 @@
 # cc-skills-meta
 
-Meta-cognitive and workflow skills for Claude Code — retrospectives, gap analysis, learning, and self-improvement.
+Meta-cognitive and workflow skills for Claude Code — retrospectives, gap analysis, learning, self-improvement, and orchestration.
 
-## Skills (20)
+## Skills (30)
 
 | Skill | Purpose |
 |-------|---------|
 | cks | Constitutional Knowledge System |
+| cognitive-stack | Cognitive architecture modes |
+| constitutional-patterns | Pattern enforcement rules |
 | decision-tree | Decision tree analysis |
 | dne | Do Not Execute safety gate |
 | dream | Creative ideation |
+| evidence-applicability | Evidence tier assessment |
 | evolve | Skill evolution |
+| execution-clarity | Execution protocols |
 | friction | Interaction and workflow friction detection |
 | gto | Gap-to-opportunity analysis with subagent dispatch |
 | learn | Quality-controlled lesson storage |
 | mlc | Meta-learning coordinator |
+| orchestrator | Multi-agent orchestration |
 | recap | Terminal-wide session catch-up |
 | reflect | Session reflection and pre-mortem |
+| response-atomicity | Response quality enforcement |
 | retro | Self-contrast retrospective orchestrator |
+| sequential-thinking | Structured reasoning |
 | similarity | Find similar skills by semantic analysis |
+| skeptic | Skeptical analysis of claims |
 | skill-craft | Skill creation and management |
+| subagent-driven-development | Subagent task decomposition |
 | think | Structured thinking modes |
 | top-problems | Top problems aggregation |
+| tot | Tree of thought exploration |
 | trace | Decision trace reconstruction |
 | truth | Truth validation |
 | usm | Universal Skills Manager |

@@ -1,0 +1,8 @@
+PRE-FLIGHT CHECKLIST - Before Any Action
+
+- Are all variables and inputs defined clearly?
+- Is the tool available in the current environment?
+- Do I have permission to use this tool?
+- Is this an action I can actually perform, or am I just describing it?
+
+If any answer is uncertain, STOP and report the issue.

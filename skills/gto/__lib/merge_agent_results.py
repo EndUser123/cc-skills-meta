@@ -64,62 +64,85 @@ def merge_gaps(l1_data: dict, agent_data: dict[str, dict]) -> dict[str, Any]:
     return {"gaps": gaps}
 
 
+def _resolve_path(path_str: str) -> Path:
+    """Resolve a path, handling /tmp/ Unix-style prefixes on Windows."""
+    p = Path(path_str)
+    # Already absolute on Windows (e.g. C:\Users\...) or Unix — use as-is
+    if p.is_absolute():
+        return p
+    # Handle /tmp/ prefix on Windows: Python tempfile.gettempdir() uses the system temp,
+    # which differs from bash's /tmp/. Resolve by replacing /tmp/ with the actual temp dir.
+    if path_str.startswith("/tmp/") or path_str.startswith("\\tmp\\"):
+        system_temp = Path(tempfile.gettempdir())
+        normalized = path_str.replace("/tmp/", "").replace("\\tmp\\", "")
+        return system_temp / normalized
+    return p
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Merge GTO L1 and agent results")
     parser.add_argument("--l1", required=True, help="Path to L1 output JSON")
-    parser.add_argument("--agents", required=True, help="Glob pattern for agent JSONs")
+    parser.add_argument(
+        "--agents", dest="agents", action="append", default=[],
+        help="Path or glob pattern for agent JSON (may be specified multiple times)",
+    )
     parser.add_argument("--output", required=True, help="Output path for merged artifact")
     parser.add_argument("--validate-schema", action="store_true")
     args = parser.parse_args()
 
     # Load L1 data
-    l1_path = Path(args.l1)
+    l1_path = _resolve_path(args.l1)
     l1_data = load_json_file(l1_path)
     if "gaps" not in l1_data:
         print(f"ERROR: L1 output missing 'gaps' field: {l1_path}", file=sys.stderr)
         return 1
-    # Load agent data
-    # Resolve /tmp Unix-style paths to platform temp directory for Windows compatibility
-    agents_arg = args.agents
-    if agents_arg.startswith("/tmp/") or agents_arg.startswith("\\tmp\\"):
-        system_temp = Path(tempfile.gettempdir())
-        # Strip the /tmp or \tmp prefix and join with system temp
-        normalized = agents_arg.replace("/tmp/", "").replace("\\tmp\\", "")
-        agents_arg = str(system_temp / normalized)
-    agent_pattern = Path(agents_arg)
-    agent_dir = agent_pattern.parent
-    agent_glob = agents_arg.rsplit("/", 1)[-1] if "/" in agents_arg else agents_arg.rsplit("\\", 1)[-1]
-    agent_files = list(agent_dir.glob(agent_glob))
-    if not agent_files:
-        print(f"WARNING: No agent files found matching pattern: {args.agents}", file=sys.stderr)
 
+    # Load agent data from all accumulated paths
     agent_data: dict[str, Any] = {}
     seen_sources: dict[str, Path] = {}
-    for agent_file in sorted(agent_files):
-        try:
-            parts = agent_file.stem.split("-")
-            if len(parts) >= 3:
-                agent_key = parts[2]  # "logic", "quality", "code-critic"
-                if agent_key in seen_sources:
-                    print(
-                        f"WARNING: Duplicate agent source '{agent_key}' — "
-                        f"{agent_file.name} overwrites {seen_sources[agent_key].name}",
-                        file=sys.stderr,
-                    )
-                seen_sources[agent_key] = agent_file
-                agent_data[agent_key] = load_json_file(agent_file)
-            else:
-                print(f"WARNING: Agent file does not match expected pattern (gto-correctness-{{type}}-{{terminal_id}}): {agent_file}", file=sys.stderr)
-        except Exception as e:
-            print(f"WARNING: Failed to load agent file {agent_file}: {e}", file=sys.stderr)
+    for agents_arg in args.agents:
+        agent_path = _resolve_path(agents_arg)
+        if not agent_path.exists():
+            print(f"WARNING: Agent path not found: {agents_arg}", file=sys.stderr)
             continue
+        if agent_path.is_dir():
+            agent_files = list(agent_path.glob("*"))
+        else:
+            agent_files = list(agent_path.parent.glob(agent_path.name))
+        if not agent_files:
+            print(f"WARNING: No agent files found at: {agents_arg}", file=sys.stderr)
+            continue
+        for agent_file in sorted(agent_files):
+            try:
+                parts = agent_file.stem.split("-")
+                if len(parts) >= 3:
+                    agent_key = parts[2]  # "logic", "quality", "code-critic"
+                    if agent_key in seen_sources:
+                        continue  # skip duplicates silently (first wins)
+                    seen_sources[agent_key] = agent_file
+                    agent_data[agent_key] = load_json_file(agent_file)
+            except Exception as e:
+                print(f"WARNING: Failed to load agent file {agent_file}: {e}", file=sys.stderr)
+                continue
 
     # Merge and write
     merged = merge_gaps(l1_data, agent_data)
+
+    # Compute health_score for assertions (0-100, 100 = no gaps)
+    gaps = merged["gaps"]
+    total = len(gaps)
+    if total == 0:
+        health_score = 100
+    else:
+        high_count = sum(1 for g in gaps if g.get("severity") == "HIGH")
+        critical_count = sum(1 for g in gaps if g.get("severity") == "CRITICAL")
+        health_score = max(0, 100 - (critical_count * 25) - (high_count * 10) - ((total - critical_count - high_count) * 2))
+    merged["health_score"] = health_score
+
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(merged, indent=2), encoding="utf-8")
-    print(f"INFO: Wrote merged artifact: {output_path} ({len(merged['gaps'])} gaps)")
+    print(f"INFO: Wrote merged artifact: {output_path} ({len(merged['gaps'])} gaps, health_score={health_score})")
     return 0
 
 

@@ -1,0 +1,8 @@
+ANTI-PATTERNS - Never Do These
+
+- Mixing planning text with tool calls
+- Providing analysis while executing
+- Explaining during execution phase
+- Combining phases in single response
+- Making tool calls without approved plan
+- Reporting results during execution
