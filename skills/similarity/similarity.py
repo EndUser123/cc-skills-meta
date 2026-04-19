@@ -531,8 +531,9 @@ def main():
             }
         )
 
-    # Create output directory in P:/.evidence/similarity/ (not inside the package)
-    evidence_dir = Path.cwd().resolve() / ".evidence" / "similarity"
+    # Create output directory in P:/.claude/.artifacts/{terminal_id}/similarity/
+    terminal_id = os.environ.get("CLAUDE_TERMINAL_ID", "cli")
+    evidence_dir = Path.cwd().resolve() / ".claude" / ".artifacts" / terminal_id / "similarity"
     evidence_dir.mkdir(parents=True, exist_ok=True)
     output_file = evidence_dir / f"{target_name}_report.json"
     output_file.write_text(json.dumps(output, indent=2))

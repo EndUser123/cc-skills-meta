@@ -13,6 +13,7 @@ Checks (WARN only, never block):
 from __future__ import annotations
 
 import json
+import os
 import stat
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -63,7 +64,7 @@ class SkillSelfHealthChecker:
             # Default to 2 levels up from this file (lib/__file__ -> skill_root)
             skill_root = Path(__file__).parent.parent
         self.skill_root = skill_root
-        self.cache_file = Path.cwd().resolve() / ".evidence" / "gto-health" / ".skill_cache.json"
+        self.cache_file = Path.cwd().resolve() / ".claude" / ".artifacts" / os.environ.get("CLAUDE_TERMINAL_ID", "default") / "gto-health" / ".skill_cache.json"
 
     def check(self, force: bool = False) -> HealthCheckResult:
         """
