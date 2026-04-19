@@ -527,6 +527,11 @@ def _detect_batch_groups(gaps: list[dict]) -> list[dict]:
         # Aggregate effort (sum of batch members — all addressed together)
         aggregate_effort = sum(g.get("effort_estimate_minutes", 5) for g in batch_gaps)
 
+        # Cascade depth: worst in batch (DEEP > MEDIUM > SHALLOW)
+        cascade_depths = [g.get("cascade_depth") for g in batch_gaps if g.get("cascade_depth")]
+        depth_order = {"DEEP": 0, "MEDIUM": 1, "SHALLOW": 2}
+        best_depth = min(cascade_depths, key=lambda d: depth_order.get(d, 3)) if cascade_depths else None
+
         results.append(
             {
                 "id": f"BATCH-LOC-{file_path.replace('|', '_')}|{line_number or 'NOLINE'}",
@@ -543,6 +548,8 @@ def _detect_batch_groups(gaps: list[dict]) -> list[dict]:
                 "gap_ids": gap_ids,
                 "effort_minutes": aggregate_effort,
                 "driven_by": batch_gaps[0].get("driven_by"),
+                "cascade_depth": best_depth,
+                "advisory": any(g.get("advisory") for g in batch_gaps),
             }
         )
 
@@ -613,6 +620,8 @@ def _detect_batch_groups(gaps: list[dict]) -> list[dict]:
                 "gap_ids": gap_ids,
                 "effort_minutes": aggregate_effort,
                 "driven_by": batch_gaps[0].get("driven_by"),
+                "cascade_depth": "MEDIUM",
+                "advisory": False,
             }
         )
 
@@ -645,6 +654,8 @@ def _detect_batch_groups(gaps: list[dict]) -> list[dict]:
                 "batch_count": 0,
                 "gap_ids": [gap.get("id", gap.get("gap_id", "unknown"))],
                 "driven_by": gap.get("driven_by"),
+                "cascade_depth": gap.get("cascade_depth"),
+                "advisory": gap.get("advisory", False),
             }
         )
 
@@ -792,6 +803,14 @@ def _format_gto_rsn_markdown(findings: list[dict], show_effort: bool = True) -> 
 
             if f.get("driven_by"):
                 lines.append(f"  [from: {f['driven_by']}]")
+
+            # Cascade depth annotation (pre-mortem Step 4.5)
+            if f.get("cascade_depth"):
+                lines.append(f"  [CASCADE: {f['cascade_depth']}]")
+
+            # Advisory enforcement flag (pre-mortem Step 3.6 advisory heuristic)
+            if f.get("advisory"):
+                lines.append(f"  [ADVISORY — base rate 80%+ ignore]")
 
         lines.append("")
 

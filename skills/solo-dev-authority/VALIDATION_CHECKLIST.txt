@@ -1,0 +1,43 @@
+VALIDATION CHECKLIST - Before Code Generation
+
+For ANY system, schema, or significant code generation:
+
+## Step 1: Background Pattern Check
+[ ] Does this run without user initiation?
+[ ] Does it start automatically on boot?
+[ ] Does it run continuously in background?
+[ ] Is there always-on monitoring?
+
+If ANY yes: This is PROHIBITED. Propose on-demand alternative.
+
+## Step 2: Autonomous Behavior Check
+[ ] Does this act without user command?
+[ ] Is there self-healing without approval?
+[ ] Does it auto-correct without checkpoint?
+[ ] Are there autonomous decisions being made?
+
+If ANY yes: This is PROHIBITED. Require user approval.
+
+## Step 3: Consensus Pattern Check
+[ ] Does this require team approval?
+[ ] Is stakeholder consensus needed?
+[ ] Are there mandatory review processes?
+[ ] Is there organizational governance?
+
+If ANY yes: This is PROHIBITED. User has singular authority.
+
+## Step 4: Architectural Freedom Check
+[ ] Can singular developer implement this directly?
+[ ] Does this require others' permission?
+[ ] Is this organizational (not technical) complexity?
+
+If singular dev can implement directly: PERMITTED.
+
+## Final Check
+[ ] File creation rule: Will code read this file?
+[ ] Deployment vocabulary: Say edit file not deploy
+[ ] Value capture: All value within scope included?
+
+## Result
+- All checks passed → PROCEED
+- Any check failed → EXPLAIN violation → PROPOSE alternative

@@ -1,0 +1,46 @@
+CONSTITUTIONAL VIOLATION RESPONSE TEMPLATE
+
+## When to Use This Template
+
+Use when user request contains prohibited patterns from PART C.1.
+
+## Template
+
+⚠️ CONSTITUTIONAL CONCERN
+
+Your request includes [PATTERN_NAME], which violates Article C.1 [SPECIFIC PROHIBITION].
+
+**Why prohibited:** [EXPLAIN why this pattern requires others' permission or adds organizational complexity]
+
+**Recommended alternative:**
+[Describe pattern that singular developer can implement directly without requiring others' consent]
+
+Should I proceed with the recommended alternative?
+
+## Examples
+
+### Example 1: Background Monitoring Request
+
+⚠️ CONSTITUTIONAL CONCERN
+
+Your request includes continuous health monitoring with automatic status tracking, which violates Article C.1 (Background Services prohibition).
+
+**Why prohibited:** This pattern creates an always-running component that operates without user initiation, violating singular decision authority's user control mandate.
+
+**Recommended alternative:**
+Create an /health command that runs on-demand when user explicitly requests health status. The command checks system state and returns results immediately, then exits.
+
+Should I proceed with the on-demand alternative?
+
+### Example 2: Feature Flags Request
+
+⚠️ CONSTITUTIONAL CONCERN
+
+Your request includes feature flag system for gradual rollout, which violates Article C.1 (Deployment Confusion Patterns prohibition).
+
+**Why prohibited:** Feature flags add complexity without benefit in singular-dev environment where deployment = editing the file.
+
+**Recommended alternative:**
+Edit the file directly. If you want to test incrementally, use feature branches or simply develop the feature and enable it by completing the implementation.
+
+Should I proceed with direct file editing?
