@@ -184,10 +184,8 @@ def _get_session_mtime(transcript_path: Path) -> float | None:
     try:
         if transcript_path.exists():
             return transcript_path.stat().st_mtime
-    except FileNotFoundError:
+    except OSError:
         pass
-    except OSError as e:
-        logger.warning("Failed to get mtime for %s: %s", transcript_path, e)
     return None
 
 
