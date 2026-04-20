@@ -206,11 +206,14 @@ def _compute_severity_trend(
         return high / total
 
     recent = [high_ratio(h) for h in history[-2:]]
-    prior = (
-        [high_ratio(h) for h in history[-4:-2]]
-        if len(history) >= 4
-        else [high_ratio(h) for h in history[:-2]]
-    )
+
+    # Guard: need at least 2 prior entries for a symmetric 2-vs-2 comparison
+    if len(history) < 4:
+        prior = [high_ratio(h) for h in history[:-2]]
+        if not prior:  # len(history) == 3: history[:-2] gives only 1 element, but check for empty
+            return "unknown", 0.0
+    else:
+        prior = [high_ratio(h) for h in history[-4:-2]]
 
     recent_avg = sum(recent) / len(recent)
     prior_avg = sum(prior) / len(prior)

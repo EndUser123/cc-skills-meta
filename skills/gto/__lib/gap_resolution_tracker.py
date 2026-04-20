@@ -313,8 +313,8 @@ def _append_resolution_record(
         log_path.parent.mkdir(parents=True, exist_ok=True)
         with open(log_path, "a") as f:
             f.write(json.dumps(record.__dict__) + "\n")
-    except OSError:
-        pass
+    except OSError as e:
+        logger.warning("Failed to append %s record for %s: %s", record.__class__.__name__, target_key, e)
 
 
 def _read_verification_log(log_path: Path) -> list[ResolutionVerificationRecord]:
@@ -359,8 +359,8 @@ def _append_verification_record(
         log_path.parent.mkdir(parents=True, exist_ok=True)
         with open(log_path, "a") as f:
             f.write(json.dumps(record.__dict__) + "\n")
-    except OSError:
-        pass
+    except OSError as e:
+        logger.warning("Failed to append %s record for %s: %s", record.__class__.__name__, target_key, e)
 
 
 def _get_verified_gap_ids(log_path: Path) -> set[str]:
@@ -615,7 +615,7 @@ def get_skill_effectiveness_score(
     skill_verifications = [
         v
         for v in verifications
-        if v.skill == skill and any(gt in gap_type_set or _extract_root_type(gt) in gap_type_set for gt in v.gap_types)
+        if v.skill == skill and any(gt is not None and (gt in gap_type_set or _extract_root_type(gt) in gap_type_set) for gt in v.gap_types)
     ]
 
     verified_count = sum(1 for v in skill_verifications if v.status == "verified")

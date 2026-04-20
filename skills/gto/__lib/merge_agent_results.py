@@ -106,7 +106,7 @@ def main() -> int:
             print(f"WARNING: Agent path not found: {agents_arg}", file=sys.stderr)
             continue
         if agent_path.is_dir():
-            agent_files = list(agent_path.glob("*"))
+            agent_files = list(agent_path.rglob("*"))
         else:
             agent_files = list(agent_path.parent.glob(agent_path.name))
         if not agent_files:

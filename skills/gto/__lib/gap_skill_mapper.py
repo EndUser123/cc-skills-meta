@@ -347,6 +347,8 @@ def _calculate_confidence(skill: SkillSummary, gap_type: str, gap_message: str) 
     # Check trigger match in message
     gap_message_lower = gap_message.lower() if gap_message else ""
     for trigger in skill.triggers:
+        if trigger is None:
+            continue
         if trigger.lower() in gap_message_lower:
             base_confidence += 0.1
             break

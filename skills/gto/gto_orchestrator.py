@@ -10,7 +10,6 @@ It implements the three-layer architecture:
 from __future__ import annotations
 
 from dataclasses import replace
-
 import json
 import os
 import sys
@@ -336,6 +335,7 @@ class GTOOrchestrator:
             results = self._apply_cascade_tracing(results)
 
             # Update counts after merging
+            results.total_gap_count = len(results.gaps)
             results.critical_count = sum(1 for g in results.gaps if g.severity == "critical")
             results.high_count = sum(1 for g in results.gaps if g.severity == "high")
             results.medium_count = sum(1 for g in results.gaps if g.severity == "medium")
@@ -496,12 +496,13 @@ class GTOOrchestrator:
 
         return results
 
-    def _apply_cascade_tracing(self, results: ConsolidatedResults) -> ConsolidatedResults:
+    def _apply_cascade_tracing(
+        self, results: ConsolidatedResults
+    ) -> ConsolidatedResults:
         """Trace second-order cascade chains for HIGH/CRITICAL gaps.
 
         Pre-mortem Step 2.5: Ask 'and then what?' 3-5 times for each high-risk
-        gap and annotate cascade depth. This surfaces single failures that can
-        trigger system-wide collapse vs localized failures.
+        gap and annotate cascade depth.
 
         Args:
             results: ConsolidatedResults with gaps
@@ -509,8 +510,6 @@ class GTOOrchestrator:
         Returns:
             ConsolidatedResults with gap cascade annotations in metadata
         """
-        # Knowledge base: known cascade chains for common gap types
-        # Format: gap_type -> list of (effect_description, downstream_gap_type_hint)
         CASCADE_CHAINS: dict[str, list[tuple[str, str | None]]] = {
             "viability_failure": [
                 ("Analysis is unreliable", "health_score_wrong"),
@@ -549,36 +548,37 @@ class GTOOrchestrator:
             ],
             "missing_docs": [
                 ("Onboarding friction for new contributors", "velocity_slows"),
-                ("Knowledge lost on handoff", None),
-                ("Repeated questions浪费 time", None),
+                ("Knowledge walks out the door", None),
+                ("Decision debt accumulates", None),
             ],
         }
 
-        annotated_gaps = []
-        for gap in results.gaps:
-            if gap.severity not in ("critical", "high"):
-                annotated_gaps.append(gap)
-                continue
-
-            # Check if we have a known cascade chain for this type
-            chain = CASCADE_CHAINS.get(gap.type, [])
-            if chain:
-                cascade_steps = [gap.message]  # Start with the gap itself
-                for effect, _ in chain:
-                    cascade_steps.append(effect)
-
-                # Add cascade annotation to metadata
-                cascade_annotation = {
-                    "cascade_chain": cascade_steps,
-                    "cascade_depth": gap.cascade_depth or "MEDIUM",
-                    "cascade_steps": len(cascade_steps),
-                }
-                new_metadata = {**gap.metadata, "cascade_annotation": cascade_annotation}
-                annotated_gaps.append(replace(gap, metadata=new_metadata))
+        def trace_cascade(gap_type: str) -> dict[str, Any]:
+            chain = CASCADE_CHAINS.get(gap_type, [])
+            steps = len(chain)
+            if steps >= 5:
+                depth = "DEEP"
+            elif steps >= 3:
+                depth = "MEDIUM"
             else:
-                annotated_gaps.append(gap)
+                depth = "SHALLOW"
+            return {
+                "cascade_chain": chain,
+                "cascade_depth": depth,
+                "cascade_steps": steps,
+            }
 
-        return replace(results, gaps=annotated_gaps)
+        updated_gaps = []
+        for gap in results.gaps:
+            if gap.severity in ("high", "critical"):
+                cascade_info = trace_cascade(gap.type)
+                new_metadata = dict(gap.metadata) if gap.metadata else {}
+                new_metadata["cascade_annotation"] = cascade_info
+                updated_gaps.append(replace(gap, metadata=new_metadata))
+            else:
+                updated_gaps.append(gap)
+
+        return replace(results, gaps=updated_gaps)
 
     def _run_session_chain_analysis(
         self,
