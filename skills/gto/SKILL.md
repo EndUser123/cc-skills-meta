@@ -17,6 +17,29 @@ allowed_first_tools:
 required_first_command_patterns:
   - '^python\s+P:/.claude/skills/gto/gto_orchestrator\.py(?:\s|$)'
 required_first_command_hint: Run gto_orchestrator.py first to initialize the session analysis workflow.
+
+# Evidence-bound verification (anti-confabulation)
+verification:
+  commands:
+    - description: "Run GTO binary assertions (A1-A5)"
+      tool: "Bash"
+      args:
+        command: "python P:/.claude/skills/gto/evals/gto_assertions.py 2>&1 | tail -30"
+    - description: "Confirm GTO artifact file exists"
+      tool: "Bash"
+      args:
+        command: "ls -la P:/.claude/.artifacts/gto-artifact-*.json 2>/dev/null | tail -3 || echo 'NO ARTIFACT FOUND'"
+    - description: "Show health score from artifact"
+      tool: "Bash"
+      args:
+        command: "python -c \"import glob,json; f=glob.glob('P:/.claude/.artifacts/gto-artifact-*.json'); print(json.load(open(f[-1])).get('health_score','MISSING')) if f else print('NO ARTIFACT')\" 2>/dev/null || echo 'CANNOT READ'"
+    - description: "Confirm gap list is non-empty or explicitly empty"
+      tool: "Bash"
+      args:
+        command: "python -c \"import glob,json; f=glob.glob('P:/.claude/.artifacts/gto-artifact-*.json'); d=json.load(open(f[-1])); gaps=d.get('gaps',[]); print(f'{len(gaps)} gaps found') if f else print('NO ARTIFACT')\" 2>/dev/null || echo 'CANNOT READ'"
+  summary_mode: evidence_only
+  expected_artifacts:
+    - "P:/.claude/.artifacts/gto-artifact-{session_id}-{timestamp}.json"
 ---
 # GTO v3.1 - Strategic Next-Step Advisor
 Reads session history to understand what happened, then recommends what skills to run next.
@@ -272,13 +295,18 @@ GTO maintains an append-only log of skill executions per target for routing sugg
 **Reference:** `lib/skill_coverage_detector.py` — `detect_skill_coverage()` function
 ## Verification (MANUAL)
 **Before claiming "done", you MUST:**
-1. Run the binary assertions script:
+1. Run each command from the `verification.commands` frontmatter
+2. **Write results to artifact:** `P:/.claude/.artifacts/{terminal_id}/gto/verification.json`
+3. Run the binary assertions script:
    ```
    python P:/.claude/skills/gto/evals/gto_assertions.py
    ```
    **Note:** Terminal ID is auto-detected from environment variables (`CLAUDE_TERMINAL_ID`, `TERMINAL_ID`, etc.) or derived from PID+timestamp.
-2. Paste the full output showing all assertions passed
-3. Only claim "done" if ALL assertions pass (exit code 0, score 100/100)
+4. Paste the full output showing all assertions passed
+5. Only claim "done" if ALL assertions pass (exit code 0, score 100/100)
+
+Do NOT write a freeform summary. Paste tool output verbatim with PASS/FAIL per command.
+
 **If any assertion fails:**
 - Diagnose the failure from the assertion output
 - Fix the issue (missing artifacts, failed checks, etc.)
