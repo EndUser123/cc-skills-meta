@@ -100,6 +100,7 @@ class Gap:
     # TASK-009e: Theme detection
     theme: str | None = None
     recurrence_count: int = 1
+<<<<<<< Updated upstream
     # Cascade depth annotation (pre-mortem Step 4.5)
     cascade_depth: str | None = None  # SHALLOW/MEDIUM/DEEP
     # Operational verification gate (pre-mortem Step 3.8)
@@ -108,6 +109,17 @@ class Gap:
     is_verified: bool = False
     # Advisory enforcement heuristic (pre-mortem Step 3.6)
     advisory: bool = False
+||||||| Stash base
+=======
+    # Cascade depth annotation (Step 4.5 from pre-mortem)
+    cascade_depth: str | None = None  # SHALLOW/MEDIUM/DEEP
+    # Operational verification gate (Step 3.8 from pre-mortem)
+    verification_required: bool = False  # True for HIGH/CRITICAL gaps needing empirical evidence
+    verification_evidence: str | None = None  # What evidence confirmed this gap
+    is_verified: bool = False  # True once evidence is provided
+    # Advisory enforcement heuristic (pre-mortem advisory rule)
+    advisory: bool = False  # True for advisory-only recommendations
+>>>>>>> Stashed changes
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -777,12 +789,22 @@ class InitialResultsBuilder:
         # TASK-009e: Apply theme detection
         themed_gaps = self._apply_theme_detection(effort_enriched_gaps)
 
+<<<<<<< Updated upstream
         # Cascade depth annotation (pre-mortem Step 4.5)
         cascade_annotated_gaps = self._apply_cascade_depth(themed_gaps)
 
         # Advisory enforcement heuristic (pre-mortem Step 3.6)
         advisory_marked_gaps = self._apply_advisory_heuristic(cascade_annotated_gaps)
 
+||||||| Stash base
+=======
+        # Cascade depth annotation (Step 4.5 from pre-mortem)
+        cascade_annotated_gaps = self._apply_cascade_depth(themed_gaps)
+
+        # Advisory enforcement heuristic (pre-mortem Step 3.6 advisory rule)
+        advisory_marked_gaps = self._apply_advisory_heuristic(cascade_annotated_gaps)
+
+>>>>>>> Stashed changes
         # Sort gaps by severity and ID
         sorted_gaps = self._sort_gaps(advisory_marked_gaps)
 
@@ -926,6 +948,7 @@ class InitialResultsBuilder:
 
         return result_gaps
 
+<<<<<<< Updated upstream
     # Cascade depth: pre-mortem Step 4.5
     def _apply_cascade_depth(self, gaps: list[Gap]) -> list[Gap]:
         """Annotate gaps with cascade depth.
@@ -1033,6 +1056,147 @@ class InitialResultsBuilder:
 
         return result_gaps
 
+||||||| Stash base
+=======
+    # Cascade depth: pre-mortem Step 4.5
+    def _apply_cascade_depth(self, gaps: list[Gap]) -> list[Gap]:
+        """Annotate gaps with cascade depth.
+
+        For HIGH/CRITICAL gaps, traces 'and then what?' chains to determine
+        cascade depth:
+        - SHALLOW (1-2 steps): Localized failure, easy recovery
+        - MEDIUM (3-4 steps): Affects multiple subsystems
+        - DEEP (5+ steps): System-wide collapse
+
+        Uses a rule-based knowledge base of known cascade patterns
+        derived from pre-mortem second-order effects methodology.
+
+        Args:
+            gaps: List of gaps to analyze
+
+        Returns:
+            Gaps with cascade_depth annotated
+        """
+        # Knowledge base: gap type → typical cascade depth
+        # Higher values = more systemic the gap type is
+        CASCADE_POTENTIAL: dict[str, int] = {
+            # Critical path failures are DEEP
+            "viability_failure": 5,
+            "dependency_vulnerable": 5,
+            "entry_point_mismatch": 4,
+            # High severity gaps get boost
+            "missing_dependency": 4,
+            "import_error": 3,
+            "test_failure": 3,
+            "missing_test": 2,
+            # Medium severity
+            "missing_docs": 2,
+            "dependency_outdated": 2,
+            "low_confidence_goal": 1,
+            "unfinished_business": 1,
+            # Low severity
+            "code_marker": 1,
+            "dependency_unused": 1,
+        }
+
+        def _classify_depth(potential: int) -> str:
+            if potential >= 5:
+                return "DEEP"
+            elif potential >= 3:
+                return "MEDIUM"
+            return "SHALLOW"
+
+        def _estimate_cascade_steps(gap: Gap) -> int:
+            """Estimate cascade depth for a gap."""
+            base = CASCADE_POTENTIAL.get(gap.type, 2)
+
+            # Severity multiplier
+            sev_mult = {"critical": 2.0, "high": 1.5, "medium": 1.0, "low": 0.5}
+            mult = sev_mult.get(gap.severity, 1.0)
+
+            # Core infrastructure gaps cascade further
+            infra_boost = 0
+            if gap.file_path:
+                fp = gap.file_path.lower()
+                if any(k in fp for k in ("orchestrator", "state_manager", "results_builder")):
+                    infra_boost = 2
+                elif any(k in fp for k in ("lib/", "__lib/", "hooks/", "subagents/")):
+                    infra_boost = 1
+
+            # Skill self-analysis gaps are deeper (they affect GTO itself)
+            if "gto" in (gap.source or "").lower():
+                infra_boost += 1
+
+            return int(base * mult + infra_boost)
+
+        result_gaps = []
+        for gap in gaps:
+            if gap.severity not in ("critical", "high"):
+                result_gaps.append(gap)
+                continue
+
+            steps = _estimate_cascade_steps(gap)
+            depth = _classify_depth(steps)
+
+            # Also mark as verification-required for DEEP cascades
+            # (these need empirical evidence, not just speculation)
+            needs_verification = depth == "DEEP" and not gap.is_verified
+
+            annotated = replace(
+                gap,
+                cascade_depth=depth,
+                verification_required=gap.verification_required or needs_verification,
+            )
+            result_gaps.append(annotated)
+
+        return result_gaps
+
+    # Advisory enforcement heuristic: pre-mortem Step 3.6
+    def _apply_advisory_heuristic(self, gaps: list[Gap]) -> list[Gap]:
+        """Mark gaps that are advisory-only with weak enforcement.
+
+        Advisory enforcement has ~80% ignore base rate. When a recommended
+        mitigation is advisory-only (not blocking), boost risk score by +2
+        and annotate with advisory=True so users know the enforcement is weak.
+
+        Advisory gap types:
+        - skill_coverage: Running a skill is a suggestion, not a requirement
+        - session_goal: Low-confidence goal detection is informational
+        - improvements: Process suggestions are advisory
+        - skill_suggestion: Explicit skill recommendations
+
+        Args:
+            gaps: List of gaps to annotate
+
+        Returns:
+            Gaps with advisory flag set for weak-enforcement items
+        """
+        ADVISORY_TYPES = {
+            "skill_coverage",
+            "skill_suggestion",
+            "session_goal",
+            "low_confidence_goal",
+            "improvement_gap",
+            "improvement_investigation",
+            "process_gap",
+        }
+
+        result_gaps = []
+        for gap in gaps:
+            is_advisory = gap.type in ADVISORY_TYPES or (
+                gap.metadata.get("action_type") in ("Use /skill", "Run skill", "Manual")
+                and gap.severity not in ("critical", "high")
+            )
+
+            if is_advisory and not gap.advisory:
+                annotated = replace(gap, advisory=True)
+                result_gaps.append(annotated)
+            else:
+                result_gaps.append(gap)
+
+        return result_gaps
+
+>>>>>>> Stashed changes
     def to_json(self, results: ConsolidatedResults, output_path: Path) -> None:
         """Write consolidated results to JSON file.
 
