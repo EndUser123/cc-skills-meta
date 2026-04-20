@@ -82,6 +82,8 @@ class NextStepsFormatter:
         "missing_dependency": "dependencies",
         "outdated_dependency": "dependencies",
         "vulnerable_dependency": "dependencies",
+        # Omission checklist (from /r decomposition)
+        "omission_checklist": "code_quality",
         # Session outcomes (conversation-level outstanding items)
         "session_outcomes": "session",
         # Suspicion signals (conversation-level reasoning gaps)

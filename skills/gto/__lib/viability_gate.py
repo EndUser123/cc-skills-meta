@@ -81,7 +81,7 @@ class ViabilityGate:
         if git_result.is_viable:
             checks_passed.append("Git repository valid")
         else:
-            # Fix: Git check failure should be tracked (though informational - doesn't block)
+            # Git check failure is informational only (doesn't block analysis)
             checks_passed.append(f"Git check: {git_result.reason} (informational)")
 
         # Check 2: Handoff envelope exists and is readable

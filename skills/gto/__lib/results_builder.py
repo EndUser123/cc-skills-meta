@@ -108,6 +108,8 @@ class Gap:
     is_verified: bool = False
     # Advisory enforcement heuristic (pre-mortem Step 3.6)
     advisory: bool = False
+    # Scope classification (from /r decomposition)
+    scope: str | None = None  # LOCAL / SYSTEMIC / ARCHITECTURAL
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -130,6 +132,7 @@ class Gap:
             "verification_evidence": self.verification_evidence,
             "is_verified": self.is_verified,
             "advisory": self.advisory,
+            "scope": self.scope,
         }
 
     @classmethod
@@ -154,6 +157,7 @@ class Gap:
             verification_evidence=data.get("verification_evidence"),
             is_verified=data.get("is_verified", False),
             advisory=data.get("advisory", False),
+            scope=data.get("scope"),
         )
 
     def signature(self) -> str:
@@ -619,14 +623,16 @@ class InitialResultsBuilder:
         gaps = []
         if hasattr(result, "gaps"):
             for idx, gap in enumerate(result.gaps):
+                tier = getattr(gap, "tier", "unit")
                 gaps.append(
                     Gap(
                         gap_id=self._create_gap_id(idx, "test"),
                         type="missing_test",
                         severity="high",
-                        message=f"Missing test for {getattr(gap, 'module_path', 'unknown module')} — expected {getattr(gap, 'expected_test_path', 'unknown path')}",
+                        message=f"Missing {tier}-tier test for {getattr(gap, 'module_path', 'unknown module')} — expected {getattr(gap, 'expected_test_path', 'unknown path')}",
                         file_path=getattr(gap, "file_path", None),
                         source=source,
+                        metadata={"test_tier": tier},
                     )
                 )
         return gaps
@@ -783,8 +789,14 @@ class InitialResultsBuilder:
         # Advisory enforcement heuristic (pre-mortem Step 3.6)
         advisory_marked_gaps = self._apply_advisory_heuristic(cascade_annotated_gaps)
 
+        # Scope classification (from /r decomposition)
+        scoped_gaps = self._apply_scope_classification(advisory_marked_gaps)
+
+        # Plan validation against CLAUDE.md constraints (from /r decomposition)
+        validated_gaps = self._apply_plan_validation(scoped_gaps)
+
         # Sort gaps by severity and ID
-        sorted_gaps = self._sort_gaps(advisory_marked_gaps)
+        sorted_gaps = self._sort_gaps(validated_gaps)
 
         # Count by severity
         severity_counts = self._count_by_severity(sorted_gaps)
@@ -1030,6 +1042,131 @@ class InitialResultsBuilder:
                 result_gaps.append(annotated)
             else:
                 result_gaps.append(gap)
+
+        return result_gaps
+
+    # Scope classification (from /r decomposition — classify_scope)
+    def _apply_scope_classification(self, gaps: list[Gap]) -> list[Gap]:
+        """Classify gaps by scope: LOCAL, SYSTEMIC, or ARCHITECTURAL.
+
+        LOCAL: Affects one file/module, easy to isolate.
+        SYSTEMIC: Affects multiple files or a subsystem.
+        ARCHITECTURAL: Affects cross-cutting concerns, design decisions, or shared infra.
+
+        Args:
+            gaps: List of gaps to classify
+
+        Returns:
+            Gaps with scope field populated
+        """
+        # Gap types that are inherently architectural
+        ARCHITECTURAL_TYPES = frozenset({
+            "viability_failure",
+            "chain_integrity_issue",
+            "contract_gap",
+            "consumer_gap",
+            "stale_data_risk",
+            "entry_point_mismatch",
+        })
+        # Gap types that are inherently systemic
+        SYSTEMIC_TYPES = frozenset({
+            "dependency_vulnerable",
+            "dependency_missing",
+            "missing_dependency",
+            "unfinished_business",
+            "low_confidence_goal",
+            "session_outcome",
+            "suspicion_misalignment",
+            "suspicion_contradiction",
+        })
+        # File path patterns indicating architecture-level code
+        ARCH_PATH_KEYWORDS = ("orchestrator", "state_manager", "results_builder",
+                              "router", "dispatcher", "config", "settings")
+
+        result_gaps = []
+        for gap in gaps:
+            if gap.type in ARCHITECTURAL_TYPES:
+                scope = "ARCHITECTURAL"
+            elif gap.type in SYSTEMIC_TYPES:
+                scope = "SYSTEMIC"
+            elif gap.file_path:
+                fp_lower = gap.file_path.lower()
+                if any(k in fp_lower for k in ARCH_PATH_KEYWORDS):
+                    scope = "ARCHITECTURAL"
+                elif any(k in fp_lower for k in ("__lib", "__init__", "conftest")):
+                    scope = "SYSTEMIC"
+                else:
+                    scope = "LOCAL"
+            else:
+                scope = "LOCAL"
+
+            result_gaps.append(replace(gap, scope=scope))
+
+        return result_gaps
+
+    # Plan validation against CLAUDE.md constraints (from /r decomposition — plan_validation)
+    def _apply_plan_validation(self, gaps: list[Gap]) -> list[Gap]:
+        """Flag gaps whose recommended fix may violate CLAUDE.md constraints.
+
+        Checks for common constraint mismatches:
+        - Enterprise/team patterns in solo-dev project
+        - Over-engineering for single-consumer code
+        - Missing CLAUDE.md file (no constraints to validate against)
+
+        Args:
+            gaps: List of gaps to validate
+
+        Returns:
+            Gaps with constraint validation metadata
+        """
+        # Check for CLAUDE.md existence
+        claude_md_path = self.project_root / "CLAUDE.md"
+        if claude_md_path.exists():
+            try:
+                claude_md_content = claude_md_path.read_text(encoding="utf-8").lower()
+            except OSError:
+                claude_md_content = ""
+        else:
+            # No CLAUDE.md — add informational gap
+            result_gaps = list(gaps)
+            result_gaps.append(Gap(
+                gap_id="GAP-0000-plan_validation",
+                type="missing_claude_md",
+                severity="low",
+                message="No CLAUDE.md found — cannot validate recommendations against project constraints",
+                source="PlanValidation",
+                scope="ARCHITECTURAL",
+            ))
+            return result_gaps
+
+        # Patterns that indicate solo-dev project
+        is_solo_dev = any(
+            phrase in claude_md_content
+            for phrase in ("solo dev", "solo-dev", "director model", "no team", "single developer")
+        )
+
+        # Enterprise patterns that would be inappropriate in solo-dev
+        ENTERPRISE_FIX_PATTERNS = {
+            "code review": "PR review process",
+            "pull request": "PR-based workflow",
+            "team member": "team collaboration",
+            "code owner": "CODEOWNERS file",
+            "approval gate": "multi-person approval",
+        }
+
+        result_gaps = []
+        for gap in gaps:
+            metadata = dict(gap.metadata)
+            msg_lower = gap.message.lower()
+
+            if is_solo_dev:
+                for pattern, label in ENTERPRISE_FIX_PATTERNS.items():
+                    if pattern in msg_lower:
+                        metadata["constraint_warning"] = f"Solo-dev project: {label} may be inappropriate"
+                        metadata["constraint_source"] = "plan_validation"
+                        break
+
+            result_gaps.append(replace(gap, metadata=metadata))
 
         return result_gaps
 

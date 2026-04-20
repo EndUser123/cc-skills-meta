@@ -82,6 +82,11 @@ __all__ = [
     "ResolutionResult",
     "track_gap_resolutions",
     "get_gap_decay_metrics",
+    # Omission checklist (from /r decomposition)
+    "OmissionChecklistResult",
+    "OmissionFinding",
+    "check_omission",
+    "omission_to_gaps",
 ]
 
 # Import subagents - handle both package and direct import
@@ -219,3 +224,9 @@ from .unfinished_business_detector import (
     detect_unfinished_business,
 )
 from .viability_gate import ViabilityGate, check_viability
+from .omission_checklist import (
+    OmissionChecklistResult,
+    OmissionFinding,
+    check_omission,
+    omission_to_gaps,
+)

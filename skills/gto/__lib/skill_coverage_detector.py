@@ -34,22 +34,21 @@ from .gap_skill_mapper import (
 )
 
 # Import changelog reader — shared utility for skill activity tracking
-# __lib is two levels up from gto/lib/, so "../../__lib" reaches it
-try:
-    from ...__lib.changelog_writer import get_skills_run as _get_changelog_skills
-except ImportError:
-    # Fallback for when gto lib is imported directly (e.g., in tests)
-    import sys
-    from pathlib import Path as _Path
-    _lib_path = _Path(__file__).parent.parent.parent / "__lib" / "changelog_writer.py"
-    if _lib_path.exists():
-        sys.path.insert(0, str(_lib_path.parent))  # Insert __lib/ directory itself
-        try:
-            from changelog_writer import get_skills_run as _get_changelog_skills
-        except ImportError:
-            _get_changelog_skills = None
-    else:
+# __lib at skills level is added to sys.path, use direct import
+import sys
+from pathlib import Path as _Path
+
+_lib_path = _Path(__file__).parent.parent.parent / "__lib" / "changelog_writer.py"
+if _lib_path.exists():
+    _lib_dir = str(_lib_path.parent)
+    if _lib_dir not in sys.path:
+        sys.path.insert(0, _lib_dir)
+    try:
+        from changelog_writer import get_skills_run as _get_changelog_skills
+    except ImportError:
         _get_changelog_skills = None
+else:
+    _get_changelog_skills = None
 
 logger = logging.getLogger(__name__)
 

@@ -23,6 +23,7 @@ class TestGap:
     expected_test_path: str
     test_exists: bool
     test_dir_exists: bool
+    tier: str = "unit"  # unit | integration | e2e — inferred from path patterns
 
 
 @dataclass
@@ -133,6 +134,38 @@ class TestPresenceChecker:
         parts.append(f"test_{module_name}.py")
         return test_dir.joinpath(*parts)
 
+    def _infer_test_tier(self, module_path: Path) -> str:
+        """Infer the test tier for a module based on its location and role.
+
+        Tiers:
+        - unit: Individual module/function tests (default)
+        - integration: Tests for cross-module interaction
+        - e2e: End-to-end workflow tests
+
+        Args:
+            module_path: Path to source module
+
+        Returns:
+            Test tier string
+        """
+        path_str = str(module_path).lower().replace("\\", "/")
+        module_name = module_path.stem.lower()
+
+        # E2E indicators: CLI entry points, main modules, app runners
+        if any(k in module_name for k in ("cli", "main", "app", "server", "entry")):
+            return "e2e"
+        if any(k in path_str for k in ("api/", "routes/", "endpoints/", "handlers/")):
+            return "integration"
+
+        # Integration indicators: multi-module coordinators
+        if any(k in module_name for k in ("orchestrator", "coordinator", "dispatcher", "pipeline")):
+            return "integration"
+        if any(k in path_str for k in ("services/", "workflows/", "pipelines/")):
+            return "integration"
+
+        # Default: unit test
+        return "unit"
+
     def check(self) -> TestPresenceResult:
         """
         Check test presence for all source modules.
@@ -176,6 +209,7 @@ class TestPresenceChecker:
                             expected_test_path="<no test dir found>",
                             test_exists=False,
                             test_dir_exists=False,
+                            tier=self._infer_test_tier(module_path),
                         )
                     )
                     modules_without_tests += 1
@@ -201,6 +235,7 @@ class TestPresenceChecker:
                             expected_test_path=str(expected_test_path),
                             test_exists=False,
                             test_dir_exists=True,
+                            tier=self._infer_test_tier(module_path),
                         )
                     )
                     modules_without_tests += 1

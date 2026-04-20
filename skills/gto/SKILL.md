@@ -73,6 +73,11 @@ Before recommending what to do next, `/gto` should run a short internal next-ste
 - What severity or effort estimate am I inferring too confidently from weak evidence?
 - Have ALL identified gaps been given an explicit disposition (MAPPED, REJECTED with rationale, or DEFERRED with owner+trigger)?
 - What should we do next that I have not yet mentioned — what else needs to be done?
+- What gap categories were NOT checked at all? (omission checklist — did we skip tests, docs, contracts, deps, git, or session?)
+- What reported gaps might be stale — has anyone verified the file/line still exists? (evidence verification)
+- What scope level is each gap — LOCAL, SYSTEMIC, or ARCHITECTURAL? Are we treating systemic gaps as local quick-fixes?
+- Does any recommended fix violate CLAUDE.md constraints? (solo-dev vs enterprise patterns, over-engineering)
+- What test tier is each test gap — unit, integration, or e2e? Are we only reporting unit-test gaps?
 These are internal self-check prompts. They are not default user-facing questions and should only surface to the user when `/gto` is genuinely blocked and cannot proceed safely without clarification.
 ## EXECUTE
 **Step 1: Initialize session and terminal isolation**
