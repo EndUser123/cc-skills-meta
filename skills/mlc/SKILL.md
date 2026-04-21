@@ -4,6 +4,7 @@ description: Minimal Lossy Compaction - Conservative token optimization that pre
 version: 2.0.0
 status: stable
 category: optimization
+enforcement: advisory
 triggers:
   - /mlc
   - "optimize tokens"
@@ -14,7 +15,6 @@ aliases:
 suggest:
   - /lmc
   - /gto
-  - /r
 workflow_steps:
   - analyze_token_usage: Measure tokens in target content
   - identify_inefficiencies: Find redundancy, verbosity, waste
@@ -56,6 +56,25 @@ Conservative token optimization that preserves ALL critical information while re
 3. **Generate Optimizations**: Condense while preserving all information
 4. **Apply Changes**: Update code/docs/output (if approved)
 5. **Verify Equivalence**: Confirm meaning preserved, measure savings
+6. **Add Smart TOC**: For documents 500+ lines, add intent-based quick-nav below the TOC
+
+### Smart TOC for Large Documents
+
+For documents over 500 lines, add a quick-nav table below the standard TOC:
+
+```markdown
+### Quick Navigation by Intent
+
+| I want to... | Go to |
+|---|---|
+| [intent description] | §Section → Sub-section |
+```
+
+**Rules for smart TOC**:
+- Maximum 8-10 rows — group by category if more needed
+- Use section (§N) notation, not line numbers (line numbers rot)
+- One specific destination per row, not multi-hop chains
+- For single-section docs, skip the smart TOC
 
 ## Validation Rules
 

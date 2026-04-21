@@ -4,6 +4,7 @@ description: Lossless Maximal Compaction - Maximum token optimization that prese
 version: 2.0.0
 status: stable
 category: optimization
+enforcement: advisory
 triggers:
   - /lmc
   - "aggressive optimize"
@@ -14,7 +15,6 @@ aliases:
 suggest:
   - /mlc
   - /gto
-  - /r
 workflow_steps:
   - analyze_token_usage: Measure tokens in target content
   - identify_essentials: Distinguish must-have from nice-to-have
@@ -54,7 +54,26 @@ Maximum token optimization that preserves all critical information while maximiz
 2. **Identify Essentials**: Distinguish must-have from nice-to-have
 3. **Apply Lossy Filters**: Drop prose, analysis, verbose output
 4. **Generate Minimal Version**: Ultra-compact with core outcomes only
-5. **Verify Functionality**: Ensure core behavior/meaning preserved
+5. **Add Smart TOC**: For documents 500+ lines, add intent-based quick-nav below the TOC
+6. **Verify Functionality**: Ensure core behavior/meaning preserved
+
+### Smart TOC for Large Documents
+
+For documents over 500 lines, add a quick-nav table below the standard TOC:
+
+```markdown
+### Quick Navigation by Intent
+
+| I want to... | Go to |
+|---|---|
+| [intent description] | §Section → Sub-section |
+```
+
+**Rules for smart TOC**:
+- Maximum 8-10 rows — if more are needed, group by category
+- Use section (§N) notation, not line numbers (line numbers rot)
+- One specific destination per row, not multi-hop chains
+- For single-section docs, skip the smart TOC
 
 ## Validation Rules
 
