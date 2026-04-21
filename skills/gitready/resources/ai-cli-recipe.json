@@ -1,0 +1,22 @@
+{
+  "default": {
+    "clis": ["gemini", "codex", "vibe"]
+  },
+  "aux": {
+    "clis": [
+      {
+        "name": "gemini",
+        "model": "gemini-2.5-flash",
+        "failover": "gemini-2.0-flash"
+      },
+      {
+        "name": "codex"
+      }
+    ]
+  },
+  "clis": [
+    "gemini:gemini-2.5-flash",
+    "codex",
+    "vibe"
+  ]
+}

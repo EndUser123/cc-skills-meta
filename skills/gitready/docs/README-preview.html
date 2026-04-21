@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gitready README Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* === WARM COLOR PALETTE (from codebase-to-course design system) === */
+  /* Light theme: warm off-white like aged paper */
+  :root, [data-theme="light"] {
+    --bg-color: #FAF7F2;
+    --bg-warm: #F5F0E8;
+    --bg-code: #1E1E2E;
+    --text-color: #2C2A28;
+    --text-muted: #6B6560;
+    --text-light: #9E9790;
+    --link-color: #0969da;
+    --border-color: #E5DFD6;
+    --heading-color: #111;
+    --inline-code-bg: #EEEBE5;
+    --blockquote-border: #E5DFD6;
+    --blockquote-bg: #F5F0E8;
+    --toggle-bg: #F5F0E8;
+    --toggle-fg: #655e56;
+    --accent: #D94F30;
+    --accent-hover: #C4432A;
+    --surface: #FFFFFF;
+    --surface-warm: #FDF9F3;
+    /* Code syntax colors (Catppuccin-inspired, dark-mode only) */
+    --code-keyword: #CBA6F7;
+    --code-string: #A6E3A1;
+    --code-function: #89B4FA;
+    --code-comment: #6C7086;
+    --code-number: #FAB387;
+    --code-property: #F9E2AF;
+    --code-operator: #94E2D5;
+  }
+  /* Dark theme */
+  [data-theme="dark"] {
+    --bg-color: #0d1117;
+    --bg-warm: #161b22;
+    --bg-code: #1E1E2E;
+    --text-color: #c9d1d9;
+    --text-muted: #8b949e;
+    --text-light: #6e7681;
+    --link-color: #58a6ff;
+    --border-color: #30363d;
+    --heading-color: #f0f6fc;
+    --inline-code-bg: #2d333b;
+    --blockquote-border: #3b434b;
+    --blockquote-bg: #161b22;
+    --toggle-bg: #30363d;
+    --toggle-fg: #c9d1d9;
+    --accent: #D94F30;
+    --accent-hover: #C4432A;
+    --surface: #161b22;
+    --surface-warm: #1C2128;
+  }
+  /* === BASE STYLES === */
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    padding-top: calc(40px + 50px);
+    color: var(--text-color);
+    line-height: 1.6;
+    background: var(--bg-color);
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  /* === ACCESSIBILITY: Skip to content === */
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    background: var(--accent);
+    color: white;
+    padding: 8px 16px;
+    z-index: 9999;
+    transition: top 0.2s;
+  }
+  .skip-link:focus { top: 0; }
+  /* === THEME TOGGLE === */
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--toggle-bg);
+    color: var(--toggle-fg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    z-index: 1000;
+  }
+  .theme-toggle:hover, .theme-toggle:focus-visible {
+    border-color: var(--accent);
+    color: var(--accent);
+    outline: none;
+  }
+  /* === TYPOGRAPHY === */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Bricolage Grotesque', Georgia, serif;
+    color: var(--heading-color);
+    line-height: 1.2;
+  }
+  h1 { font-size: 2.25rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
+  h2 { font-size: 1.5rem; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; margin-top: 2rem; }
+  h3 { font-size: 1.25rem; font-weight: 600; }
+  h4 { font-size: 1rem; font-weight: 600; color: var(--text-muted); }
+  p { color: var(--text-color); margin-bottom: 1rem; }
+  /* === CODE (text wraps, no horizontal scroll) === */
+  code {
+    background: var(--inline-code-bg);
+    border-radius: 4px;
+    padding: 0.2em 0.4em;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875em;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  pre {
+    background: var(--bg-code);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  pre code { background: none; padding: 0; font-size: 0.875em; white-space: pre-wrap; word-break: break-word; }
+  /* Catppuccin syntax highlighting (dark code blocks only) */
+  .code-keyword { color: var(--code-keyword); }
+  .code-string { color: var(--code-string); }
+  .code-function { color: var(--code-function); }
+  .code-comment { color: var(--code-comment); }
+  .code-number { color: var(--code-number); }
+  .code-property { color: var(--code-property); }
+  .code-operator { color: var(--code-operator); }
+  /* === LINKS === */
+  a { color: var(--link-color); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* === TABLES === */
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { border: 1px solid var(--border-color); padding: 8px 12px; text-align: left; color: var(--text-color); }
+  th { background: var(--bg-warm); font-weight: 600; }
+  /* === QUOTES === */
+  blockquote { border-left: 4px solid var(--accent); margin: 1em 0; padding: 0.5em 1em; color: var(--text-muted); background: var(--blockquote-bg); border-radius: 0 4px 4px 0; }
+  /* === HEADER === */
+  .header-section {
+    background: linear-gradient(135deg, var(--accent) 0%, #C4432A 100%);
+    color: white;
+    padding: 2em;
+    border-radius: 12px;
+    margin-bottom: 2em;
+    transition: background 0.3s ease;
+  }
+  .header-section h1 { color: white; border: none; font-size: 2.5rem; }
+  .header-section p { color: rgba(255,255,255,0.9); font-size: 1.1rem; }
+  /* === BADGES === */
+  .badge { display: inline-block; background: var(--inline-code-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 3px 8px; font-size: 0.75em; margin: 2px; font-family: 'JetBrains Mono', monospace; }
+  hr { border: none; border-top: 1px solid var(--border-color); margin: 2em 0; }
+  /* === CODE HILITE (for pre-existing content) === */
+  .codehilite { background: var(--bg-code); padding: 16px; border-radius: 8px; overflow-x: hidden; white-space: pre-wrap; word-break: break-word; }
+  /* === ANIMATE IN (scroll-triggered reveal) === */
+  .animate-in {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .animate-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* === PREFERS REDUCED MOTION === */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  /* === SCROLLBAR STYLING === */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light/dark mode" title="Toggle theme">
+  <span id="theme-icon">&#9788;</span>
+</button>
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const icon = document.getElementById('theme-icon');
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  icon.innerHTML = next === 'dark' ? '&#9790;' : '&#9788;';
+  localStorage.setItem('theme', next);
+}
+(function() {
+  // Check saved preference first, then fall back to system preference
+  const saved = localStorage.getItem('theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+    document.getElementById('theme-icon').innerHTML = saved === 'dark' ? '&#9790;' : '&#9788;';
+  } else {
+    // Respect system preference when no saved preference exists
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    document.getElementById('theme-icon').innerHTML = prefersDark ? '&#9790;' : '&#9788;';
+  }
+  // Listen for system theme changes mid-session
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('theme')) {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      document.getElementById('theme-icon').innerHTML = e.matches ? '&#9790;' : '&#9788;';
+    }
+  });
+})();
+</script>
+<div class="header-section">
+  <h1>gitready</h1>
+  <p>Universal Package Creator & Portfolio Polisher</p>
+</div>
+<h1>gitready</h1>
+<p><a href="https://github.com/EndUser123/gitready"><img alt="Version" src="https://img.shields.io/badge/version-5.5.0-blue.svg" /></a>
+<a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green.svg" /></a>
+<a href="https://github.com/EndUser123/gitready"><img alt="Claude Code" src="https://img.shields.io/badge/Claude_Code-plugin-purple.svg" /></a>
+<a href="https://github.com/EndUser123/gitready/actions"><img alt="Tests" src="https://img.shields.io/badge/tests-passing-brightgreen.svg" /></a></p>
+<blockquote>
+<p>Universal Package Creator and Portfolio Polisher v5.5.0</p>
+</blockquote>
+<p>Create GitHub-ready Python libraries, Claude skills, and Claude Code plugins with badges, CI/CD workflows, coverage metrics, media artifacts, and automated GitHub publication.</p>
+<h2>Quick Start</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Create a new package (auto-detects type)</span>
+/gitready<span class="w"> </span>mylib
+
+<span class="c1"># Polish existing repository</span>
+/gitready<span class="w"> </span>--target<span class="w"> </span>P:/packages/existing-repo
+
+<span class="c1"># Preview what will happen</span>
+/gitready<span class="w"> </span>--dry-run<span class="w"> </span>myproject
+</code></pre></div>
+
+<h2>See The Transformation</h2>
+<p>Here's what changes when gitready polishes your project:</p>
+<table>
+<thead>
+<tr>
+<th>Before gitready</th>
+<th>After gitready</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/</code> directory, no structure</td>
+<td>Clean <code>.claude-plugin/</code>, <code>core/</code>, <code>hooks/</code> pattern</td>
+</tr>
+<tr>
+<td>No badges</td>
+<td>Version, License, CI/CD, Tests badges from shields.io</td>
+</tr>
+<tr>
+<td>No CI/CD</td>
+<td><code>.github/workflows/test.yml</code> — runs on every push</td>
+</tr>
+<tr>
+<td>Hand-written README</td>
+<td>README with Quick Start, badges, architecture flowchart, media links</td>
+</tr>
+<tr>
+<td>No CHANGELOG</td>
+<td>Auto-generated CHANGELOG.md with version history</td>
+</tr>
+<tr>
+<td>No license file</td>
+<td>MIT License (or your choice)</td>
+</tr>
+<tr>
+<td>Scattered test files</td>
+<td>Organized <code>tests/</code> directory with fixtures</td>
+</tr>
+<tr>
+<td>No media</td>
+<td>Banners, architecture diagrams, explainer video</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bottom line</strong>: projects that look like weekend prototypes become projects that look like they had a team.</p>
+<h2>Explainer Video</h2>
+<p><a href="https://enduser123.github.io/gitready/docs/video.html"><img alt="Watch the demo with audio" src="assets/videos/debug_screenshot.png" /></a></p>
+<blockquote>
+<p><strong><a href="https://enduser123.github.io/gitready/docs/video.html">🎬 Watch the explainer in the browser</a></strong>
+<strong><a href="https://github.com/EndUser123/gitready/releases/download/media/github_ready_explainer_pbs.mp4">⬇️ Download the MP4 directly</a></strong>
+<em>Browser playback requires GitHub Pages to be enabled for this repository.</em></p>
+</blockquote>
+<p><strong>Quick overview</strong>: Features, workflow, and automated portfolio polish.
+<em>Runtime should match the exported NotebookLM asset; update this text only after verifying the final file duration.</em></p>
+<h2>What gitready Does</h2>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>What It Means For You</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🎯 <strong>Intelligent Detection</strong></td>
+<td>Points at a folder — gitready figures out if it's a plugin, skill, or library on its own</td>
+</tr>
+<tr>
+<td>📦 <strong>Multi-Format Support</strong></td>
+<td>One tool handles Claude skills, Python libraries, and Claude Code plugins</td>
+</tr>
+<tr>
+<td>🎨 <strong>Portfolio Polish</strong></td>
+<td>Badges, CI/CD, CHANGELOG, and docs appear automatically — no manual setup</td>
+</tr>
+<tr>
+<td>🎬 <strong>Media Generation</strong></td>
+<td>Banners, architecture diagrams, and explainer videos built from your code</td>
+</tr>
+<tr>
+<td>🔍 <strong>Code Review</strong></td>
+<td>Quality checks run before polishing — security and correctness validated first</td>
+</tr>
+<tr>
+<td>🔄 <strong>Brownfield Conversion</strong></td>
+<td>Existing Python library? Convert it to a plugin in one step — src/ becomes core/</td>
+</tr>
+<tr>
+<td>🚀 <strong>GitHub Publication</strong></td>
+<td>Extract from monorepo, create repo, push, and enable GitHub Pages — all automated</td>
+</tr>
+</tbody>
+</table>
+<p><strong>One command → Full intelligent pipeline:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="o">/</span><span class="nx">gitready</span><span class="w"> </span><span class="nx">mylib</span>
+<span class="w">   </span><span class="err">│</span>
+<span class="w">   </span><span class="err">├─</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="w"> </span><span class="nx">DETECT</span><span class="w">      </span><span class="err">→</span><span class="w"> </span><span class="nx">What</span><span class="err">&#39;</span><span class="nx">s</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nx">this</span><span class="w"> </span><span class="nx">folder</span><span class="p">?</span><span class="w"> </span><span class="nx">What</span><span class="w"> </span><span class="nx">does</span><span class="w"> </span><span class="nx">it</span><span class="w"> </span><span class="nx">need</span><span class="p">?</span>
+<span class="w">   </span><span class="err">│</span>
+<span class="w">   </span><span class="err">├─</span><span class="w"> </span><span class="mi">2</span><span class="p">.</span><span class="w"> </span><span class="nx">ANALYZE</span><span class="w">     </span><span class="err">→</span><span class="w"> </span><span class="nx">Is</span><span class="w"> </span><span class="nx">it</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="nx">plugin</span><span class="p">,</span><span class="w"> </span><span class="nx">skill</span><span class="p">,</span><span class="w"> </span><span class="k">or</span><span class="w"> </span><span class="kn">library</span><span class="p">?</span>
+<span class="w">   </span><span class="err">│</span>
+<span class="w">   </span><span class="err">├─</span><span class="w"> </span><span class="mi">3</span><span class="p">.</span><span class="w"> </span><span class="nx">GENERATE</span><span class="w">    </span><span class="err">→</span><span class="w"> </span><span class="nx">Scaffold</span><span class="w"> </span><span class="nx">structure</span><span class="p">,</span><span class="w"> </span><span class="nx">badges</span><span class="p">,</span><span class="w"> </span><span class="nx">CI</span><span class="o">/</span><span class="nx">CD</span><span class="p">,</span><span class="w"> </span><span class="nx">docs</span><span class="p">,</span><span class="w"> </span><span class="nx">CHANGELOG</span>
+<span class="w">   </span><span class="err">│</span>
+<span class="w">   </span><span class="err">├─</span><span class="w"> </span><span class="mi">4</span><span class="p">.</span><span class="w"> </span><span class="nx">VALIDATE</span><span class="w">    </span><span class="err">→</span><span class="w"> </span><span class="nx">Run</span><span class="w"> </span><span class="nx">quality</span><span class="w"> </span><span class="nx">checks</span><span class="w"> </span><span class="p">(</span><span class="nx">security</span><span class="p">,</span><span class="w"> </span><span class="nx">dependencies</span><span class="p">,</span><span class="w"> </span><span class="nx">badges</span><span class="p">)</span>
+<span class="w">   </span><span class="err">│</span>
+<span class="w">   </span><span class="err">├─</span><span class="w"> </span><span class="mi">5</span><span class="p">.</span><span class="w"> </span><span class="nx">CLEANUP</span><span class="w">     </span><span class="err">→</span><span class="w"> </span><span class="nx">Remove</span><span class="w"> </span><span class="nx">obsolete</span><span class="w"> </span><span class="nx">files</span><span class="w"> </span><span class="nx">from</span><span class="w"> </span><span class="nx">refactoring</span>
+<span class="w">   </span><span class="err">│</span>
+<span class="w">   </span><span class="err">├─</span><span class="w"> </span><span class="mi">6</span><span class="p">.</span><span class="w"> </span><span class="nx">PUBLISH</span><span class="w">     </span><span class="err">→</span><span class="w"> </span><span class="nx">Extract</span><span class="w"> </span><span class="nx">from</span><span class="w"> </span><span class="nx">monorepo</span><span class="p">,</span><span class="w"> </span><span class="nx">create</span><span class="w"> </span><span class="nx">GitHub</span><span class="w"> </span><span class="nx">repo</span><span class="p">,</span><span class="w"> </span><span class="nx">push</span>
+<span class="w">   </span><span class="err">│</span>
+<span class="w">   </span><span class="err">└─</span><span class="w"> </span><span class="mi">7</span><span class="p">.</span><span class="w"> </span><span class="nx">REPORT</span><span class="w">      </span><span class="err">→</span><span class="w"> </span><span class="nx">Show</span><span class="w"> </span><span class="nx">what</span><span class="w"> </span><span class="nx">was</span><span class="w"> </span><span class="nx">created</span><span class="w"> </span><span class="nx">with</span><span class="w"> </span><span class="nx">evidence</span>
+</code></pre></div>
+
+<h2>What Gets Created</h2>
+<p>Every run produces a specific set of artifacts. Here's the full map:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">📁</span><span class="w"> </span><span class="nx">your</span><span class="o">-</span><span class="kn">package</span><span class="o">/</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📄</span><span class="w"> </span><span class="nx">README</span><span class="p">.</span><span class="nx">md</span><span class="w">              </span><span class="err">←</span><span class="w"> </span><span class="nx">Portfolio</span><span class="o">-</span><span class="nx">ready</span><span class="w"> </span><span class="nx">readme</span><span class="w"> </span><span class="nx">with</span><span class="w"> </span><span class="nx">badges</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="nx">flowchart</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📄</span><span class="w"> </span><span class="nx">LICENSE</span><span class="w">                </span><span class="err">←</span><span class="w"> </span><span class="nx">MIT</span><span class="w"> </span><span class="nx">license</span><span class="w"> </span><span class="p">(</span><span class="k">or</span><span class="w"> </span><span class="nx">your</span><span class="w"> </span><span class="kd">choice</span><span class="p">)</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📄</span><span class="w"> </span><span class="nx">CHANGELOG</span><span class="p">.</span><span class="nx">md</span><span class="w">          </span><span class="err">←</span><span class="w"> </span><span class="nx">Auto</span><span class="o">-</span><span class="nx">generated</span><span class="w"> </span><span class="nx">version</span><span class="w"> </span><span class="nx">history</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📄</span><span class="w"> </span><span class="nx">AGENTS</span><span class="p">.</span><span class="nx">md</span><span class="w">             </span><span class="err">←</span><span class="w"> </span><span class="nx">AI</span><span class="o">-</span><span class="nx">maintainable</span><span class="w"> </span><span class="nx">documentation</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📄</span><span class="w"> </span><span class="nx">CONTRIBUTING</span><span class="p">.</span><span class="nx">md</span><span class="w">       </span><span class="err">←</span><span class="w"> </span><span class="nx">Contribution</span><span class="w"> </span><span class="nx">guidelines</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📁</span><span class="w"> </span><span class="p">.</span><span class="nx">claude</span><span class="o">-</span><span class="nx">plugin</span><span class="o">/</span><span class="w">       </span><span class="err">←</span><span class="w"> </span><span class="nx">Plugin</span><span class="w"> </span><span class="nx">manifest</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="nx">plugin</span><span class="p">.</span><span class="nx">json</span><span class="w">          </span><span class="err">←</span><span class="w"> </span><span class="nx">Name</span><span class="p">,</span><span class="w"> </span><span class="nx">description</span><span class="p">,</span><span class="w"> </span><span class="nx">author</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📁</span><span class="w"> </span><span class="p">.</span><span class="nx">github</span><span class="o">/</span><span class="nx">workflows</span><span class="o">/</span><span class="w">    </span><span class="err">←</span><span class="w"> </span><span class="nx">CI</span><span class="o">/</span><span class="nx">CD</span><span class="w"> </span><span class="nx">pipelines</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="nx">test</span><span class="p">.</span><span class="nx">yml</span><span class="w">             </span><span class="err">←</span><span class="w"> </span><span class="nx">Runs</span><span class="w"> </span><span class="nx">tests</span><span class="w"> </span><span class="nx">on</span><span class="w"> </span><span class="nx">every</span><span class="w"> </span><span class="nx">push</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📁</span><span class="w"> </span><span class="nx">core</span><span class="o">/</span><span class="w">                 </span><span class="err">←</span><span class="w"> </span><span class="nx">Your</span><span class="w"> </span><span class="nx">Python</span><span class="w"> </span><span class="nx">code</span><span class="w"> </span><span class="p">(</span><span class="nx">plugin</span><span class="w"> </span><span class="nx">pattern</span><span class="p">)</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="nx">__init__</span><span class="p">.</span><span class="nx">py</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="nx">main</span><span class="p">.</span><span class="nx">py</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📁</span><span class="w"> </span><span class="nx">hooks</span><span class="o">/</span><span class="w">                </span><span class="err">←</span><span class="w"> </span><span class="nx">Hook</span><span class="w"> </span><span class="nx">configuration</span><span class="w"> </span><span class="p">(</span><span class="nx">plugins</span><span class="w"> </span><span class="nx">only</span><span class="p">)</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="nx">hooks</span><span class="p">.</span><span class="nx">json</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📁</span><span class="w"> </span><span class="nx">skills</span><span class="o">/</span><span class="w">               </span><span class="err">←</span><span class="w"> </span><span class="nx">Claude</span><span class="w"> </span><span class="nx">skills</span><span class="w"> </span><span class="p">(</span><span class="nx">skill</span><span class="w"> </span><span class="nx">packages</span><span class="w"> </span><span class="nx">only</span><span class="p">)</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="nx">your</span><span class="o">-</span><span class="nx">skill</span><span class="o">/</span>
+<span class="err">│</span><span class="w">       </span><span class="err">└──</span><span class="w"> </span><span class="nx">SKILL</span><span class="p">.</span><span class="nx">md</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📁</span><span class="w"> </span><span class="nx">scripts</span><span class="o">/</span><span class="w">              </span><span class="err">←</span><span class="w"> </span><span class="nx">Helper</span><span class="w"> </span><span class="nx">scripts</span><span class="w"> </span><span class="p">(</span><span class="nx">publication</span><span class="p">,</span><span class="w"> </span><span class="nx">quality</span><span class="w"> </span><span class="nx">scanning</span><span class="p">)</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="err">📁</span><span class="w"> </span><span class="nx">docs</span><span class="o">/</span><span class="w">                 </span><span class="err">←</span><span class="w"> </span><span class="nx">Architecture</span><span class="w"> </span><span class="nx">diagrams</span><span class="p">,</span><span class="w"> </span><span class="nx">video</span><span class="w"> </span><span class="nx">player</span>
+<span class="err">│</span>
+<span class="err">└──</span><span class="w"> </span><span class="err">📁</span><span class="w"> </span><span class="nx">assets</span><span class="o">/</span><span class="w">               </span><span class="err">←</span><span class="w"> </span><span class="nx">Banners</span><span class="p">,</span><span class="w"> </span><span class="nx">thumbnails</span><span class="p">,</span><span class="w"> </span><span class="nx">explainer</span><span class="w"> </span><span class="nx">videos</span>
+</code></pre></div>
+
+<p><strong>The result</strong>: a folder that looks like it took a weekend to build — but took 90 seconds.</p>
+<h2>Which Package Type Do You Need?</h2>
+<p>Not sure which type to pick? Answer two questions:</p>
+<div class="codehilite"><pre><span></span><code>Does your code need to run inside Claude Code?
+│
+├── YES → Claude Code Plugin
+│         hooks, skills, agents, commands
+│         (default — most common)
+│
+└── NO → Does it need to run outside Claude Code too?
+          │
+          ├── YES → Python Library
+          │         pip-installable, no Claude Code dependency
+          │
+          └── NO → Claude Skill
+                    standalone SKILL.md only
+</code></pre></div>
+
+<p>Quick reference:</p>
+<table>
+<thead>
+<tr>
+<th>This</th>
+<th>Goes in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hooks, commands, agents, automation</td>
+<td><strong>Plugin</strong> — <code>.claude-plugin/</code> + <code>core/</code> + <code>hooks/</code></td>
+</tr>
+<tr>
+<td>Backend library used by other tools</td>
+<td><strong>Python Library</strong> — <code>src/</code> + <code>tests/</code></td>
+</tr>
+<tr>
+<td>Standalone skill documentation</td>
+<td><strong>Skill</strong> — <code>SKILL.md</code> only</td>
+</tr>
+<tr>
+<td>Existing library to convert</td>
+<td><strong>Brownfield Plugin</strong> — <code>src/</code> → <code>core/</code> migration</td>
+</tr>
+</tbody>
+</table>
+<p>Run <code>/gitready --dry-run</code> to preview what will be created before committing.</p>
+<h2>PHASE 6: GitHub Publication</h2>
+<p><strong>PHASE 6</strong> provides end-to-end GitHub repository creation and publishing automation. This is useful for packages developed in a monorepo that need to be published as standalone repositories.</p>
+<h3>Prerequisites</h3>
+<ul>
+<li><strong>git 2.30+</strong> for subtree split support</li>
+<li><strong>GitHub CLI (gh)</strong> for automated repository creation (optional but recommended)</li>
+<li><strong>GitHub account</strong> with appropriate permissions</li>
+</ul>
+<h3>Scripts</h3>
+<p>Two Python scripts are provided for Windows-compatible GitHub publication:</p>
+<h4><code>extract_from_monorepo.py</code></h4>
+<p>Extracts a package from a monorepo with two methods:</p>
+<ol>
+<li><strong>Subtree Split</strong> (default): Preserves git history from the monorepo using <code>git subtree split</code></li>
+<li><strong>Fresh Init</strong> (<code>--fresh-init</code>): Creates a clean git history without monorepo artifacts</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Extract with history preservation (default)</span>
+python<span class="w"> </span>scripts/extract_from_monorepo.py<span class="w"> </span>P:/packages/my-package<span class="w"> </span>my-package
+
+<span class="c1"># Extract with fresh git history</span>
+python<span class="w"> </span>scripts/extract_from_monorepo.py<span class="w"> </span>P:/packages/my-package<span class="w"> </span>my-package<span class="w"> </span>--fresh-init
+</code></pre></div>
+
+<h4><code>create_github_repo.py</code></h4>
+<p>Creates a GitHub repository and pushes the extracted code:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Create repository with description</span>
+python<span class="w"> </span>scripts/create_github_repo.py<span class="w"> </span><span class="s2">&quot;my-package&quot;</span><span class="w"> </span><span class="s2">&quot;P:/packages/my-package&quot;</span><span class="w"> </span><span class="s2">&quot;My awesome library&quot;</span>
+</code></pre></div>
+
+<h3>Publication Workflow</h3>
+<ol>
+<li><strong>Extraction</strong>: Run <code>extract_from_monorepo.py</code> to extract the package from the monorepo</li>
+<li><strong>Repository Creation</strong>: Run <code>create_github_repo.py</code> to create the GitHub repository</li>
+<li><strong>Verification</strong>: The script verifies the repository was created successfully</li>
+</ol>
+<h3>Manual Fallback</h3>
+<p>If GitHub CLI is not available, <code>create_github_repo.py</code> provides manual instructions with curl API commands and GitHub web interface steps.</p>
+<h2>PHASE 7: Repository Finalization</h2>
+<p><strong>PHASE 7</strong> automates post-publish tasks that should happen immediately after repo creation. This includes GitHub Pages enablement, initial release creation, repository topics, and governance files.</p>
+<h3>Prerequisites</h3>
+<ul>
+<li><strong>GitHub CLI (gh)</strong> for automated repository operations</li>
+<li><strong>GitHub account</strong> with appropriate permissions</li>
+</ul>
+<h3>Script: <code>finalize_github_repo.py</code></h3>
+<p>Automates the following tasks:</p>
+<ol>
+<li><strong>GitHub Pages Enablement</strong></li>
+<li>Automatically enables GitHub Pages for documentation</li>
+<li>Sets correct branch/directory (root or /docs)</li>
+<li>
+<p>Provides Pages URL for verification</p>
+</li>
+<li>
+<p><strong>Initial Release Creation</strong></p>
+</li>
+<li>Creates v5.5.0 or v5.5.0 release via <code>gh release create</code></li>
+<li>Generates release notes from CHANGELOG.md</li>
+<li>
+<p>Provides release URL for verification</p>
+</li>
+<li>
+<p><strong>Repository Topics/Tags</strong></p>
+</li>
+<li>Adds relevant topics based on package type (python, claude-code, plugin, mcp, etc.)</li>
+<li>
+<p>Improves repository discoverability</p>
+</li>
+<li>
+<p><strong>CODEOWNERS File</strong></p>
+</li>
+<li>Generates CODEOWNERS file from git config or provided username</li>
+<li>
+<p>Essential for collaborative projects</p>
+</li>
+<li>
+<p><strong>SECURITY.md File</strong></p>
+</li>
+<li>Generates security policy template</li>
+<li>Includes vulnerability reporting instructions</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Finalize after GitHub publication</span>
+python<span class="w"> </span>scripts/finalize_github_repo.py<span class="w"> </span>my-package<span class="w"> </span>P:/packages/my-package<span class="w"> </span>--package-type<span class="w"> </span>plugin
+
+<span class="c1"># With options</span>
+python<span class="w"> </span>scripts/finalize_github_repo.py<span class="w"> </span>my-package<span class="w"> </span>.<span class="w"> </span>--release-version<span class="w"> </span><span class="m">1</span>.0.0<span class="w"> </span>--username<span class="w"> </span>myuser
+
+<span class="c1"># Skip specific steps</span>
+python<span class="w"> </span>scripts/finalize_github_repo.py<span class="w"> </span>my-package<span class="w"> </span>.<span class="w"> </span>--skip-pages<span class="w"> </span>--skip-release
+
+<span class="c1"># Verify finalization status</span>
+python<span class="w"> </span>scripts/finalize_github_repo.py<span class="w"> </span>my-package<span class="w"> </span>.<span class="w"> </span>--verify
+</code></pre></div>
+
+<h3>Options</h3>
+<ul>
+<li><code>--package-type</code> - Type of package (plugin, skill, mcp, library, tool)</li>
+<li><code>--release-version</code> - Version for initial release (default: 0.1.0)</li>
+<li><code>--username</code> - GitHub username for CODEOWNERS</li>
+<li><code>--skip-pages</code> - Skip GitHub Pages enablement</li>
+<li><code>--skip-release</code> - Skip initial release creation</li>
+<li><code>--skip-topics</code> - Skip adding repository topics</li>
+<li><code>--skip-codeowners</code> - Skip CODEOWNERS file generation</li>
+<li><code>--skip-security</code> - Skip SECURITY.md generation</li>
+<li><code>--verify</code> - Verify finalization status and exit</li>
+</ul>
+<h3>Output</h3>
+<p>Fully finalized GitHub repository with:
+- GitHub Pages enabled and URL provided
+- Initial release created with notes from CHANGELOG
+- Repository topics added for discoverability
+- CODEOWNERS file for collaboration
+- SECURITY.md file for vulnerability reporting</p>
+<h2>Development and Deployment</h2>
+<h3>Three Deployment Models</h3>
+<p><strong>IMPORTANT</strong>: This package supports three different deployment modes. Choose the right one for your use case.</p>
+<h4>1. SKILLS (Dev Deployment) ⭐ <strong>Recommended for Development</strong></h4>
+<p><strong>For</strong>: When you're actively developing this package and want instant feedback.</p>
+<p><strong>Setup:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c"># Windows (Junction - No admin required)</span>
+<span class="c"># For plugins with skills: Junction to the skills/ subdirectory</span>
+<span class="nb">New-Item</span> <span class="n">-ItemType</span> <span class="n">Junction</span> <span class="n">-Path</span> <span class="s2">&quot;P:\.claude\skills\package&quot;</span> <span class="n">-Target</span> <span class="s2">&quot;P:\packages\gitready\skills\gitready&quot;</span>
+
+<span class="c"># macOS/Linux (Symlink)</span>
+<span class="n">ln</span> <span class="n">-s</span> <span class="p">/</span><span class="n">path</span><span class="p">/</span><span class="n">to</span><span class="p">/</span><span class="n">packages</span><span class="p">/</span><span class="n">gitready</span><span class="p">/</span><span class="n">skills</span><span class="p">/</span><span class="n">gitready</span> <span class="p">~/.</span><span class="n">claude</span><span class="p">/</span><span class="n">skills</span><span class="p">/</span><span class="n">package</span>
+</code></pre></div>
+
+<p><strong>Key points:</strong>
+- ✅ Edit in <code>P:/packages/gitready</code>, changes work immediately
+- ✅ No reinstallation required - skills auto-discover from <code>P:/.claude/skills/</code>
+- ✅ Perfect for active development
+- ✅ Junction to <code>skills/gitready/</code> subdirectory (where SKILL.md actually lives)
+- ⚠️  <strong>CRITICAL</strong>: The junction target points to WHERE THE SKILL.md FILE ACTUALLY LIVES
+  - Plugin skills: <code>package-name/skills/skill-name/SKILL.md</code> → junction target: <code>skills/skill-name/</code></p>
+<h4>2. HOOKS (Dev Deployment - Hook Files Only)</h4>
+<p><strong>For</strong>: When this package has hook files (<code>.py</code> files in <code>core/hooks/</code>) you want to test.</p>
+<p><strong>Setup:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c"># Symlink individual hook files to P:/.claude/hooks/</span>
+<span class="nb">cd </span><span class="n">P</span><span class="p">:/.</span><span class="n">claude</span><span class="p">/</span><span class="n">hooks</span>
+
+<span class="c"># Example: Symlink a specific hook file</span>
+<span class="n">cmd</span> <span class="p">/</span><span class="n">c</span> <span class="s2">&quot;mklink HookName.py P:/packages/gitready/core/hooks/HookName.py&quot;</span>
+</code></pre></div>
+
+<p><strong>Key points:</strong>
+- ✅ Symlink individual <code>.py</code> hook files only (NOT the entire directory)
+- ✅ Symlinks go in <code>P:/.claude/hooks/</code> (NOT <code>~/.claude/plugins/</code>)
+- ✅ These are dev-only symlinks for working directly on source code
+- ⚠️  After brownfield conversion, check for broken symlinks pointing to old <code>src/</code> paths</p>
+<h4>3. PLUGINS (End User Deployment)</h4>
+<p><strong>For</strong>: Distributing this package to other users via marketplace or GitHub.</p>
+<p><strong>Setup:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># End users install via /plugin command</span>
+/plugin<span class="w"> </span>P:/packages/gitready
+
+<span class="c1"># Or from marketplace (when published)</span>
+/plugin<span class="w"> </span>install<span class="w"> </span>gitready
+</code></pre></div>
+
+<p><strong>Key points:</strong>
+- ✅ Plugin copied to <code>~/.claude/plugins/cache/</code>
+- ✅ Registered in <code>~/.claude/plugins/installed_plugins.json</code>
+- ❌ <strong>NOT for local development</strong> - requires reinstall on every change
+- ✅ Use for distributing finished packages to users</p>
+<h3>Which Model Should You Use?</h3>
+<table>
+<thead>
+<tr>
+<th>Your Situation</th>
+<th>Use This Model</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actively developing this package</td>
+<td><strong>SKILLS</strong> (junction)</td>
+<td>Instant feedback, no reinstall</td>
+</tr>
+<tr>
+<td>Testing hook file changes</td>
+<td><strong>HOOKS</strong> (symlinks)</td>
+<td>Direct hook testing</td>
+</tr>
+<tr>
+<td>Distributing to end users</td>
+<td><strong>PLUGINS</strong> (/plugin)</td>
+<td>Proper distribution format</td>
+</tr>
+</tbody>
+</table>
+<h3>Common Mistakes to Avoid</h3>
+<p>Three things that trip people up — each has a clear recovery path:</p>
+<p><strong>Using /plugin during local development</strong>
+The <code>/plugin install</code> command copies your package to the plugins cache — it doesn't link back to your source. Every change requires a reinstall. Fine for distributing to others, painful when you're iterating.
+→ <strong>Recovery</strong>: For active development, use a junction (Windows) or symlink (macOS/Linux) pointing directly at your source.</p>
+<p><strong>Broken symlinks after brownfield conversion</strong>
+After converting an existing library, hook symlinks in <code>P:/.claude/hooks/</code> sometimes still point to the old <code>src/</code> path — which no longer exists. Hooks silently stop working.
+→ <strong>Recovery</strong>: Run <code>gitready --target your-package</code> again to let it fix the paths automatically. The output tells you to verify symlinks — don't skip that step.</p>
+<p><strong>Wrong package type selected</strong>
+A plugin and a Python library have completely different structures — not just different folders, but different purposes. Commands won't register where you expect.
+→ <strong>Recovery</strong>: Run <code>/gitready --dry-run</code> to preview what will be created before committing. The decision tree above shows which type to pick.</p>
+<h2>Additional Media Assets</h2>
+<blockquote>
+<p>💡 <strong>Note</strong>: These assets were generated using NotebookLM integration and automatically published to GitHub Releases for easy access.</p>
+</blockquote>
+<h3>📊 Architecture Flowchart</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">graph</span><span class="w"> </span><span class="n">TB</span>
+<span class="w">    </span><span class="n">Input</span><span class="p">[</span><span class="n">User</span><span class="o">:</span><span class="w"> </span><span class="o">/</span><span class="n">gitready</span><span class="w"> </span><span class="n">mylib</span><span class="p">]</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Detect</span><span class="p">[</span><span class="n">Detect</span><span class="w"> </span><span class="n">Package</span><span class="w"> </span><span class="n">Type</span><span class="p">]</span>
+
+<span class="w">    </span><span class="n">Detect</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Type</span><span class="p">{</span><span class="n">Package</span><span class="w"> </span><span class="n">Type</span><span class="o">?</span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">Type</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">Claude</span><span class="w"> </span><span class="n">Code</span><span class="w"> </span><span class="n">Plugin</span><span class="o">|</span><span class="w"> </span><span class="n">Plugin</span><span class="p">[</span><span class="n">Plugin</span><span class="w"> </span><span class="n">Structure</span><span class="p">]</span>
+<span class="w">    </span><span class="n">Type</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">Claude</span><span class="w"> </span><span class="n">Skill</span><span class="o">|</span><span class="w"> </span><span class="n">Skill</span><span class="p">[</span><span class="n">Skill</span><span class="w"> </span><span class="n">Structure</span><span class="p">]</span>
+<span class="w">    </span><span class="n">Type</span><span class="w"> </span><span class="o">--&gt;|</span><span class="n">Python</span><span class="w"> </span><span class="n">Library</span><span class="o">|</span><span class="w"> </span><span class="n">Library</span><span class="p">[</span><span class="n">Library</span><span class="w"> </span><span class="n">Structure</span><span class="p">]</span>
+
+<span class="w">    </span><span class="n">Plugin</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Scaffold</span><span class="p">[</span><span class="n">Scaffolding</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">Generation</span><span class="p">]</span>
+<span class="w">    </span><span class="n">Skill</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Scaffold</span>
+<span class="w">    </span><span class="n">Library</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Scaffold</span>
+
+<span class="w">    </span><span class="n">Scaffold</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Polish</span><span class="p">[</span><span class="n">Portfolio</span><span class="w"> </span><span class="n">Polish</span><span class="p">]</span>
+
+<span class="w">    </span><span class="n">Polish</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Badges</span><span class="p">[</span><span class="n">Badges</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">Metrics</span><span class="p">]</span>
+<span class="w">    </span><span class="n">Polish</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">CI</span><span class="p">[</span><span class="n">CI</span><span class="o">/</span><span class="n">CD</span><span class="w"> </span><span class="n">Workflows</span><span class="p">]</span>
+<span class="w">    </span><span class="n">Polish</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Docs</span><span class="p">[</span><span class="n">Documentation</span><span class="p">]</span>
+<span class="w">    </span><span class="n">Polish</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Media</span><span class="p">[</span><span class="n">Media</span><span class="w"> </span><span class="n">Assets</span><span class="p">]</span>
+
+<span class="w">    </span><span class="n">Media</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Diagram</span><span class="p">[</span><span class="n">Architecture</span><span class="w"> </span><span class="n">Flowchart</span><span class="p">]</span>
+<span class="w">    </span><span class="n">Media</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Video</span><span class="p">[</span><span class="n">Explainer</span><span class="w"> </span><span class="n">Videos</span><span class="p">]</span>
+<span class="w">    </span><span class="n">Media</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Slides</span><span class="p">[</span><span class="n">Presentation</span><span class="w"> </span><span class="n">Slides</span><span class="p">]</span>
+
+<span class="w">    </span><span class="n">Badges</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Quality</span><span class="p">[</span><span class="n">Quality</span><span class="w"> </span><span class="n">Validation</span><span class="p">]</span>
+<span class="w">    </span><span class="n">CI</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Quality</span>
+<span class="w">    </span><span class="n">Docs</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Quality</span>
+
+<span class="w">    </span><span class="n">Quality</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Output</span><span class="p">[</span><span class="n">GitHub</span><span class="o">-</span><span class="n">Ready</span><span class="w"> </span><span class="n">Package</span><span class="p">]</span>
+
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">Input</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="mf">1f6f</span><span class="n">eb</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">Output</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="mi">238636</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">Detect</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="mi">21262</span><span class="n">d</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">Scaffold</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="mi">21262</span><span class="n">d</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">Polish</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="mi">21262</span><span class="n">d</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">Quality</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="mi">21262</span><span class="n">d</span>
+</code></pre></div>
+
+<h3>📑 Presentation Slides</h3>
+<p><a href="https://github.com/EndUser123/gitready/blob/main/"><img alt="Slide deck preview" src="assets/slides/github_ready_slides_preview.png" /></a></p>
+<p><strong><a href="https://github.com/EndUser123/gitready/blob/main/">📄 View Slides (PDF)</a></strong>
+<strong><a href="https://github.com/EndUser123/gitready/blob/main/">⬇️ Download PDF</a></strong></p>
+<p><em>Use the PDF for both viewing and download on GitHub.</em></p>
+
+<h3>Interactive Course</h3>
+<p><a href="https://EndUser123.github.io/gitready/docs/gitready_course.html">Learn how gitready works →</a></p>
+<p><em>An interactive walkthrough of the architecture, components, and how everything fits together.</em></p>
+
+<hr />
+<p><strong>💡 Tip</strong>: Keep the slide deck in PDF form for the cleanest GitHub viewing experience.</p>
+<h2>Contributing</h2>
+<p>Contributions are welcome! Please see <a href="https://github.com/EndUser123/gitready/blob/main/">CONTRIBUTING.md</a> for guidelines.</p>
+<h2>Changelog</h2>
+<p>See <a href="https://github.com/EndUser123/gitready/blob/main/">CHANGELOG.md</a> for version history and updates.</p>
+<h2>License</h2>
+<p>MIT License - see <a href="LICENSE">LICENSE</a> for details.</p>
+<h2>Resources</h2>
+<ul>
+<li><a href="https://github.com/EndUser123/gitready/blob/main/">templates/</a> - Template files for various package elements</li>
+<li><a href="https://github.com/EndUser123/gitready/blob/main/">Video Workflow Template</a> - Copy-paste template for README videos</li>
+<li><a href="https://github.com/EndUser123/gitready/blob/main/">scripts/extract_from_monorepo.py</a> - Extract package from monorepo for GitHub publication</li>
+<li><a href="https://github.com/EndUser123/gitready/blob/main/">scripts/create_github_repo.py</a> - Create GitHub repository and push code</li>
+</ul>
+<h2>PHASE 4.5: Quality Scanning</h2>
+<p><strong>PHASE 4.5</strong> provides automated security and dependency scanning during the validation phase. This helps identify potential issues before publishing.</p>
+<h3>Prerequisites</h3>
+<ul>
+<li><strong>bandit</strong> for Python security linting (<code>pip install bandit</code>)</li>
+<li><strong>safety</strong> for known vulnerability checks (<code>pip install safety</code>)</li>
+<li><strong>pip-audit</strong> for dependency auditing (<code>pip install pip-audit</code>)</li>
+</ul>
+<h3>Script: <code>scan_package_quality.py</code></h3>
+<p>Performs the following checks:</p>
+<ol>
+<li><strong>Security Scanning</strong></li>
+<li>Runs <code>bandit</code> for Python security issues</li>
+<li>Runs <code>safety</code> for known vulnerable dependencies</li>
+<li>
+<p>Reports issues by severity (HIGH, MEDIUM, LOW)</p>
+</li>
+<li>
+<p><strong>Dependency Auditing</strong></p>
+</li>
+<li>Runs <code>pip-audit</code> for vulnerability scanning</li>
+<li>Checks for outdated packages</li>
+<li>
+<p>Reports affected versions</p>
+</li>
+<li>
+<p><strong>Badge Validation</strong></p>
+</li>
+<li>Verifies all badge URLs in README.md are reachable</li>
+<li>Checks CI/CD badges reference correct workflows</li>
+<li>
+<p>Warns about broken badges</p>
+</li>
+<li>
+<p><strong>Quality Metrics</strong></p>
+</li>
+<li>Counts Python files and test files</li>
+<li>Calculates test ratio</li>
+<li>Reports total lines of code</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Scan package quality</span>
+python<span class="w"> </span>scripts/scan_package_quality.py<span class="w"> </span>P:/packages/my-package
+
+<span class="c1"># Save report to file</span>
+python<span class="w"> </span>scripts/scan_package_quality.py<span class="w"> </span>.<span class="w"> </span>--save-report
+
+<span class="c1"># Skip specific checks</span>
+python<span class="w"> </span>scripts/scan_package_quality.py<span class="w"> </span>.<span class="w"> </span>--skip-badges<span class="w"> </span>--skip-quality
+
+<span class="c1"># Exit with error if issues found</span>
+python<span class="w"> </span>scripts/scan_package_quality.py<span class="w"> </span>.<span class="w"> </span>--fail-on-issues
+</code></pre></div>
+
+<h3>Options</h3>
+<ul>
+<li><code>--skip-security</code> - Skip security scanning (bandit, safety)</li>
+<li><code>--skip-audit</code> - Skip dependency auditing (pip-audit)</li>
+<li><code>--skip-badges</code> - Skip badge validation</li>
+<li><code>--skip-quality</code> - Skip code quality metrics</li>
+<li><code>--save-report</code> - Save scan results to .quality-report.json</li>
+<li><code>--fail-on-issues</code> - Exit with error code if issues are found</li>
+</ul>
+<h3>Output</h3>
+<p>Quality scan report with:
+- Security issues found (if any)
+- Known vulnerabilities in dependencies
+- Broken or missing badge references
+- Code quality metrics (file counts, test ratio, LOC)
+- Overall assessment and recommendations</p>
+<hr />
+<p><strong>gitready</strong> - Create portfolio-worthy Python packages, skills, and plugins</p>
+</body>
+</html>

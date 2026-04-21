@@ -1,0 +1,74 @@
+[
+  {
+    "query": "create a GitHub-ready Python library with badges and coverage",
+    "should_trigger": true
+  },
+  {
+    "query": "/gitready",
+    "should_trigger": true
+  },
+  {
+    "query": "make this repo GitHub-ready",
+    "should_trigger": true
+  },
+  {
+    "query": "convert my Python package to a Claude Code plugin",
+    "should_trigger": true
+  },
+  {
+    "query": "generate badges for my repository",
+    "should_trigger": true
+  },
+  {
+    "query": "scaffold a new Python library project",
+    "should_trigger": true
+  },
+  {
+    "query": "validate plugin standards for my package",
+    "should_trigger": true
+  },
+  {
+    "query": "create a package with hooks and skills",
+    "should_trigger": true
+  },
+  {
+    "query": "brownfield conversion for my existing library",
+    "should_trigger": true
+  },
+  {
+    "query": "polish my portfolio with badges and docs",
+    "should_trigger": true
+  },
+  {
+    "query": "initialize a new project with coverage",
+    "should_trigger": true
+  },
+  {
+    "query": "fix my authentication bug",
+    "should_trigger": false
+  },
+  {
+    "query": "why is my API returning 500 errors",
+    "should_trigger": false
+  },
+  {
+    "query": "write a function to parse JSON",
+    "should_trigger": false
+  },
+  {
+    "query": "add user authentication to my Flask app",
+    "should_trigger": false
+  },
+  {
+    "query": "help me debug this memory leak",
+    "should_trigger": false
+  },
+  {
+    "query": "optimize my database queries",
+    "should_trigger": false
+  },
+  {
+    "query": "deploy my app to Kubernetes",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,26 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#1f6feb', 'primaryTextColor': '#c9d1d9', 'primaryBorderColor': '#58a6ff', 'lineColor': '#58a6ff', 'secondaryColor': '#21262d', 'tertiaryColor': '#161b22'}}}%%
+%% C4 Component Diagram for gitready
+%% Shows the internal structure of the main skill
+
+C4Component
+    title Component Diagram - gitready Skill
+
+    Container(skill, "Package Skill", "Python", "Main orchestration")
+
+    Component(detect, "Detection Module", "Python", "Analyzes package structure")
+    Component(scaffold, "Scaffolding Module", "Python", "Creates directory structure")
+    Component(polish, "Portfolio Polish Module", "Python", "Adds badges, CI/CD, docs")
+    Component(validate, "Validation Module", "Python", "Verifies package quality")
+    Component(media, "Media Generation Module", "Python", "Creates visual assets")
+    Component(cleanup, "Cleanup Module", "Python", "Removes obsolete files")
+
+    Component_Ext(nlmCLI, "NotebookLM CLI", "External", "nlm command")
+    Component_Ext(mermaidSkill, "Mermaid Diagrams", "External", "Skill invocation")
+
+    Rel(detect, scaffold, "Triggers")
+    Rel(scaffold, polish, "Completes structure")
+    Rel(polish, validate, "Validates before")
+    Rel(validate, media, "Optional trigger")
+    Rel(media, nlmCLI, "Generates assets")
+    Rel(media, mermaidSkill, "Creates diagrams")
+    Rel(media, cleanup, "Completes workflow")
