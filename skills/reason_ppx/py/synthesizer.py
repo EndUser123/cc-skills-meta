@@ -76,6 +76,15 @@ def finalize_answer(state: ReasoningState) -> str:
                     lines.append(f"  - {severity_marker} {f.summary}".strip())
         lines.append("")
 
+    # Execution Warnings for failed external calls
+    failed = [r for r in state.external_results if not r.ok]
+    if failed:
+        lines.append("Execution Warnings (External verification failed):")
+        for f in failed:
+            role_label = f.role.value.upper()
+            lines.append(f"  - [{role_label} via {f.provider}] {f.error_type or 'error'}: {f.stderr or 'No output'}")
+        lines.append("")
+
     lines.append("Assumptions and uncertainty:")
     if state.assumptions:
         for a in state.assumptions:

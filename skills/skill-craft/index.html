@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>skill-craft — Unified Skill-Craft Orchestrator</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card: #f3f4f6;
+      --border: #d1d5db;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --green: #16a34a;
+      --amber: #d97706;
+      --red: #dc2626;
+      --purple: #7c3aed;
+      --cyan: #0891b2;
+      --link: #2563eb;
+      --toc-width: 240px;
+    }
+    [data-theme="dark"] {
+      --bg: #0f1117;
+      --card: #1a1d27;
+      --border: #2a2d3a;
+      --text: #e4e4e7;
+      --muted: #71717a;
+      --accent: #60a5fa;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --purple: #c084fc;
+      --cyan: #22d3ee;
+      --link: #60a5fa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      display: flex;
+    }
+    .toc {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--toc-width);
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 2rem 1rem;
+      z-index: 200;
+      font-size: 0.8rem;
+      transition: transform 0.25s ease;
+    }
+    .toc.collapsed { transform: translateX(calc(-1 * var(--toc-width))); }
+    .toc-toggle-btn {
+      position: fixed;
+      left: calc(var(--toc-width) - 16px);
+      top: 0.75rem;
+      width: 24px; height: 28px;
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 201;
+      transition: left 0.25s ease, opacity 0.15s;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.3);
+    }
+    body.toc-hidden .toc-toggle-btn { left: 0; }
+    .toc-toggle-btn:hover { opacity: 0.85; }
+    .toc h3 {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .toc a {
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      margin-bottom: 0.15rem;
+      transition: background 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .toc a:hover { background: var(--accent); color: #fff; }
+    .toc a.active { background: var(--accent); color: #fff; border-left-color: #fff; }
+    .content {
+      margin-left: var(--toc-width);
+      padding: 2rem 2.5rem 4rem;
+      width: calc(100% - var(--toc-width));
+      max-width: 900px;
+      transition: margin-left 0.25s ease, max-width 0.25s ease, width 0.25s ease;
+    }
+    body.toc-hidden .content { margin-left: 0; width: 100%; max-width: none; }
+    .header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 { font-size: 1.75rem; margin-bottom: 0.25rem; color: var(--accent); }
+    h2 { font-size: 1.1rem; margin-bottom: 0; color: var(--muted); font-weight: 400; }
+    h3 { font-size: 0.85rem; color: var(--text); font-weight: 700; margin-bottom: 0.75rem; margin-top: 0; }
+    h4 { font-size: 0.8rem; color: var(--accent); font-weight: 600; margin-bottom: 0.4rem; margin-top: 0; }
+    .highlight { color: var(--green); font-weight: 700; }
+    .toggle-wrap {
+      position: fixed;
+      top: 1rem; right: 1rem;
+      display: flex; gap: 0.5rem;
+      align-items: center;
+      z-index: 300;
+    }
+    .toggle-label { font-size: 0.75rem; color: var(--muted); font-weight: 500; }
+    .toggle {
+      width: 44px; height: 24px;
+      background: var(--border);
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      background: white;
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: transform 0.2s;
+    }
+    [data-theme="dark"] .toggle { background: var(--accent); }
+    [data-theme="dark"] .toggle::after { transform: translateX(20px); }
+    .mermaid-container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      overflow-x: auto;
+    }
+    .mermaid-container svg { max-width: 100%; height: auto; }
+    .legend {
+      display: flex; gap: 1.25rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      font-size: 0.75rem;
+      padding: 0.5rem 0;
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; }
+    .legend-dot {
+      width: 0.65rem; height: 0.65rem;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .section-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin: 2.5rem 0 1.25rem;
+    }
+    .section-header h3 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .section-header .line { flex: 1; height: 1px; background: var(--border); }
+    .stages {
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+    .stage {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .stage:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+    .stage-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .stage-header:hover { background: var(--bg); }
+    .stage-num {
+      background: var(--accent);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      width: 1.5rem; height: 1.5rem;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .stage-name { font-weight: 600; font-size: 1rem; }
+    .stage-chevron {
+      color: var(--muted);
+      font-size: 0.7rem;
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .stage.collapsed .stage-chevron { transform: rotate(-90deg); }
+    .stage-body {
+      padding: 0 1.5rem 1.25rem;
+      max-height: 800px;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease, opacity 0.25s ease;
+      opacity: 1;
+    }
+    .stage.collapsed .stage-body { max-height: 0; padding-top: 0; opacity: 0; }
+    .steps {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      margin-bottom: 0.6rem;
+    }
+    .step {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      font-size: 0.85rem; line-height: 1.5;
+    }
+    .step::before { content: '\203A'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+    .data-flow {
+      font-size: 0.75rem; color: var(--muted);
+      font-family: 'Fira Code', 'Cascadia Code', monospace;
+      background: var(--bg);
+      padding: 0.4rem 0.7rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .data-flow::before { content: '\2192 '; color: var(--accent); }
+    .ladder {
+      display: flex; flex-direction: column; gap: 0;
+      margin: 0.75rem 0;
+    }
+    .rung {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      position: relative;
+    }
+    .rung:nth-child(odd) { background: var(--bg); }
+    .rung-label {
+      background: var(--green);
+      color: #fff;
+      font-size: 0.6rem; font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+      min-width: 3.5rem;
+      text-align: center;
+    }
+    .rung-name { font-weight: 600; }
+    .rung-desc { color: var(--muted); font-size: 0.775rem; display: block; margin-top: 0.1rem; }
+    .rung-arrow { text-align: center; color: var(--border); font-size: 0.85rem; padding: 0.05rem 0 0.05rem 3.5rem; }
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.6rem;
+      margin: 0.75rem 0;
+    }
+    .provider-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+    .provider-card .pname { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.3rem; }
+    .provider-card .pdesc { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+    .note {
+      font-size: 0.8rem; color: var(--muted);
+      padding: 0.75rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 1rem;
+      line-height: 1.6;
+    }
+    .note strong { color: var(--amber); }
+    .note code {
+      background: var(--card);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      font-family: 'Fira Code', monospace;
+    }
+    .stats {
+      display: flex; gap: 0.6rem; flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      text-align: center;
+      flex: 1; min-width: 120px;
+      position: relative;
+      cursor: default;
+    }
+    .stat:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .stat-value { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+    .stat-label {
+      font-size: 0.65rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-top: 0.15rem;
+    }
+    .stat .tooltip-box {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.725rem;
+      color: var(--text); line-height: 1.4;
+      width: max-content; max-width: 220px;
+      text-align: left;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      z-index: 10;
+      pointer-events: none;
+    }
+    .stat:hover .tooltip-box { display: block; }
+    .stat .tooltip-box::after {
+      content: '';
+      position: absolute; top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--border);
+    }
+    .arrow-down { text-align: center; color: var(--border); font-size: 1.25rem; padding: 0.25rem 0; }
+    .footer {
+      margin-top: 3rem; padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.7rem; color: var(--muted); text-align: center;
+    }
+    .footer a { color: var(--link); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+    .badge {
+      display: inline-block;
+      background: var(--purple);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      margin-left: 0.5rem;
+    }
+    .badge.green { background: var(--green); }
+    .badge.amber { background: var(--amber); }
+    .badge.cyan { background: var(--cyan); }
+    code { font-family: 'Fira Code', monospace; background: var(--card); padding: 0.05rem 0.3rem; border-radius: 3px; font-size: 0.8em; }
+    pre {
+      font-family: 'Fira Code', 'Cascadia Code', monospace;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+    .table-wrap { overflow-x: auto; margin-bottom: 1rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    th {
+      text-align: left;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      border-bottom: 2px solid var(--border);
+      padding: 0.5rem 0.75rem;
+    }
+    td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: var(--card); }
+    .agent-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .agent-card h4 { margin-bottom: 0.5rem; }
+    .agent-card .agent-meta {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+    .agent-card ul {
+      margin: 0.5rem 0 0.5rem 1.25rem;
+      font-size: 0.8rem;
+    }
+    .agent-card li { margin-bottom: 0.25rem; }
+    .workflow-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      line-height: 1.8;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    @media (max-width: 800px) {
+      .toc { transform: translateX(calc(-1 * var(--toc-width))); }
+      .toc.collapsed { transform: translateX(0); }
+      .content { margin-left: 0; padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<button class="toc-toggle-btn" id="tocToggle" title="Toggle sidebar">&#9776;</button>
+
+<nav class="toc" id="toc">
+  <h3>skill-craft</h3>
+  <a href="#diagram" data-section="diagram">Architecture Diagram</a>
+  <a href="#mermaid" data-section="mermaid">Mermaid Authoring</a>
+  <a href="#pipeline" data-section="pipeline">5-Phase Pipeline</a>
+  <a href="#subskills" data-section="subskills">Sub-skill Recs</a>
+  <a href="#usm" data-section="usm">Capability Discovery</a>
+  <a href="#agents" data-section="agents">Review Agents</a>
+</nav>
+
+<div class="toggle-wrap">
+  <span class="toggle-label">&#9728;&#65039;</span>
+  <div class="toggle" id="themeToggle"></div>
+  <span class="toggle-label">&#127769;</span>
+</div>
+
+<div class="content">
+
+  <div class="header">
+    <h1>skill-craft — Unified Skill-Craft Orchestrator</h1>
+    <h2>Coordinates audit, ship, creator, and development with fidelity closing gates</h2>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">4</div>
+      <div class="stat-label">Sub-skills orchestrated</div>
+      <div class="tooltip-box">audit (diagnose), ship (repair), creator (iterate), development (craft standards)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">5</div>
+      <div class="stat-label">Pipeline phases</div>
+      <div class="tooltip-box">Diagnosing → Planning → Executing → Evaluating → Gating</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">8</div>
+      <div class="stat-label">Recommended skills</div>
+      <div class="tooltip-box">skill-creator, skill-development, writing-skills, doc-to-skill, command-dev, hook-dev, agent-dev, av</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">3</div>
+      <div class="stat-label">Review agents</div>
+      <div class="tooltip-box">Hook Review, Agent Review, MCP Review</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- DIAGRAM -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="diagram" class="section-header">
+    <h3>Architecture Diagram</h3>
+    <div class="line"></div>
+  </div>
+
+  <div class="mermaid-container">
+    <pre class="mermaid" id="pipelineDiagram">
+flowchart TD
+    Start(["Target skill"]) --> P1["Phase 1: DIAGNOSING"]
+    P1 --> AVRun["av"]
+    P1 --> CraftLens["craft_lens_enforcer"]
+
+    AVRun --> AF["av_findings"]
+    CraftLens --> CI["craft_issues"]
+
+    AF --> P2["Phase 2: PLANNING"]
+    CI --> P2
+
+    P2 --> USM["/usm discovery"]
+    USM --> Route
+
+    P2 --> Route{"Route findings by type"}
+    Route -->|Verification| AVRoute["av"]
+    Route -->|Doc conversion| DocRun["/doc-to-skill"]
+    Route -->|Eval/Triggers| CreatorRun["/skill-creator:skill-creator"]
+    Route -->|Craft structure| DevRun["[placeholder]"]
+    Route -->|Hooks| HookDev["[placeholder]"]
+    Route -->|Agents| AgentDev["[placeholder]"]
+    Route -->|Commands| CmdDev["[placeholder]"]
+    Route -->|All source skill| Done["exit (nothing to do)"]
+
+    DocRun --> P3["Phase 3: EXECUTING"]
+    CreatorRun --> P3
+    DevRun --> P3
+    HookDev --> P3
+    AgentDev --> P3
+    CmdDev --> P3
+
+    subgraph P3_EXECUTING ["Phase 3 EXECUTING"]
+        P3 --> AgentReview["Review Agents (pre-flight, parallel)"]
+        AgentReview --> HR["Hook Review → hook_findings.json"]
+        AgentReview --> AR["Agent Review → agent_findings.json"]
+        AgentReview --> MR["MCP Review → mcp_findings.json"]
+        HR --> Subs["Sub-skills: ship → creator → dev → audit"]
+        AR --> Subs
+        MR --> Subs
+    end
+
+    Subs --> P4["Phase 4: EVALUATING"]
+    P4 --> Fidelity["fidelity_tracker.run()"]
+    Fidelity --> FS{"fidelity_score"}
+    FS -->|Pass| P5["Phase 5: GATING"]
+    FS -->|Fail| P1
+
+    P5 --> CertGate["CertificationGate.check()"]
+    CertGate -->|PASS| Done
+    CertGate -.->|FAIL| Route
+
+    Done(["Skill is craft-done"])
+    </pre>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Orchestrator</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Subskill invocation</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Pass path</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Fail / loop-back</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div> State/data</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- Mermaid Authoring -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="mermaid" class="section-header">
+    <h3>Mermaid Diagram Authoring</h3>
+    <div class="line"></div>
+  </div>
+
+  <div class="stages">
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">1</div>
+        <span class="stage-name">Layout Rules</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Rule</th><th>Why</th><th>Enforce with</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Direction matters</strong></td><td>TD keeps phases vertical; LR is good for state machines</td><td><code>flowchart TD</code> or <code>flowchart LR</code></td></tr>
+              <tr><td><strong>Group by phase</strong></td><td>Related nodes on same rank = visual coherence</td><td>Order nodes so related nodes share a rank</td></tr>
+              <tr><td><strong>Avoid crossing edges</strong></td><td>Crossing lines create cognitive load and obscure intent</td><td>Swap node order or insert invisible nodes</td></tr>
+              <tr><td><strong>Color-code edge types</strong></td><td>Scan intent instantly — different colors for pass/fail/delegation</td><td><code>stroke</code> on edges; consistent color map</td></tr>
+              <tr><td><strong>Curve: basis or monotone</strong></td><td>Sharp corners signal a layout problem</td><td><code>curve: 'basis'</code> in flowchart config</td></tr>
+              <tr><td><strong>Padding and spacing</strong></td><td>Nodes too close fuse; too far and the eye loses the thread</td><td><code>nodeSpacing</code>, <code>rankSpacing</code>, <code>padding</code></td></tr>
+              <tr><td><strong>Max width</strong></td><td>Wrapped text creates jagged edges</td><td><code>useMaxWidth: true</code>; no fixed width on svg</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">2</div>
+        <span class="stage-name">Node Shape Choices</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Node type</th><th>Syntax</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Start/End</td><td><code>(["label"])</code></td><td>Rounded pill — terminal state</td></tr>
+              <tr><td>Phase headers</td><td><code>["Phase 1: DIAGNOSING"]</code></td><td>Plain text — just a label</td></tr>
+              <tr><td>Sub-skill nodes</td><td><code>"sub-skill-name"</code></td><td>Plain text — no decoration</td></tr>
+              <tr><td>Conditional</td><td><code>{label}</code></td><td>Diamond — decision or branch</td></tr>
+              <tr><td>Data/state</td><td><code>[["data label"]]</code></td><td>Rectangle — built-in line break</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">3</div>
+        <span class="stage-name">Edge Semantics</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Edge type</th><th>Color</th><th>Width</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Forward/pass</td><td style="color:#4ade80">green</td><td>2px</td><td>Happy path, next phase</td></tr>
+              <tr><td>Back/loop</td><td style="color:#f87171">red</td><td>2px</td><td>Loop-back, failure path</td></tr>
+              <tr><td>Delegation</td><td style="color:#c084fc">purple</td><td>1.5px</td><td>Sub-skill invocation</td></tr>
+              <tr><td>Data flow</td><td style="color:#22d3ee">cyan</td><td>1px</td><td>Data passing between phases</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">4</div>
+        <span class="stage-name">Color Palette</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <pre>dark:  { success: '#4ade80', fallback: '#f87171', discovery: '#c084fc', entry: '#60a5fa', analysis: '#22d3ee', other: '#71717a' }
+light: { success: '#16a34a', fallback: '#dc2626', discovery: '#7c3aed', entry: '#2563eb', analysis: '#0891b2', other: '#6b7280' }</pre>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">5</div>
+        <span class="stage-name">Diagram Checklist</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="steps">
+          <div class="step">Can you trace from Start to End without lifting your pen?</div>
+          <div class="step">Do any two edges cross?</div>
+          <div class="step">Is every node labeled clearly enough to stand alone without the surrounding text?</div>
+          <div class="step">Does every non-forward edge have a labeled condition?</div>
+          <div class="step">Is the diagram readable at 50% zoom?</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PIPELINE -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="pipeline" class="section-header">
+    <h3>5-Phase Pipeline</h3>
+    <div class="line"></div>
+  </div>
+
+  <div class="stages">
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">1</div>
+        <span class="stage-name">Phase 1: DIAGNOSING</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="steps">
+          <div class="step"><strong>av</strong> — verification, validation, correctness checking</div>
+          <div class="step"><strong>craft_lens_enforcer</strong> — imperative form check, third-person trigger check, SKILL.md body line count, progressive disclosure verification</div>
+        </div>
+        <div class="data-flow">target_skill_path → av + craft_lens_enforcer → av_findings + craft_issues</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">2</div>
+        <span class="stage-name">Phase 2: PLANNING</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="ladder">
+          <div class="rung">
+            <span class="rung-label" style="background:var(--purple)">verification</span>
+            <div><span class="rung-name">av</span><span class="rung-desc">Validate skill structure, output correctness</span></div>
+          </div>
+          <div class="rung-arrow">&#8600;</div>
+          <div class="rung">
+            <span class="rung-label" style="background:var(--accent)">doc conversion</span>
+            <div><span class="rung-name">/doc-to-skill</span><span class="rung-desc">Convert existing docs into skill structure</span></div>
+          </div>
+          <div class="rung-arrow">&#8600;</div>
+          <div class="rung">
+            <span class="rung-label" style="background:var(--accent)">eval/triggers</span>
+            <div><span class="rung-name">/skill-creator:skill-creator</span><span class="rung-desc">Eval iteration, trigger optimization</span></div>
+          </div>
+          <div class="rung-arrow">&#8600;</div>
+          <div class="rung">
+            <span class="rung-label" style="background:var(--amber)">craft structure</span>
+            <div><span class="rung-name">[placeholder]</span><span class="rung-desc">Progressive disclosure, SKILL.md lean</span></div>
+          </div>
+          <div class="rung-arrow">&#8600;</div>
+          <div class="rung">
+            <span class="rung-label" style="background:var(--amber)">hooks</span>
+            <div><span class="rung-name">[placeholder]</span><span class="rung-desc">Add or improve hooks</span></div>
+          </div>
+          <div class="rung-arrow">&#8600;</div>
+          <div class="rung">
+            <span class="rung-label" style="background:var(--amber)">agents</span>
+            <div><span class="rung-name">[placeholder]</span><span class="rung-desc">Define agents within ecosystem</span></div>
+          </div>
+          <div class="rung-arrow">&#8600;</div>
+          <div class="rung">
+            <span class="rung-label" style="background:var(--amber)">commands</span>
+            <div><span class="rung-name">[placeholder]</span><span class="rung-desc">Create new slash commands</span></div>
+          </div>
+        </div>
+        <div class="note">
+          <strong>Exit condition</strong>: If all findings are owned by <code>source skill</code> → exit immediately, nothing to do.
+        </div>
+        <div class="data-flow">audit_findings + craft_issues → route() → action_list (priority-ordered)</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">3</div>
+        <span class="stage-name">Phase 3: EXECUTING</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="steps">
+          <div class="step">Invoke sub-skills by priority: <code>ship → creator → development → audit</code></div>
+          <div class="step">Spawn three Review Agents in parallel (non-trivial skills): Hook Review, Agent Review, MCP Review</div>
+          <div class="step">Route all findings back to Phase 2 for incorporation</div>
+        </div>
+        <div class="data-flow">action_list → invoke_by_priority(ship | creator | development | audit) + review_agents → phase_results</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">4</div>
+        <span class="stage-name">Phase 4: EVALUATING</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="steps">
+          <div class="step"><strong>Trigger accuracy</strong>: % of expected triggers that fired</div>
+          <div class="step"><strong>Outcome accuracy</strong>: % of outputs matching expected behavioral patterns</div>
+          <div class="step"><strong>Degradation delta</strong>: fidelity change vs last baseline</div>
+        </div>
+        <div class="data-flow">target_skill_path + eval_set → fidelity_tracker.run() → fidelity_score → pass|fail</div>
+        <div class="note">
+          <strong>Loop-back</strong>: If fidelity_score fails threshold, loop back to Phase 1 with updated state.
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">5</div>
+        <span class="stage-name">Phase 5: GATING</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="ladder">
+          <div class="rung">
+            <span class="rung-label">Context size</span>
+            <div><span class="rung-name">validate_context_size()</span><span class="rung-desc">SKILL.md body &lt;500 lines, references loaded as-needed</span></div>
+          </div>
+          <div class="rung-arrow">&#8600;</div>
+          <div class="rung">
+            <span class="rung-label">Frontmatter</span>
+            <div><span class="rung-name">name + description present</span><span class="rung-desc">Required fields per skill-frontmatter-fields.md</span></div>
+          </div>
+          <div class="rung-arrow">&#8600;</div>
+          <div class="rung">
+            <span class="rung-label">Trigger accuracy</span>
+            <div><span class="rung-name">description triggers match usage</span><span class="rung-desc">No hallucinated flags, no drift from body</span></div>
+          </div>
+        </div>
+        <div class="note">
+          <strong>Fail route</strong>: If cert gate fails, route to repair sub-skill — do NOT exit loop.
+          Only exit when both fidelity_score AND cert gate pass.
+        </div>
+        <div class="data-flow">target_skill_path → CertificationGate.check() → pass|fail → route|exit</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SUB-SKILL RECS -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="subskills" class="section-header">
+    <h3>Sub-skill Recommendations</h3>
+    <div class="line"></div>
+  </div>
+
+  <div class="stages">
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">&#9679;</div>
+        <span class="stage-name">When to invoke each sub-skill</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Sub-skill</th><th>When to invoke</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>/skill-creator:skill-creator</code></td><td>Eval iteration, trigger optimization, description improvement</td></tr>
+              <tr><td><code>/skill-development</code></td><td>Progressive disclosure, SKILL.md structure, craft conventions</td></tr>
+              <tr><td><code>/writing-skills</code></td><td>Skill documentation, prose quality, clarity improvements</td></tr>
+              <tr><td><code>/doc-to-skill</code></td><td>Converting existing docs into a skill structure</td></tr>
+              <tr><td><code>/command-development</code></td><td>Creating new slash commands for the skill</td></tr>
+              <tr><td><code>/hook-development</code></td><td>Adding or improving hooks for the skill</td></tr>
+              <tr><td><code>/agent-development</code></td><td>Defining agents within the skill ecosystem</td></tr>
+              <tr><td><code>/av</code></td><td>Verification, validation, or correctness checking</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          Proactively recommend these when they add value — don't wait for a direct finding type match.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- USM -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="usm" class="section-header">
+    <h3>Capability Discovery — /usm</h3>
+    <div class="line"></div>
+  </div>
+
+  <div class="stages">
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">&#9679;</div>
+        <span class="stage-name">Search before building</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="steps">
+          <div class="step">Before finalizing any skill, run <code>/usm search "&lt;skill-name&gt;" --category all</code></div>
+          <div class="step">Look for: <strong>Skills</strong> (existing coverage), <strong>Plugins</strong> (extensions), <strong>Agents</strong> (sub-agent candidacy), <strong>Hooks</strong> (enforcement), <strong>MCPs</strong> (external tools)</div>
+          <div class="step">If /usm finds a match, recommend it explicitly — <strong>do not duplicate</strong> what already exists</div>
+        </div>
+        <div class="data-flow">/usm search "&lt;skill-name&gt;" --category all → recommendation or "nothing found"</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- REVIEW AGENTS -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="agents" class="section-header">
+    <h3>Review Agents</h3>
+    <div class="line"></div>
+  </div>
+
+  <div class="stages">
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">1</div>
+        <span class="stage-name">Hook Review Agent</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="agent-card">
+          <h4>Hook Review Agent <span class="badge amber">priority</span></h4>
+          <div class="agent-meta">
+            <span class="badge">blocking</span>
+            <span class="badge">advisory</span>
+          </div>
+          <strong>Checks:</strong>
+          <ul>
+            <li>Does the skill benefit from pre-tool or post-tool hooks?</li>
+            <li>Are there enforcement gaps a hook could close?</li>
+            <li>Would a blocking hook improve behavior more than advisory?</li>
+            <li>Are there existing hooks this skill should chain with?</li>
+          </ul>
+          <strong>Output:</strong> <code>hook_findings.json</code> — array of <code>{hook_type, location, recommendation, priority}</code>
+          <br><strong>Reference:</strong> <code>P:/.claude/docs/claude-hooks-v3.1.md</code>
+        </div>
+        <div class="note">
+          <strong>Invoke when</strong>: The skill has conditional enforcement, state dependencies, or repeated validation patterns.
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">2</div>
+        <span class="stage-name">Agent Review Agent</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="agent-card">
+          <h4>Agent Review Agent <span class="badge green">parallelism</span></h4>
+          <div class="agent-meta">
+            <span class="badge">sub-agent</span>
+            <span class="badge">concurrent</span>
+          </div>
+          <strong>Checks:</strong>
+          <ul>
+            <li>Could a sub-agent handle a distinct phase better than the skill itself?</li>
+            <li>Are there parallel workstreams that would benefit from concurrent agents?</li>
+            <li>Would spawning an agent reduce context burden vs staying in-skill?</li>
+            <li>Are there existing agents this skill should delegate to?</li>
+          </ul>
+          <strong>Output:</strong> <code>agent_findings.json</code> — array of <code>{agent_type, task_phase, recommendation, priority}</code>
+        </div>
+        <div class="note">
+          <strong>Invoke when</strong>: The skill has multiple independent phases, complex parallel workstreams, or tasks that benefit from different expertise domains.
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">3</div>
+        <span class="stage-name">MCP Review Agent</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="agent-card">
+          <h4>MCP Review Agent <span class="badge cyan">external-tools</span></h4>
+          <div class="agent-meta">
+            <span class="badge">browser</span>
+            <span class="badge">search</span>
+            <span class="badge">knowledge</span>
+          </div>
+          <strong>Checks:</strong>
+          <ul>
+            <li>Does the skill's domain have a relevant MCP server?</li>
+            <li>Would an MCP tool replace a fragile or slow subprocess call?</li>
+            <li>Is there a Browser Use, Brave Search, or Perplexity MCP that fits?</li>
+            <li>Could an MCP backend (CHS, CKS, CDS) provide knowledge or context?</li>
+          </ul>
+          <strong>Output:</strong> <code>mcp_findings.json</code> — array of <code>{mcp_name, capability, integration_point, recommendation, priority}</code>
+        </div>
+        <div class="note">
+          <strong>Invoke when</strong>: The skill interacts with external services, does research, searches codebases, or uses web tools.
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">&#9679;</div>
+        <span class="stage-name">Agent Review Workflow</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="workflow-box">Phase 3 (EXECUTING)
+  ├── skill-specific sub-skills (ship, creator, development, audit)
+  ├── Hook Review Agent      → hook_findings.json
+  ├── Agent Review Agent    → agent_findings.json
+  └── MCP Review Agent       → mcp_findings.json
+
+  └── All findings route back to Phase 2 (PLANNING) for incorporation</div>
+        <div class="note">
+          Each agent outputs a JSON artifact. If findings exist, route them to the appropriate sub-skill for repair or integration. If no findings, note <strong>"no agent-specific gaps found"</strong> and continue.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    skill-craft — coordinates audit, ship, creator, development with fidelity closing gate
+  </div>
+
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+  let currentTheme = 'dark';
+
+  const COLORS = {
+    dark: {
+      success: '#4ade80', fallback: '#f87171',
+      discovery: '#c084fc', entry: '#60a5fa',
+      analysis: '#22d3ee', other: '#71717a',
+      labelBg: '#1a1d27'
+    },
+    light: {
+      success: '#16a34a', fallback: '#dc2626',
+      discovery: '#7c3aed', entry: '#2563eb',
+      analysis: '#0891b2', other: '#6b7280',
+      labelBg: '#f3f4f6'
+    }
+  };
+
+  function getColors() { return COLORS[currentTheme] || COLORS.dark; }
+
+  function initMermaid() {
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: currentTheme === 'dark' ? 'dark' : 'default',
+      flowchart: { htmlLabels: true, curve: 'basis', padding: 15, nodeSpacing: 30, rankSpacing: 40, useMaxWidth: true }
+    });
+    setTimeout(colorLinks, 600);
+  }
+
+  function colorLinks() {
+    const svg = document.querySelector('.mermaid-container svg');
+    if (!svg) return;
+    const c = getColors();
+    const colorMap = {
+      'Pass': c.success, 'Fail': c.fallback,
+      'FAIL': c.fallback, 'PASS': c.success,
+    };
+    const labels = svg.querySelectorAll('.edge-label');
+    labels.forEach((label) => {
+      const text = label.textContent.trim();
+      const strokeColor = colorMap[text] || c.other;
+      if (strokeColor === c.other) return;
+      const edgeGroup = label.closest('g');
+      if (!edgeGroup) return;
+      const parent = edgeGroup.parentElement;
+      if (!parent) return;
+      const path = parent.querySelector('path');
+      if (path) { path.setAttribute('stroke', strokeColor); path.setAttribute('stroke-width', '2.5'); }
+    });
+  }
+
+  let mermaidSource = '';
+
+  function setTheme(theme) {
+    currentTheme = theme;
+    document.documentElement.dataset.theme = theme;
+    const pre = document.getElementById('pipelineDiagram');
+    if (pre && !mermaidSource) mermaidSource = pre.textContent;
+    if (!mermaidSource) return;
+    const container = document.querySelector('.mermaid-container');
+    if (!container) return;
+    container.innerHTML = '';
+    mermaid.initialize({ startOnLoad: false, theme: theme === 'dark' ? 'dark' : 'default', flowchart: { htmlLabels: true, curve: 'basis', padding: 15, nodeSpacing: 30, rankSpacing: 40, useMaxWidth: true } });
+    const newPre = document.createElement('pre');
+    newPre.className = 'mermaid';
+    newPre.id = 'pipelineDiagram';
+    newPre.textContent = mermaidSource;
+    container.appendChild(newPre);
+    setTimeout(() => { mermaid.run({ nodes: [newPre] }).then(() => colorLinks()); }, 100);
+  }
+
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const toc = document.getElementById('toc');
+    const btn = document.getElementById('tocToggle');
+    if (toc && btn) {
+      btn.addEventListener('click', () => {
+        toc.classList.toggle('collapsed');
+        document.body.classList.toggle('toc-hidden');
+        btn.innerHTML = toc.classList.contains('collapsed') ? '&#9654;' : '&#9776;';
+      });
+    }
+    const sections = document.querySelectorAll('[id]');
+    const tocLinks = document.querySelectorAll('.toc a[data-section]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          tocLinks.forEach(l => l.classList.remove('active'));
+          const link = document.querySelector(`.toc a[data-section="${entry.target.id}"]`);
+          if (link) link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(s => observer.observe(s));
+    initMermaid();
+  });
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Output formatting for reflection results.
 Supports verbose (decorated) and concise (clean markdown) modes.

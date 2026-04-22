@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Configure pytest to import the recap package from the skills directory."""
 
 from __future__ import annotations

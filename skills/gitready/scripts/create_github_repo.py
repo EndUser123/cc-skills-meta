@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 create_github_repo.py - Create GitHub repository and push code
 

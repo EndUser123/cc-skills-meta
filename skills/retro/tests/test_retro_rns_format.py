@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Validate retro SKILL.md specifies required RNS output format elements.
 
 Ensures future edits to retro SKILL.md don't accidentally remove:

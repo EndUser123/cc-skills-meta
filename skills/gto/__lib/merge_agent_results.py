@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Merge GTO L1 gaps with agent findings into unified artifact."""
 import argparse
 import json

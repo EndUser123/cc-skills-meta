@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """GTO Binary Assertions - Self-verifying completion enforcement.
 
 This script validates 5 criteria for GTO analysis completion:

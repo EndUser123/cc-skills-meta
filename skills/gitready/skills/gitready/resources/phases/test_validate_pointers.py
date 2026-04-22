@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Tests for validate_pointers.py."""
 
 from __future__ import annotations

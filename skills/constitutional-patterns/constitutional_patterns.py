@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 constitutional_patterns.py - Constitutional Patterns Reference
 

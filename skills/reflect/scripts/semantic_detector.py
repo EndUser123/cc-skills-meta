@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Semantic learning detection using Claude Code CLI.
 
 Uses `claude -p` (print mode) to semantically analyze user messages

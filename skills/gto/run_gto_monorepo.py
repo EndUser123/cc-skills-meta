@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 r"""Run GTO analysis on monorepo subdirectories.
 
 This script bypasses the viability gate's git repository check

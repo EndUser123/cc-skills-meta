@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Extracts learning signals from conversation transcripts.
 Identifies corrections, approvals, and patterns with confidence levels.

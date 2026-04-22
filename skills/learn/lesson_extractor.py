@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Lesson Extractor - Self-contained local pipeline with optional semantic novelty detection.
 

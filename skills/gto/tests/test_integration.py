@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Integration tests for GTO v3 self-verifying infrastructure.
 
 Tests the complete flow: GTO run → artifacts → assertions → hook block/pass

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Promote Learning - Move skill-level learnings to global CLAUDE.md
 

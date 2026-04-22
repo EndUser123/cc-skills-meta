@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 CKS Schema Mapper for /reflect to /r Integration.
 

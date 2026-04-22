@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Create GitHub repository via GitHub API.
 ==========================================
 

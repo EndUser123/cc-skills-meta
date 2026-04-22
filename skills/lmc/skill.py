@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Lossless Maximal Compaction (LMC) Skill
 

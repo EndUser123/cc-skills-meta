@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Scope Analyzer - Determines if a learning should be project or global.
 

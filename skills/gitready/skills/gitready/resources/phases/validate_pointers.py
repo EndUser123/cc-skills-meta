@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Validate all > READ: pointers in SKILL.md resolve to existing, non-empty files.
 
 Run as a PHASE 0 prerequisite check before any phase that reads bundled resources.

@@ -72,7 +72,7 @@ def call_provider(query: ExternalQuery) -> ExternalResult:
 
     if provider == "codex":
         ok, stdout, stderr = run_command(
-            ["codex", query.prompt],
+            ["codex", "exec", query.prompt],
             timeout=query.timeout_seconds
         )
         elapsed_ms = int((time.monotonic() - start) * 1000)

@@ -14,7 +14,7 @@ from .models import Claim, ClaimStatus, ReasoningState, Severity, Classification
 from .policies import build_external_queries, should_run_second_round, should_use_external
 from .adapters import execute_external_queries
 from .synthesizer import finalize_answer, reconcile
-from .utils import json_pretty
+from .utils import json_pretty, normalize_query
 
 
 LEDGER_PATH = os.path.join(".claude", "state", "reason_ppx_ledger.json")
@@ -40,6 +40,7 @@ def load_ledger(config: OrchestratorConfig) -> dict:
 
 def save_ledger(query: str, state: ReasoningState):
     os.makedirs(os.path.dirname(LEDGER_PATH), exist_ok=True)
+    norm_query = normalize_query(query)
     try:
         data = {}
         if os.path.exists(LEDGER_PATH):
@@ -48,7 +49,7 @@ def save_ledger(query: str, state: ReasoningState):
         
         state_dict = asdict(state)
         state_dict["_timestamp"] = time.time()
-        data[query] = state_dict
+        data[norm_query] = state_dict
         
         with open(LEDGER_PATH, "w") as f:
             json.dump(data, f, indent=2)
@@ -104,10 +105,11 @@ def build_internal_draft(state: ReasoningState) -> ReasoningState:
 
 def orchestrate(query: str, debug: bool = False) -> ReasoningState:
     config = OrchestratorConfig()
+    norm_query = normalize_query(query)
     
     # Check ledger for cross-turn data
     ledger = load_ledger(config)
-    cached_entry = ledger.get(query)
+    cached_entry = ledger.get(norm_query)
 
     if cached_entry:
         # Reconstruct state from ledger to avoid Amnesia Loop

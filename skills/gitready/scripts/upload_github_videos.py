@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 GitHub Video Uploader - Browser Automation (Improved)
 

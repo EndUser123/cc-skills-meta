@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Retrospective Common - Self-contained lesson extraction utilities.
 
 Minimal implementation for the /learn skill that provides:

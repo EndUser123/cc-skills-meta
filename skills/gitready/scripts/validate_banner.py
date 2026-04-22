@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 validate_banner.py - Banner Quality Validation with Z.ai Vision API
 

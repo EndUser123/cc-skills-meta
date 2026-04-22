@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 update_marketplace_data.py — Universal Skills Manager
 

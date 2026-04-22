@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """GTO State Consolidation Script.
 
 Consolidates scattered GTO state files to centralized location:

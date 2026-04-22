@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Integration tests for CKS schema integration into store_to_cks()."""
 
 import sys

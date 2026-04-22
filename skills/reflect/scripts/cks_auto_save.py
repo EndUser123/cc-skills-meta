@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Auto-save reflection lessons to CKS.
 Saves formatted CKS entries from reflection analysis.

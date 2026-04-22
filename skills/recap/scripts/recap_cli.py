@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """CLI entry point for /recap skill."""
 
 import sys

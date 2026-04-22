@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 solo_dev_authority.py - Solo Dev Authority Constraints
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 validate_media_assets.py - Multi-Domain Media Asset Quality Validation
 

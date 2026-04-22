@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """GTO Failure Capture Hook - PostToolUseFailure
 
 Classifies GTO failures and logs structured entries to .claude/failure-patterns/

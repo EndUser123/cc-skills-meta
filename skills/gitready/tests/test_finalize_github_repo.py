@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Tests for finalize_github_repo.py - PHASE 7: Repository Finalization
 

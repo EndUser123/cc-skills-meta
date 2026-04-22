@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Terminal-wide session recap via direct transcript analysis."""
 
 from __future__ import annotations

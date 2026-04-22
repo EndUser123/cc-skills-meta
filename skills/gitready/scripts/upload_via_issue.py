@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Upload video to GitHub via issue comment to get user-images CDN URL.
 

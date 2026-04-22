@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 SKILL.md Frontmatter Validator for claude.ai / Claude Desktop
 

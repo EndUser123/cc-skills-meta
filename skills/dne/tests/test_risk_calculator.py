@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 TDD tests for /dne objective risk calculator module.
 

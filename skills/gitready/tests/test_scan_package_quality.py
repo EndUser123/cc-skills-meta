@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Tests for scan_package_quality.py - PHASE 4.5: Package Quality Scanning
 

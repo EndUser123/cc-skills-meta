@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 create_findings_table.py - CKS Findings Table Migration
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 cks_health_check.py - Check Constitutional Knowledge System health
 

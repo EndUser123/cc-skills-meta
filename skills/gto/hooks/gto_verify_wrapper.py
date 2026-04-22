@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """GTO Verification Stop Hook - Platform-aware wrapper with scope guard.
 
 This script:

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Main reflection orchestration engine.
 Coordinates signal extraction, skill updates, and user review.

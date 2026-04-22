@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 extract_from_monorepo.py - Extract package from monorepo for GitHub publication
 

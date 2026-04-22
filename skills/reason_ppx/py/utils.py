@@ -35,5 +35,10 @@ def slugify(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
 
 
+def normalize_query(query: str) -> str:
+    """Normalize query for consistent ledger keys."""
+    return query.strip().lower()
+
+
 def json_pretty(obj) -> str:
     return json.dumps(obj, indent=2, ensure_ascii=False, default=str)

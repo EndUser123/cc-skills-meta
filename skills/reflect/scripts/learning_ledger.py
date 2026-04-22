@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Learning Ledger - SQLite-based tracking for cross-skill learning.
 

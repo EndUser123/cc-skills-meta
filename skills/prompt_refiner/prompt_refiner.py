@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 prompt_refiner.py - Prompt Refiner Reference
 
