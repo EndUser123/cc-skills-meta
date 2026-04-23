@@ -14,6 +14,10 @@ from .models import (
 
 
 def should_use_external(state: ReasoningState, config: OrchestratorConfig) -> bool:
+    # CLI override: --no-external forces local-only
+    if getattr(config, "override_no_external", False):
+        return False
+
     if not config.external_on_for_nontrivial:
         return False
 

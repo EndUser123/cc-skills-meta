@@ -131,6 +131,11 @@ class ReasoningState:
     confidence_summary: str = ""
     strategy_shift: str = ""
     execution_notes: List[str] = field(default_factory=list)
+    # Decision flags from CLI
+    force_choice: bool = False
+    kill: bool = False
+    invert: bool = False
+    ship: bool = False
 
     def high_impact_unproven_count(self) -> int:
         return sum(

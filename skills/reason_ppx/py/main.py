@@ -103,10 +103,29 @@ def build_internal_draft(state: ReasoningState) -> ReasoningState:
     return state
 
 
-def orchestrate(query: str, debug: bool = False) -> ReasoningState:
-    config = OrchestratorConfig()
+def orchestrate(
+    query: str,
+    debug: bool = False,
+    no_external: bool = False,
+    mode: str = "auto",
+    force_choice: bool = False,
+    kill: bool = False,
+    invert: bool = False,
+    ship: bool = False,
+    output: str = "compact",
+) -> ReasoningState:
+    # Build config with CLI overrides
+    config = OrchestratorConfig(
+        override_no_external=no_external,
+        override_mode=mode,
+        override_force_choice=force_choice,
+        override_kill=kill,
+        override_invert=invert,
+        override_ship=ship,
+        override_output=output,
+    )
     norm_query = normalize_query(query)
-    
+
     # Check ledger for cross-turn data
     ledger = load_ledger(config)
     cached_entry = ledger.get(norm_query)
@@ -115,20 +134,20 @@ def orchestrate(query: str, debug: bool = False) -> ReasoningState:
         # Reconstruct state from ledger to avoid Amnesia Loop
         state = ReasoningState(query=query)
         state.execution_notes.append(f"ledger_hit=true")
-        
+
         # Basic fields
-        for field in ["final_answer", "confidence_summary", "primary_frame", "challenger_frame", 
+        for field in ["final_answer", "confidence_summary", "primary_frame", "challenger_frame",
                       "internal_draft", "strategy_shift", "assumptions", "unknowns", "contradictions"]:
             if field in cached_entry:
                 setattr(state, field, cached_entry[field])
-        
+
         # Nested objects
         if cached_entry.get("task"):
             state.task = ClassificationResult(**cached_entry["task"])
-        
+
         if cached_entry.get("claims"):
             state.claims = [Claim(**c) for c in cached_entry["claims"]]
-        
+
         if cached_entry.get("external_results"):
             # Deep reconstruction for external results and findings
             results = []
@@ -141,18 +160,31 @@ def orchestrate(query: str, debug: bool = False) -> ReasoningState:
                 results.append(ExternalResult(**r_copy))
             state.external_results = results
 
+        # Re-apply CLI flags even on ledger hit
+        state.force_choice = force_choice
+        state.kill = kill
+        state.invert = invert
+        state.ship = ship
+
         if state.final_answer:
             if debug:
                 print(json_pretty(asdict(state)))
             else:
-                print(state.final_answer)
+                print(finalize_answer(state, output_format=output))
             return state
 
     state = ReasoningState(query=query)
     state.task = classify_task(query)
     state.context = build_context(query)
-    state.primary_frame, state.challenger_frame = select_frames(state.task.task_type)
+    # Pass mode override to frame selection
+    state.primary_frame, state.challenger_frame = select_frames(state.task.task_type, override_mode=mode)
     state = build_internal_draft(state)
+
+    # Store decision flags in state for synthesizer
+    state.force_choice = force_choice
+    state.kill = kill
+    state.invert = invert
+    state.ship = ship
 
     # Emit routing decision for observability
     state.execution_notes.append(
@@ -180,7 +212,7 @@ def orchestrate(query: str, debug: bool = False) -> ReasoningState:
             if round_number >= config.max_external_rounds:
                 break
 
-    state.final_answer = finalize_answer(state)
+    state.final_answer = finalize_answer(state, output_format=output)
     state.confidence_summary = (
         f"Task={state.task.task_type.value}; "
         f"classification_confidence={state.task.confidence:.2f}; "
@@ -203,8 +235,25 @@ def main():
     parser = argparse.ArgumentParser(description="THINK Orchestrator")
     parser.add_argument("--query", required=True, help="User query")
     parser.add_argument("--debug", action="store_true", help="Print full state as JSON")
+    parser.add_argument("--no-external", action="store_true", help="Skip external calls, local reasoning only")
+    parser.add_argument("--mode", default="auto", help="Reasoning mode: auto, review, design, diagnose, optimize, decide, explore, off, execute")
+    parser.add_argument("--force-choice", action="store_true", help="Pick one option, no both-sidesing")
+    parser.add_argument("--kill", action="store_true", help="Prune aggressively")
+    parser.add_argument("--invert", action="store_true", help="Analyze failure paths")
+    parser.add_argument("--ship", action="store_true", help="Add execution checklist")
+    parser.add_argument("--output", default="compact", help="Output format: compact, verbose, json")
     args = parser.parse_args()
-    orchestrate(args.query, debug=args.debug)
+    orchestrate(
+        args.query,
+        debug=args.debug,
+        no_external=args.no_external,
+        mode=args.mode,
+        force_choice=args.force_choice,
+        kill=args.kill,
+        invert=args.invert,
+        ship=args.ship,
+        output=args.output,
+    )
 
 
 if __name__ == "__main__":

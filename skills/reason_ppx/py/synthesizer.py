@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from .models import ClaimStatus, ReasoningState, Severity
 
@@ -52,14 +53,91 @@ def reconcile(state: ReasoningState) -> ReasoningState:
     return state
 
 
-def finalize_answer(state: ReasoningState) -> str:
+def finalize_answer(state: ReasoningState, output_format: str = "compact") -> str:
+    if output_format == "json":
+        return json.dumps({
+            "query": state.query,
+            "task_type": state.task.task_type.value if state.task else None,
+            "primary_frame": state.primary_frame,
+            "challenger_frame": state.challenger_frame,
+            "claims": [
+                {"id": c.id, "text": c.text, "status": c.status.value, "impact": c.impact.value}
+                for c in state.claims
+            ],
+            "contradictions": state.contradictions,
+            "confidence_summary": state.confidence_summary,
+            "strategy_shift": state.strategy_shift,
+            "final_answer": _build_text_answer(state),
+        }, indent=2)
+
+    return _build_text_answer(state)
+
+
+def _build_text_answer(state: ReasoningState) -> str:
     verified = [c for c in state.claims if c.status == ClaimStatus.VERIFIED]
     inferred = [c for c in state.claims if c.status == ClaimStatus.INFERRED]
     unproven = [c for c in state.claims if c.status == ClaimStatus.UNPROVEN]
 
     lines = []
+
+    # --force-choice: pick one, no both-sidesing
+    if getattr(state, "force_choice", False):
+        lines.append("## Decision")
+        lines.append("")
+        if inferred:
+            best = inferred[0]
+            lines.append(f"**Choice:** {best.text}")
+            lines.append(f"**Rationale:** Highest-impact inferable claim with supporting logic.")
+            lines.append(f"**Reversal trigger:** If this assumption fails: {state.contradictions[0] if state.contradictions else 'No specific failure signal identified.'}")
+        elif verified:
+            best = verified[0]
+            lines.append(f"**Choice:** {best.text}")
+            lines.append("**Rationale:** Only verified claim — no alternatives with sufficient support.")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+
+    # --kill: aggressive reduction
+    if getattr(state, "kill", False):
+        lines.append("## Kill List")
+        lines.append("")
+        for c in state.claims:
+            if c.status == ClaimStatus.UNPROVEN:
+                lines.append(f"**KILL:** {c.text} — insufficient evidence")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+
+    # --invert: failure path analysis
+    if getattr(state, "invert", False):
+        lines.append("## Failure Path Analysis")
+        lines.append("")
+        lines.append("**How it fails:** External verification reveals unsupported assumptions.")
+        lines.append("**Earliest warning sign:** High-impact claim challenged by verifier.")
+        lines.append("**Preventive move:** Require explicit evidence for VERIFIED status.")
+        if state.contradictions:
+            for c in state.contradictions[:2]:
+                lines.append(f"- Fail signal: {c}")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+
+    # Main draft
     lines.append(state.internal_draft.strip())
     lines.append("")
+
+    # --ship: execution checklist
+    if getattr(state, "ship", False):
+        lines.append("## Execution Checklist")
+        lines.append("")
+        lines.append("- [ ] **Next 15min:** Clarify the primary recommendation")
+        lines.append("- [ ] **Next 60min:** Test the top challenged assumption")
+        lines.append("- [ ] **First milestone:** Verification of VERIFIED claims")
+        lines.append("- [ ] **Blocker:** Unknown or UNPROVEN claims blocking progress")
+        lines.append("- [ ] **Kill criteria:** IfVERIFIED claims are downgraded → abort and re-analyze")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
 
     # External challenger findings
     successful = [r for r in state.external_results if r.ok and r.normalized]

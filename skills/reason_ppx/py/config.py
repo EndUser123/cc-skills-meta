@@ -38,3 +38,11 @@ class OrchestratorConfig:
     # Short-output settings
     max_bullets_per_result: int = 6
     max_chars_per_bullet: int = 300
+    # CLI overrides (set via --no-external, --mode, --force-choice, --kill, --invert, --ship)
+    override_no_external: bool = False
+    override_mode: str = "auto"  # auto, review, design, diagnose, optimize, decide, explore, off, execute
+    override_force_choice: bool = False
+    override_kill: bool = False
+    override_invert: bool = False
+    override_ship: bool = False
+    override_output: str = "compact"  # compact, verbose, json
