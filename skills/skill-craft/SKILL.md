@@ -244,7 +244,12 @@ skill-craft references two components that implement the self-verification inter
 - If cert gate fails → route to repair sub-skill
 - Exit only when **both** fidelity_score AND cert gate pass
 
-Both are specified but not yet implemented as code. The eval set at `eval_sets/default.json` defines the expected `CraftState` output shape — any implementation must produce:
+Both are implemented as standalone scripts in `__lib/`:
+
+```bash
+python __lib/run_cert_gate.py <skill_path>   # Phase 5 gate
+python __lib/run_fidelity.py <skill_path>    # Phase 4 fidelity
+```
 
 ```
 CraftState with exit_condition=True, phase=DONE, cert_gate.passed=True, fidelity_score.passed=True

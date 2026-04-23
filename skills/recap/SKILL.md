@@ -23,19 +23,23 @@ execution:
 
 ## Core Concept
 
-`/recap` aggregates context from ALL sessions in this terminal by directly analyzing the transcript file. Session boundaries are detected via `sessionId` changes in the transcript. No handoff files required — works independently.
+`/recap` aggregates context from ALL sessions in this terminal by walking the full session chain (handoff files + mtime-gap fallback) and parsing each transcript. Session boundaries within each transcript are detected via `sessionId` changes.
 
-## How It Works
+`/recap` uses `session_chain.walk_session_chain()` to walk the full session chain via handoff files, then parses each transcript in oldest-to-newest order.
 
-1. **Find transcript file**: Searches terminal file registry, project-local, and user-level transcript locations
-2. **Parse transcript**: Loads JSONL transcript file directly
-3. **Detect session boundaries**: Identifies sessions by `sessionId` changes in transcript
-4. **Aggregate context**: Extracts goals, message counts from each session
+**LLM Executor:** If you are the LLM with full conversation context in memory, skip the transcript search and proceed directly to synthesizing findings from context. Only walk the session chain when resuming a prior session without current context.
+
+1. **Get current session ID**: Extract from `CLAUDE_TRANSCRIPT` env var (stem of the `.jsonl` path), or from `sessionId` field in the transcript file itself
+2. **Walk the session chain**: Call `session_chain.walk_session_chain(session_id)` — Strategy 1 uses handoff files (`n_1_transcript_path`), Strategy 2 uses mtime-gap + semantic fallback
+3. **Parse each transcript**: Load each transcript path, detect session boundaries via `sessionId` changes, extract goals/message counts
+4. **Aggregate context**: Extract goals, message counts from each session
 5. **Present summary**: Shows chronological session history
+
+> **`session_chain` module**: `P:/packages/search-research/core/session_chain.py` — exports `walk_session_chain()` (unified entry), `walk_handoff_chain()` (Strategy 1), `walk_sessions_index_chain()` (Strategy 2). All synchronous.
 
 > **Always parse the transcript.** Even when compaction context is available, the transcript contains the authoritative full session chain and detailed working state. Compaction summaries are lossy — they capture goals and outcomes but not the exact sequence of working decisions, errors encountered, or file states mid-edit.
 
-> **⚠️ Fallback behavior**: If the session chain index is unavailable (e.g., `core.session_chain` import fails), the primary path falls back to reading only the current terminal's transcript file directly — it cannot reconstruct the full multi-session terminal history. The synthesis step will have less context to work with.
+> **⚠️ Fallback behavior**: If `session_chain` import fails, fall back to reading only the current terminal's transcript file directly — it cannot reconstruct the full multi-session terminal history. The synthesis step will have less context to work with.
 
 ## Output Structure
 
@@ -181,9 +185,9 @@ These are internal self-check prompts. They are not default user-facing question
 
 ## Implementation Notes
 
-- Finds transcript files via `~/.claude/terminals/` registry file (deprecated — prefer env vars)
-- Parses JSONL transcript files directly (no handoff package dependency)
-- Detects session boundaries via `sessionId` field changes
-- Independent of handoff hooks and task tracker files
+- **Session chain walking**: Uses `session_chain.walk_session_chain()` which first tries handoff-file chain (Strategy 1: `n_1_transcript_path` → prior handoff → ...), then mtime-gap + semantic fallback (Strategy 2)
+- Fallback order: handoff files → sessions-index scan → semantic similarity → current transcript only
+- Detects session boundaries via `sessionId` field changes within each transcript
+- `sessionId` is the stem of the transcript filename (e.g., `8a7b83ff-7d98-47e9-b3b5-3ffabc978c40.jsonl`)
 - Semantic extraction (problem/fix/action) via regex against structured output patterns (bugfixes.md format)
 - Synthesis (optimal fix reasoning) is performed by the responding LLM — not in preprocessing

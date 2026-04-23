@@ -5,8 +5,8 @@ Validates a skill's SKILL.md: required frontmatter fields, body size,
 and trigger-to-usage fidelity (listed triggers actually cause the skill to fire).
 
 Usage:
-    from certification_gate import certification_gate
-    result = certification_gate.check(skill_path="P:/.claude/skills/gto")
+    from certification_gate import check
+    result = check(skill_path="P:/.claude/skills/gto")
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from .craft_state import CertGateResult
+from craft_state import CertGateResult
 
 REQUIRED_FIELDS = ["name", "description"]
 MAX_BODY_LINES = 500

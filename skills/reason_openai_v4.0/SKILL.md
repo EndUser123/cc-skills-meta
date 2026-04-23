@@ -79,16 +79,16 @@ Prefer grounded reasoning over elegant unsupported reasoning.
 2. Docs/knowledge — fresh library/API docs
 3. Browser/Playwright — validate flows, check behavior
 
-## Installation checklist
-1. Save `~/.claude/commands/reason_openai.md`
-2. Save `~/.claude/hooks/reason_openai_preflight.py` + chmod +x
-3. Save `~/.claude/hooks/reason_openai_quality_gate.py` + chmod +x
-4. Save `~/.claude/hooks/reason_openai_log.py` + chmod +x
-5. Merge hooks block into `~/.claude/settings.json`
-6. Merge `CLAUDE.md` user operating preferences
-7. Save 3 subagents to `~/.claude/agents/`
-8. Save `reason_openai_analyze.py` to `~/.claude/hooks/` + chmod +x
-9. Connect GitHub / docs / browser MCP
+## Installation
+
+**Windows (symlink):**
+```cmd
+cmd //c mklink /J "C:\Users\brsth\.claude\plugins\reason_openai_v4.0" "P:\packages\cc-skills-meta\skills\reason_openai_v4.0"
+```
+
+**Then in Claude Code:** `/reload-plugins`
+
+The plugin is self-contained — no manual hook registration or file copying required.
 
 ## Best test prompts
 ```

@@ -6,8 +6,8 @@ produces a FidelityScore with trigger accuracy, outcome accuracy, and
 degradation delta.
 
 Usage:
-    from fidelity_tracker import fidelity_tracker
-    score = fidelity_tracker.run(skill_path="P:/.claude/skills/gto")
+    from fidelity_tracker import run
+    score = run(skill_path="P:/.claude/skills/gto")
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from .craft_state import FidelityScore
+from craft_state import FidelityScore
 
 DEFAULT_EVAL_SET = Path(__file__).parent.parent / "eval_sets" / "default.json"
 
