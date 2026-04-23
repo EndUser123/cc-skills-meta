@@ -20,7 +20,7 @@ def main():
         print("Usage: python run_cert_gate.py <skill_path>")
         sys.exit(1)
 
-    skill_path = sys.argv[1]
+    skill_path = Path(sys.argv[1]).resolve()
     result = certification_gate(skill_path)
 
     print(f"CertificationGate — {skill_path}")

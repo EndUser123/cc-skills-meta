@@ -983,8 +983,9 @@ light: { success: '#16a34a', fallback: '#dc2626', discovery: '#7c3aed', entry: '
           <div class="step"><strong><code>CertificationGate.check()</code></strong> — Phase 5 (GATING)</div>
           <div class="step-sub">Validates the target skill's <code>SKILL.md</code> at rest. Checks: <code>validate_context_size()</code> (SKILL.md body &lt;500 lines), <code>name + description present</code> (required frontmatter), <code>description triggers match usage</code> (no hallucinated flags). If cert gate fails, routes to repair sub-skill. Exit only when both fidelity_score AND cert gate pass.</div>
         </div>
-        <div class="note">Both are specified but not yet implemented as code. The eval set defines the expected <code>CraftState</code> output shape:</div>
-        <div class="code-block">CraftState with exit_condition=True, phase=DONE, cert_gate.passed=True, fidelity_score.passed=True</div>
+        <div class="note">Both are implemented as standalone scripts in <code>__lib/</code>:</div>
+        <div class="code-block">python __lib/run_cert_gate.py &lt;skill_path&gt;   # Phase 5 gate
+python __lib/run_fidelity.py &lt;skill_path&gt;    # Phase 4 fidelity</div>
       </div>
     </div>
 

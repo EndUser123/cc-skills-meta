@@ -21,8 +21,8 @@ def main():
         print("Usage: python run_fidelity.py <skill_path> [eval_set_path]")
         sys.exit(1)
 
-    skill_path = sys.argv[1]
-    eval_set_path = sys.argv[2] if len(sys.argv) > 2 else None
+    skill_path = Path(sys.argv[1]).resolve()
+    eval_set_path = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else None
 
     score = fidelity_tracker(skill_path, eval_set_path)
 

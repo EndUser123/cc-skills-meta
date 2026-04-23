@@ -251,10 +251,6 @@ python __lib/run_cert_gate.py <skill_path>   # Phase 5 gate
 python __lib/run_fidelity.py <skill_path>    # Phase 4 fidelity
 ```
 
-```
-CraftState with exit_condition=True, phase=DONE, cert_gate.passed=True, fidelity_score.passed=True
-```
-
 ### External ecosystem references
 
 When building self-verification for a skill, these external tools and patterns inform implementation:
