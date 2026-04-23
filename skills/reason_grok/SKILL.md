@@ -48,6 +48,22 @@ suggest:
 - `--context PATH` → explicit files/directories (auto-detected otherwise)
 - `--output [compact|verbose|json]` → default compact with tradeoffs
 
+**Decision Flags** (when the query is a decision):
+- `--force-choice` → pick one option, state why it wins, state reversal trigger. No timid both-sidesing.
+- `--kill` → explicit Keep/Delegate/Defer/Kill pruning. Aggressive reduction.
+- `--invert` → analyze failure paths: how it fails, earliest warning sign, preventive move.
+- `--ship` → add execution checklist: next 15min action, next 60min push, first milestone, blocker, kill criteria.
+
+**Mode Flags** (override routing):
+- `--mode review` → attack weak logic, hidden fragility, omitted costs
+- `--mode design` → compare architectures: simplicity, failure containment, migration burden
+- `--mode diagnose` → ranked hypotheses, smallest discriminating test
+- `--mode optimize` → clarify objective first, ask whether redesign beats tuning
+- `--mode decide` → regret minimization + optionality + expected value
+- `--mode explore` → challenge frame itself, what adjacent problem matters more
+- `--mode off` → treat discomfort as signal, find hidden mismatch or elegant-but-wrong
+- `--mode execute` → produce momentum now, not just ideas
+
 ## How /reason Works (Dynamic Hybrid Orchestration)
 
 ### 1. Intake, Classification & Routing Decision (0.5–2s)
@@ -99,6 +115,9 @@ Step 3: Route based on decision
 ### 3. Multi-Round Reflexion Engine (core brain — evolved from original /think)
 - **Generate**: Synthesize strongest consensus from all available sources (internal + external).
 - **Critique**: Cross-model analysis + evidence labeling + gap detection + solo-dev tradeoff callout.
+- **Decision Theory Pass**: Score each candidate on: expected upside, downside risk, reversibility, time to feedback, energy cost, dependency load, compounding potential, robustness.
+- **Bias Check**: Detect sunk cost, status quo bias, loss aversion, overconfidence, confirmation bias, novelty bias, analysis paralysis, emotional relief disguised as logic.
+- **Second-Order Effects**: Ask — if this wins, what burden appears? If it fails, what cascades?
 - **Improve**: Refined final answer with frame chaining only when it meaningfully changes the outcome.
 - Optional debate/reflexion rounds: critiques fed back to external models or run internally.
 - Ends with **Evidence Fusion Layer**: confidence matrix + Verified/Inferred/Unproven on every major claim.

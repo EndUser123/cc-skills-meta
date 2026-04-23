@@ -27,13 +27,13 @@ execution:
 
 ## How It Works
 
-**IMPORTANT — LLM Executor:** If you are the LLM with full conversation context in memory, skip the transcript search and proceed directly to synthesizing findings from context. Only search for transcript files when resuming a prior session without current context.
-
 1. **Find transcript file**: Searches terminal file registry, project-local, and user-level transcript locations
 2. **Parse transcript**: Loads JSONL transcript file directly
 3. **Detect session boundaries**: Identifies sessions by `sessionId` changes in transcript
 4. **Aggregate context**: Extracts goals, message counts from each session
 5. **Present summary**: Shows chronological session history
+
+> **Always parse the transcript.** Even when compaction context is available, the transcript contains the authoritative full session chain and detailed working state. Compaction summaries are lossy — they capture goals and outcomes but not the exact sequence of working decisions, errors encountered, or file states mid-edit.
 
 > **⚠️ Fallback behavior**: If the session chain index is unavailable (e.g., `core.session_chain` import fails), the primary path falls back to reading only the current terminal's transcript file directly — it cannot reconstruct the full multi-session terminal history. The synthesis step will have less context to work with.
 
@@ -50,33 +50,6 @@ The script extracts structured data via regex and presents it in a format compat
 - **Terminal ID**: {terminal_id}
 - **Current Session**: {session_id}
 - **Project**: {project_path}
-
-### Session Timeline (Mermaid)
-When the session history has any entries, output one of the following diagrams for at-a-glance orientation:
-
-**For 1 session:**
-```mermaid
-timeline
-    title Session Timeline
-    [Session 1] : {goal}
-```
-
-**For 2-4 sessions:**
-```mermaid
-timeline
-    title Session Timeline
-    [Session 1] : {goal}
-    [Session 2] : {goal}
-```
-
-**For 5+ sessions:**
-```mermaid
-timeline
-    title Session Timeline — {count} Sessions
-    [Session 1] : {goal}
-    [Session 2] : {goal}
-    [Session N] : ... (oldest to newest)
-```
 
 ## Session History
 

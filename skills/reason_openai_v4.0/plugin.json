@@ -1,0 +1,9 @@
+{
+  "name": "reason_openai_v4.0",
+  "version": "4.0.0",
+  "description": "Elite reasoning ecosystem — 5-layer system with command, hooks, subagents, MCP, and calibration loop.",
+  "author": {
+    "name": "Bruce Thomson"
+  },
+  "skills": "./"
+}

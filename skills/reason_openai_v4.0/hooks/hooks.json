@@ -1,0 +1,51 @@
+{
+  "description": "Reason OpenAI v4.0 — elite reasoning ecosystem hooks",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*reason.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/reason_openai_preflight.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/reason_openai_quality_gate.py",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/reason_openai_log.py",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/reason_openai_pending_queue.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/reason_openai_session_reminder.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

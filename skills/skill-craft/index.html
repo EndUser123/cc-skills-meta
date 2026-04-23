@@ -149,8 +149,45 @@
       padding: 1.5rem;
       margin-bottom: 1rem;
       overflow-x: auto;
+      line-height: 0;
     }
     .mermaid-container svg { max-width: 100%; height: auto; }
+    .diagram-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      cursor: grab;
+      min-height: 200px;
+    }
+    .diagram-wrapper:active { cursor: grabbing; }
+    .diagram-wrapper svg { cursor: inherit; }
+    .zoom-controls {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      z-index: 5;
+    }
+    .zoom-btn {
+      width: 28px; height: 28px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+      transition: background 0.15s;
+    }
+    .zoom-btn:hover { background: var(--accent); color: #fff; }
+    .zoom-reset {
+      font-size: 0.65rem;
+      font-family: 'Fira Code', monospace;
+      padding: 0 4px;
+    }
     .legend {
       display: flex; gap: 1.25rem;
       flex-wrap: wrap;
@@ -442,6 +479,7 @@
   <a href="#pipeline" data-section="pipeline">5-Phase Pipeline</a>
   <a href="#subskills" data-section="subskills">Sub-skill Recs</a>
   <a href="#usm" data-section="usm">Capability Discovery</a>
+  <a href="#selfverify" data-section="selfverify">Self-Verifying Skills</a>
   <a href="#agents" data-section="agents">Review Agents</a>
 </nav>
 
@@ -475,9 +513,9 @@
       <div class="tooltip-box">skill-creator, skill-development, writing-skills, doc-to-skill, command-dev, hook-dev, agent-dev, av</div>
     </div>
     <div class="stat">
-      <div class="stat-value">3</div>
+      <div class="stat-value">4</div>
       <div class="stat-label">Review agents</div>
-      <div class="tooltip-box">Hook Review, Agent Review, MCP Review</div>
+      <div class="tooltip-box">Hook Review, Agent Review, MCP Review, Skill Implementation Review</div>
     </div>
   </div>
 
@@ -489,10 +527,13 @@
     <div class="line"></div>
   </div>
 
-  <div class="mermaid-container">
+  <div class="diagram-wrapper" id="diagramWrapper">
+    <div class="mermaid-container">
     <pre class="mermaid" id="pipelineDiagram">
 flowchart TD
-    Start(["Target skill"]) --> P1["Phase 1: DIAGNOSING"]
+    Start(["Target skill"]) --> NewOrExisting{"New or Existing?"}
+    NewOrExisting -->|new| USM["/usm discovery"]
+    NewOrExisting -->|existing| P1["Phase 1: DIAGNOSING"]
     P1 --> AVRun["av"]
     P1 --> CraftLens["craft_lens_enforcer"]
 
@@ -502,10 +543,8 @@ flowchart TD
     AF --> P2["Phase 2: PLANNING"]
     CI --> P2
 
-    P2 --> USM["/usm discovery"]
-    USM --> Route
-
-    P2 --> Route{"Route findings by type"}
+    P2 --> USM2["/usm discovery"]
+    USM2 --> Route{"Route findings by type"}
     Route -->|Verification| AVRoute["av"]
     Route -->|Doc conversion| DocRun["/doc-to-skill"]
     Route -->|Eval/Triggers| CreatorRun["/skill-creator:skill-creator"]
@@ -544,6 +583,12 @@ flowchart TD
 
     Done(["Skill is craft-done"])
     </pre>
+    </div>
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>
+      <button class="zoom-btn" id="zoomOut" title="Zoom out">−</button>
+      <button class="zoom-btn zoom-reset" id="zoomReset" title="Reset">1:1</button>
+    </div>
   </div>
 
   <div class="legend">
@@ -552,6 +597,7 @@ flowchart TD
     <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Pass path</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Fail / loop-back</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div> State/data</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> New vs. Existing</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -878,6 +924,105 @@ light: { success: '#16a34a', fallback: '#dc2626', discovery: '#7c3aed', entry: '
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SELF-VERIFYING SKILLS -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="selfverify" class="section-header">
+    <h3>Self-Verifying Skills</h3>
+    <div class="line"></div>
+  </div>
+
+  <div class="stages">
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">&#9679;</div>
+        <span class="stage-name">What is a self-verifying skill?</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <p>A <strong>self-verifying skill</strong> is one that can assess whether it is progressing correctly through its own workflow — not just whether it ran, but whether the output at each phase is actually correct.</p>
+        <p>This is distinct from skill review (another agent looking at your skill) or testing (pre-deployment validation). Self-verification is a <strong>runtime control loop</strong>: the skill checks its own outputs as it runs and decides whether to continue, loop back, or abort.</p>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">&#9679;</div>
+        <span class="stage-name">Three ecosystem patterns</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Pattern</th><th>What it does</th><th>Where it lives</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Self-Verify Loop</strong></td><td>PostToolUse hook returns <code>{"ok": bool, "reason": str}</code> — if <code>!ok</code>, re-injects corrected input</td><td>Hook frontmatter (<code>claude-hooks-v3.1.md</code> §6.1)</td></tr>
+              <tr><td><strong>Fidelity Tracking</strong></td><td>Each phase emits a structured checkpoint; eval set scores trigger accuracy, outcome accuracy, degradation delta</td><td>Phase 4 of this skill</td></tr>
+              <tr><td><strong>Lifecycle Evaluation</strong></td><td>Pre-deployment eval against test cases + production telemetry comparing actual to expected</td><td><code>eval_sets/default.json</code> + production monitoring</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">skill-craft implements <strong>fidelity tracking</strong> in Phase 4 and <strong>ifecycle evaluation</strong> in Phase 5. The Self-Verify Loop pattern lives in hook frontmatter and is complementary.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">&#9679;</div>
+        <span class="stage-name">skill-craft's self-verification components</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="steps">
+          <div class="step"><strong><code>fidelity_tracker.run()</code></strong> — Phase 4 (EVALUATING)</div>
+          <div class="step-sub">Reads <code>eval_sets/default.json</code> for the target skill. Runs each eval case and produces a <code>fidelity_score</code>: trigger accuracy (% of expected triggers that fired), outcome accuracy (% of outputs matching expected patterns), degradation delta (fidelity change vs last baseline). If <code>fidelity_score</code> fails, loops back to Phase 1 with updated state.</div>
+        </div>
+        <div class="steps">
+          <div class="step"><strong><code>CertificationGate.check()</code></strong> — Phase 5 (GATING)</div>
+          <div class="step-sub">Validates the target skill's <code>SKILL.md</code> at rest. Checks: <code>validate_context_size()</code> (SKILL.md body &lt;500 lines), <code>name + description present</code> (required frontmatter), <code>description triggers match usage</code> (no hallucinated flags). If cert gate fails, routes to repair sub-skill. Exit only when both fidelity_score AND cert gate pass.</div>
+        </div>
+        <div class="note">Both are specified but not yet implemented as code. The eval set defines the expected <code>CraftState</code> output shape:</div>
+        <div class="code-block">CraftState with exit_condition=True, phase=DONE, cert_gate.passed=True, fidelity_score.passed=True</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">&#9679;</div>
+        <span class="stage-name">External ecosystem references</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="steps">
+          <div class="step"><strong>Anthropic eval guidance</strong> — trigger accuracy + outcome accuracy as core metrics</div>
+          <div class="step"><strong>LangChain Agent Observatory</strong> — trace-based phase checkpointing</div>
+          <div class="step"><strong>AWS agent observability patterns</strong> — runtime telemetry + pre-deployment eval pairing</div>
+          <div class="step"><strong>DeepEval / Braintrust</strong> — golden dataset comparison for outcome accuracy</div>
+          <div class="step"><strong>Azure AI Agent observability</strong> — lifecycle evaluation (pre-deployment through production)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <div class="stage-num">&#9679;</div>
+        <span class="stage-name">Anti-patterns</span>
+        <span class="stage-chevron">&#9660;</span>
+      </div>
+      <div class="stage-body">
+        <div class="steps">
+          <div class="step"><strong>Verification-only skills</strong> — A skill that checks its own output but has no mechanism to act on failures (no loop-back, no escalation). Self-verification without self-correction is just auditing.</div>
+          <div class="step"><strong>Fidelity theater</strong> — Running an eval set and declaring success without the implementation to close the loop. The fidelity score must drive behavior.</div>
+          <div class="step"><strong>Hallucinated triggers</strong> — Listing triggers in SKILL.md frontmatter that the skill never actually responds to. This fails CertificationGate's <code>description triggers match usage</code> check.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
   <!-- REVIEW AGENTS -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div id="agents" class="section-header">
@@ -1073,6 +1218,64 @@ light: { success: '#16a34a', fallback: '#dc2626', discovery: '#7c3aed', entry: '
     container.appendChild(newPre);
     setTimeout(() => { mermaid.run({ nodes: [newPre] }).then(() => colorLinks()); }, 100);
   }
+
+  // ── Zoom / Pan ─────────────────────────────────────────────
+  let scale = 1, tX = 0, tY = 0;
+  let dragging = false, startX = 0, startY = 0, startTX = 0, startTY = 0;
+  const MIN_SCALE = 0.25, MAX_SCALE = 3, STEP = 0.15;
+
+  function applyTransform(svg) {
+    if (!svg) return;
+    svg.style.transform = `translate(${tX}px, ${tY}px) scale(${scale})`;
+    svg.style.transformOrigin = 'top left';
+    svg.style.transition = dragging ? 'none' : 'transform 0.15s ease';
+  }
+
+  function zoomIn() {
+    scale = Math.min(MAX_SCALE, scale + STEP);
+    const svg = document.querySelector('.diagram-wrapper svg');
+    if (svg) applyTransform(svg);
+  }
+  function zoomOut() {
+    scale = Math.max(MIN_SCALE, scale - STEP);
+    const svg = document.querySelector('.diagram-wrapper svg');
+    if (svg) applyTransform(svg);
+  }
+  function zoomReset() {
+    scale = 1; tX = 0; tY = 0;
+    const svg = document.querySelector('.diagram-wrapper svg');
+    if (svg) applyTransform(svg);
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'zoomIn') { zoomIn(); return; }
+    if (e.target.id === 'zoomOut') { zoomOut(); return; }
+    if (e.target.id === 'zoomReset') { zoomReset(); return; }
+  });
+
+  document.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.zoom-controls')) return;
+    const svg = document.querySelector('.diagram-wrapper svg');
+    if (!svg || e.target !== svg) return;
+    dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    startTX = tX; startTY = tY;
+    svg.style.transition = 'none';
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    tX = startTX + (e.clientX - startX);
+    tY = startTY + (e.clientY - startY);
+    const svg = document.querySelector('.diagram-wrapper svg');
+    if (svg) applyTransform(svg);
+  });
+  document.addEventListener('mouseup', () => {
+    if (dragging) {
+      dragging = false;
+      const svg = document.querySelector('.diagram-wrapper svg');
+      if (svg) { svg.style.transition = 'transform 0.15s ease'; }
+    }
+  });
 
   document.getElementById('themeToggle').addEventListener('click', () => {
     setTheme(currentTheme === 'dark' ? 'light' : 'dark');

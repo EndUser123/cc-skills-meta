@@ -75,7 +75,9 @@ light: { success: '#16a34a', fallback: '#dc2626', discovery: '#7c3aed', entry: '
 
 ```mermaid
 flowchart TD
-    Start(["Target skill"]) --> P1["Phase 1: DIAGNOSING"]
+    Start(["Target skill"]) --> NewOrExisting{"New or Existing?"}
+    NewOrExisting -->|new| USM["/usm discovery"]
+    NewOrExisting -->|existing| P1["Phase 1: DIAGNOSING"]
     P1 --> AVRun["av"]
     P1 --> CraftLens["craft_lens_enforcer"]
 
@@ -85,15 +87,15 @@ flowchart TD
     AF --> P2["Phase 2: PLANNING"]
     CI --> P2
 
-    P2 --> USM["/usm discovery"]
-    USM --> Route{"Route findings by type"}
+    P2 --> USM2["/usm discovery"]
+    USM2 --> Route{"Route findings by type"}
     Route -->|Verification| AVRoute["av"]
     Route -->|Doc conversion| DocRun["/doc-to-skill"]
     Route -->|Eval/Triggers| CreatorRun["/skill-creator:skill-creator"]
-    Route -->|Craft structure| DevRun["[placeholder]"]
-    Route -->|Hooks| HookDev["[placeholder]"]
-    Route -->|Agents| AgentDev["[placeholder]"]
-    Route -->|Commands| CmdDev["[placeholder]"]
+    Route -->|Craft structure| DevRun["plugin-dev:skill-development"]
+    Route -->|Hooks| HookDev["plugin-dev:hook-development"]
+    Route -->|Agents| AgentDev["plugin-dev:agent-development"]
+    Route -->|Commands| CmdDev["plugin-dev:command-development"]
     Route -->|All source skill| Done
 
     DocRun --> P3["Phase 3: EXECUTING"]
@@ -127,6 +129,7 @@ flowchart TD
 ```
 
 Key layout decisions:
+- **New vs. Existing branch** — `Start` splits on "new" (→ USM, skip DIAGNOSING) vs "existing" (→ DIAGNOSING then USM). New skills skip the validator phase.
 - **`/usm` inside Phase 2** — capability discovery runs before routing
 - **Review Agents in a subgraph** — explicit two-step structure (pre-flight → sub-skills)
 - **`[placeholder]` nodes** for unimplemented sub-skills — signals where future skills are planned
@@ -209,6 +212,62 @@ Delegate repetitive sub-loops to `/tilldone`:
 
 This keeps skill-craft as an orchestrator, not a loop controller.
 
+## Self-Verifying Skills
+
+A **self-verifying skill** is one that can assess whether it is progressing correctly through its own workflow — not just whether it ran, but whether the output at each phase is actually correct.
+
+This is distinct from skill review (another agent looking at your skill) or testing (pre-deployment validation). Self-verification is a **runtime control loop**: the skill checks its own outputs as it runs and decides whether to continue, loop back, or abort.
+
+### Three patterns exist in the ecosystem
+
+| Pattern | What it does | Where it lives |
+|--------|--------------|----------------|
+| **Self-Verify Loop** | PostToolUse hook returns `{"ok": bool, "reason": str}` — if `!ok`, re-injects corrected input | Hook frontmatter (`claude-hooks-v3.1.md` §6.1) |
+| **Fidelity Tracking** | Each phase emits a structured checkpoint; eval set scores trigger accuracy, outcome accuracy, degradation delta | Phase 4 of this skill |
+| **Lifecycle Evaluation** | Pre-deployment eval against test cases + production telemetry comparing actual to expected | `eval_sets/default.json` + production monitoring |
+
+skill-craft implements **fidelity tracking** in Phase 4 and **lifecycle evaluation** in Phase 5. The Self-Verify Loop pattern lives in hook frontmatter and is complementary.
+
+### Skill Self-Verification in skill-craft
+
+skill-craft references two components that implement the self-verification interface:
+
+**`fidelity_tracker.run()`** — Phase 4 (EVALUATING)
+- Reads `eval_sets/default.json` for the target skill
+- Runs each eval case and produces a `fidelity_score`
+- Scores: trigger accuracy (% of expected triggers that fired), outcome accuracy (% of outputs matching expected patterns), degradation delta (fidelity change vs last baseline)
+- If `fidelity_score` fails → loop back to Phase 1 with updated state
+
+**`CertificationGate.check()`** — Phase 5 (GATING)
+- Validates the target skill's SKILL.md at rest
+- Checks: `validate_context_size()` (SKILL.md body <500 lines), `name + description present` (required frontmatter), `description triggers match usage` (no hallucinated flags)
+- If cert gate fails → route to repair sub-skill
+- Exit only when **both** fidelity_score AND cert gate pass
+
+Both are specified but not yet implemented as code. The eval set at `eval_sets/default.json` defines the expected `CraftState` output shape — any implementation must produce:
+
+```
+CraftState with exit_condition=True, phase=DONE, cert_gate.passed=True, fidelity_score.passed=True
+```
+
+### External ecosystem references
+
+When building self-verification for a skill, these external tools and patterns inform implementation:
+
+- **Anthropic eval guidance** — trigger accuracy + outcome accuracy as core metrics
+- **LangChain Agent Observatory** — trace-based phase checkpointing
+- **AWS agent observability patterns** — runtime telemetry + pre-deployment eval pairing
+- **DeepEval / Braintrust** — golden dataset comparison for outcome accuracy
+- **Azure AI Agent observability** — lifecycle evaluation (pre-deployment through production)
+
+### Anti-patterns
+
+1. **Verification-only skills** — A skill that checks its own output but has no mechanism to act on failures (no loop-back, no escalation). Self-verification without self-correction is just auditing.
+
+2. **Fidelity theater** — Running an eval set and declaring success without the implementation to close the loop. The fidelity score must drive behavior.
+
+3. **Hallucinated triggers** — Listing triggers in SKILL.md frontmatter that the skill never actually responds to. This fails CertificationGate's `description triggers match usage` check.
+
 ## Review Agents
 
 Three specialist agents run **in parallel** as pre-flight checks before sub-skills during Phase 3 (EXECUTING). Spawn them when the skill is non-trivial.
@@ -216,14 +275,21 @@ Three specialist agents run **in parallel** as pre-flight checks before sub-skil
 ### 1. Hook Review Agent
 
 ```
-purpose: Review skill for optimal hook integration
+purpose: Review skill for optimal hook integration — determines where and how the skill could use or benefit from hooks, and how it integrates with the global hook environment
+inputs:
+  - plugin-dev:hook-development  # Live hook development standard (updated with plugin)
+  - P:/.claude/docs/claude-hooks-v3.1.md  # Hook architecture, hierarchy, enforcement patterns
+  - target_skill_path                       # The skill being reviewed (SKILL.md + any code)
 checks:
+  - Read the target skill's SKILL.md fully before assessing
   - Does the skill benefit from pre-tool or post-tool hooks?
   - Are there enforcement gaps a hook could close?
   - Would a blocking hook improve behavior more than advisory?
   - Are there existing hooks this skill should chain with?
-output: hook_findings.json — array of {hook_type, location, recommendation, priority}
-reference: P:/.claude/docs/claude-hooks-v3.1.md  # Hook architecture, hierarchy, enforcement patterns
+  - Could /hook-obs help identify patterns in how this skill's hooks are performing?
+  - Does this skill introduce new hook patterns that need to be registered globally?
+  - Should this skill's hook needs be met by plugin-dev:hook-development?
+output: hook_findings.json — array of {hook_type, location, recommendation, priority, integration_point}
 ```
 
 **Invoke**: When the skill has conditional enforcement, state dependencies, or repeated validation patterns.
@@ -234,15 +300,38 @@ reference: P:/.claude/docs/claude-hooks-v3.1.md  # Hook architecture, hierarchy,
 - Hook chaining and composition
 - Permission models and registration
 
+**Companion skills for hook review:**
+- `/hook-obs` — check hook performance, block patterns, and compliance before recommending new hooks
+- `plugin-dev:hook-development` — use when a new hook needs to be built, not just registered
+- `/hooks-edit` — use when editing existing global hooks or adding new registrations
+
+**Hook integration decision tree:**
+1. Can an existing global hook handle this? → check `/hook-obs` for patterns
+2. Does a new hook need to be built? → invoke `plugin-dev:hook-development`
+3. Should the skill own its own hooks (skill-private)? → register in skill's own hooks/ dir
+4. Should the hook be global (affects all skills)? → add to global hook registry
+
 ### 2. Agent Review Agent
 
 ```
-purpose: Review skill for optimal sub-agent use
+purpose: Review skill for optimal sub-agent and MCP use
+agent: mcp-agent-analyzer
+inputs:
+  - P:/.claude/docs/claude-agents-v1.0.md  # Agent patterns, team architecture, best practices reference
+  - P:/.claude/docs/claude-mcp-v1.0.md     # MCP integration, skill composition, security reference
+  - plugin-dev:agent-development            # Live agent development standard (updated with plugin)
+  - plugin-dev:mcp-integration              # Live MCP integration guide (updated with plugin)
+  - target_skill_path                       # The skill being reviewed (SKILL.md + any code)
 checks:
   - Could a sub-agent handle a distinct phase better than the skill itself?
   - Are there parallel workstreams that would benefit from concurrent agents?
   - Would spawning an agent reduce context burden vs staying in-skill?
   - Are there existing agents this skill should delegate to?
+  - Does this skill have gaps vs claude-agents-v1.0.md best practices?
+  - Would fan-out, spec/impl separation, or token budgeting improve this skill?
+  - What MCP servers could this skill use? Are tool descriptions generic or specific?
+  - Are there skill composition or chaining opportunities?
+  - Does this skill exhibit any MCP anti-patterns (tool poisoning risk, prompt injection vectors)?
 output: agent_findings.json — array of {agent_type, task_phase, recommendation, priority}
 ```
 
@@ -252,15 +341,43 @@ output: agent_findings.json — array of {agent_type, task_phase, recommendation
 
 ```
 purpose: Review skill for optimal MCP tool use
+inputs:
+  - plugin-dev:mcp-integration  # Live MCP integration guide (updated with plugin)
+  - target_skill_path           # The skill being reviewed (SKILL.md + any code)
 checks:
   - Does the skill's domain have a relevant MCP server?
   - Would an MCP tool replace a fragile or slow subprocess call?
   - Is there a Browser Use, Brave Search, or Perplexity MCP that fits?
   - Could an MCP backend (CHS, CKS, CDS) provide knowledge or context?
+  - Does the skill follow MCP integration best practices from the live plugin-dev guide?
+  - Are MCP tool descriptions specific (not generic)?
 output: mcp_findings.json — array of {mcp_name, capability, integration_point, recommendation, priority}
 ```
 
 **Invoke**: When the skill interacts with external services, does research, searches codebases, or uses web tools.
+
+### 4. Skill Implementation Review Agent
+
+```
+purpose: Review skill for runtime quality — artifact isolation, error handling, execution compliance
+agent: skill-reviewer
+inputs:
+  - P:/.claude/docs/claude-skill-v1.0.md  # Skill authoring standard (terminal_id, artifact isolation)
+  - plugin-dev:skill-development           # Live skill development guide (updated with plugin)
+  - target_skill_path                       # The skill being reviewed (SKILL.md + any code)
+checks:
+  - Does the skill write runtime artifacts to .claude/.artifacts/{terminal_id}/{skill_name}/?
+  - Are there hardcoded paths instead of terminal_id-resolved paths?
+  - Does the skill check exit codes on external commands?
+  - Does the skill set timeouts on long-running operations?
+  - Does the skill report errors with actionable guidance, or silently swallow them?
+  - Does the skill use the Skill tool correctly, or substitute tool execution with prose analysis?
+  - Are agent invocations using subagent_type strings that actually exist in the plugin cache or `.claude/agents/`? (verify against runtime discovery)
+  - Does the skill handle sub-skill/agent failures gracefully?
+output: runtime_findings.json — array of {category, severity, issue, location, fix}
+```
+
+**Invoke**: When a skill has passed definition review (plugin-dev:skill-reviewer) and needs production-readiness validation. Runs after definition review, not instead of it. A skill with perfect SKILL.md but broken runtime should fail this review.
 
 ### Agent Review Workflow
 
@@ -269,19 +386,84 @@ Phase 3 runs in two steps:
 **Step 1 — Review Agents (pre-flight, parallel):**
 ```
 Phase 3 (EXECUTING)
-  ├── Hook Review Agent      → hook_findings.json
-  ├── Agent Review Agent    → agent_findings.json
-  └── MCP Review Agent       → mcp_findings.json
+  ├── Hook Review Agent           → hook_findings.json
+  ├── Agent Review Agent         → agent_findings.json
+  ├── MCP Review Agent            → mcp_findings.json
+  └── Skill Implementation Review → runtime_findings.json
 ```
 
 **Step 2 — Sub-skills (after pre-flight):**
 ```
-skill-specific sub-skills (ship → creator → development → audit)
+invoke routed sub-skills per planning results (av, /doc-to-skill, /skill-creator, etc.)
 ```
 
 All findings from both validators and review agents route back to Phase 2 (PLANNING) for incorporation into the next planning cycle.
 
 Each agent outputs a JSON artifact. If findings exist, route them to the appropriate sub-skill for repair or integration. If no findings, note "no agent-specific gaps found" and continue.
+
+## HTML Artifact Authoring
+
+When skill-craft generates or rewrites an `index.html` page for a skill, apply these rules to avoid the common breakage patterns.
+
+### CSS Rules
+
+| Rule | Why |
+|------|-----|
+| **No duplicate selectors** | A second `.mermaid-container {}` rule overwrites the first. Merge all properties into one rule. |
+| **`line-height: 0` on container** | Prevents unwanted vertical space below the SVG. Always pair with `overflow-x: auto`. |
+| **`max-width: 100%; height: auto` on SVG** | Makes diagram responsive. Never set fixed pixel width on the SVG itself. |
+
+### HTML Structure
+
+```
+.diagram-wrapper          ← position: relative; overflow: hidden
+  ├── .mermaid-container ← line-height: 0; contains <pre class="mermaid">
+  └── .zoom-controls      ← position: absolute; bottom/right inside .diagram-wrapper
+```
+
+**Critical: `.zoom-controls` must be a sibling of `.mermaid-container`, not a child.**
+
+Reason: `setTheme()` (and any similar JS that replaces `container.innerHTML`) destroys all descendants. If `.zoom-controls` is inside `.mermaid-container`, the zoom buttons vanish on theme toggle.
+
+### Mermaid CDN
+
+Use the CDN import for ESM bundles — never a local copy:
+
+```html
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+</script>
+```
+
+Local ESM bundles fail because the mermaid ESM file references code-splitting chunks (e.g. `chunk-267PNR3T.mjs`) that cannot be downloaded independently. The CDN serves the full bundled version correctly.
+
+### TOC Toggle
+
+Attach the click listener via `addEventListener` inside a `DOMContentLoaded` handler — **never inline `onclick`**:
+
+```javascript
+window.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('tocToggle');
+  const toc  = document.getElementById('toc');
+  if (btn && toc) {
+    btn.addEventListener('click', () => {
+      toc.classList.toggle('collapsed');
+      document.body.classList.toggle('toc-hidden');
+    });
+  }
+});
+```
+
+Inline `onclick="..."` combined with a DOMContentLoaded listener causes **double-fire**: both fire on the same click, toggling twice → no net state change.
+
+### DOMContentLoaded Timing with Module Scripts
+
+`<script type="module">` is always deferred — it runs **after** `DOMContentLoaded` fires. This means code that registers event listeners inside `window.addEventListener('DOMContentLoaded', ...)` runs before the module script executes. If your TOC init depends on module code having already run, move it after the module import or use a different ready signal.
+
+### Testing
+
+- **Click testing**: Use native `.click()` in test harnesses — `js("el.click()")` via CDP harness may not dispatch events the same way as a real browser click.
+- **Visual verification**: Take screenshots rather than relying on DOM query results when validating that diagrams rendered or toggles worked.
 
 ## Sub-skill Recommendations
 
@@ -290,10 +472,9 @@ When a finding type maps to a known sub-skill, invoke it directly. Also proactiv
 | Sub-skill | When to invoke |
 |-----------|----------------|
 | `/skill-creator:skill-creator` | Eval iteration, trigger optimization, description improvement |
-| `/skill-development` | Progressive disclosure, SKILL.md structure, craft conventions |
-| `/writing-skills` | Skill documentation, prose quality, clarity improvements |
+| `plugin-dev:skill-development` | Progressive disclosure, SKILL.md structure, craft conventions |
 | `/doc-to-skill` | Converting existing docs into a skill structure |
-| `/command-development` | Creating new slash commands for the skill |
-| `/hook-development` | Adding or improving hooks for the skill |
-| `/agent-development` | Defining agents within the skill ecosystem |
-| `/av` | Verification, validation, or correctness checking |
+| `plugin-dev:hook-development` | Adding or improving hooks for the skill |
+| `plugin-dev:agent-development` | Defining agents within the skill ecosystem |
+| `plugin-dev:command-development` | Creating new slash commands for the skill |
+| `av` | Verification, validation, or correctness checking |
