@@ -103,20 +103,45 @@ def _parse_frontmatter(content: str) -> dict:
             end_idx += 1
         fm_lines = lines[1:end_idx]
         fm = {}
-        for line in fm_lines:
+        i = 0
+        while i < len(fm_lines):
+            line = fm_lines[i].strip()
+            if not line or line.startswith("#"):
+                i += 1
+                continue
             if ":" in line:
                 key, _, val = line.partition(":")
-                fm[key.strip()] = val.strip().strip('"').strip("'")
+                key = key.strip()
+                val = val.strip().strip('"').strip("'")
+                # If value is empty and next lines are indented list items, accumulate
+                if val == "" and i + 1 < len(fm_lines) and fm_lines[i + 1].strip().startswith("-"):
+                    # Collect all list items following this key
+                    items = []
+                    j = i + 1
+                    while j < len(fm_lines) and fm_lines[j].strip().startswith("-"):
+                        item = fm_lines[j].strip().lstrip("-").strip().strip('"').strip("'")
+                        items.append(item)
+                        j += 1
+                    fm[key] = items
+                    i = j
+                else:
+                    fm[key] = val
+                    i += 1
+            else:
+                i += 1
         return fm
     return {}
 
 
 def _count_trigger_hits(prompt: str, triggers: list[str]) -> float:
-    """Check how many triggers are referenced in the eval prompt."""
+    """
+    Check if at least one trigger from the skill's frontmatter appears in the eval prompt.
+    Scoring: 1.0 if any trigger is present, 0.0 otherwise.
+    """
     if not triggers:
         return 0.0
-    hits = sum(1 for t in triggers if t in prompt)
-    return hits / len(triggers)
+    hits = any(t in prompt for t in triggers)
+    return 1.0 if hits else 0.0
 
 
 def _evaluate_outcome(expected: str, skill_md_content: str) -> float:

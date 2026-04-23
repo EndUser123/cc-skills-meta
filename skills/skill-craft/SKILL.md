@@ -79,13 +79,10 @@ flowchart TD
     NewOrExisting -->|new| USM["/usm discovery"]
     NewOrExisting -->|existing| P1["Phase 1: DIAGNOSING"]
     P1 --> AVRun["av"]
-    P1 --> CraftLens["craft_lens_enforcer"]
 
     AVRun --> AF["av_findings"]
-    CraftLens --> CI["craft_issues"]
 
     AF --> P2["Phase 2: PLANNING"]
-    CI --> P2
 
     P2 --> USM2["/usm discovery"]
     USM2 --> Route{"Route findings by type"}
@@ -106,7 +103,8 @@ flowchart TD
     CmdDev --> P3
 
     subgraph P3_EXECUTING ["Phase 3 EXECUTING"]
-        P3 --> RA["Review Agents (pre-flight, parallel)"]
+        P3 --> GHR["GitHub Issues Review (gate before all other review)"]
+        GHR -.screening.-> RA["Review Agents (pre-flight, parallel)"]
         RA --> HRA["Hook Review → hook_findings.json"]
         RA --> AGA["Agent Review → agent_findings.json"]
         RA --> MCPA["MCP Review → mcp_findings.json"]
@@ -139,10 +137,9 @@ Key layout decisions:
 
 ### Phase 1: DIAGNOSING
 
-Run two validators in parallel:
+Run `av` — verification, validation, and correctness checking for the target skill.
 
-1. **`av`** — verification, validation, correctness checking
-2. **`craft_lens_enforcer`** — imperative form check, third-person trigger check, SKILL.md body line count, progressive disclosure verification
+`craft_lens_enforcer` checks (imperative form, trigger fidelity, body line count, progressive disclosure) are incorporated into `CertificationGate.check()` as warning-level checks — they run as part of Phase 5 GATING, not Phase 1. This avoids duplicating the validator in Phase 1.
 
 ### Phase 2: PLANNING
 
@@ -281,8 +278,10 @@ inputs:
   - plugin-dev:hook-development  # Live hook development standard (updated with plugin)
   - P:/.claude/docs/claude-hooks-v3.1.md  # Hook architecture, hierarchy, enforcement patterns
   - target_skill_path                       # The skill being reviewed (SKILL.md + any code)
+  - issues_findings.json                   # Components with known GitHub issues (from GitHub Issues Review Agent)
 checks:
-  - Read the target skill's SKILL.md fully before assessing
+  - Read issues_findings.json FIRST
+  - Filter checks so that components flagged as `recommendation_blocked: true` are excluded from recommendations
   - Does the skill benefit from pre-tool or post-tool hooks?
   - Are there enforcement gaps a hook could close?
   - Would a blocking hook improve behavior more than advisory?
@@ -316,13 +315,15 @@ output: hook_findings.json — array of {hook_type, location, recommendation, pr
 
 ```
 purpose: Review skill for optimal sub-agent and MCP use
-agent: mcp-agent-analyzer
+agent: general-purpose
+fallback_note: If mcp-agent-analyzer or skill-reviewer subtypes are not registered in the agent cache, fall back to general-purpose. Do not proceed with an unverified subtype string — silent fallback is acceptable; silent wrong-agent is not.
 inputs:
   - P:/.claude/docs/claude-agents-v1.0.md  # Agent patterns, team architecture, best practices reference
   - P:/.claude/docs/claude-mcp-v1.0.md     # MCP integration, skill composition, security reference
   - plugin-dev:agent-development            # Live agent development standard (updated with plugin)
   - plugin-dev:mcp-integration              # Live MCP integration guide (updated with plugin)
   - target_skill_path                       # The skill being reviewed (SKILL.md + any code)
+  - issues_findings.json                   # Components with known GitHub issues (from GitHub Issues Review Agent)
 checks:
   - Could a sub-agent handle a distinct phase better than the skill itself?
   - Are there parallel workstreams that would benefit from concurrent agents?
@@ -345,7 +346,10 @@ purpose: Review skill for optimal MCP tool use
 inputs:
   - plugin-dev:mcp-integration  # Live MCP integration guide (updated with plugin)
   - target_skill_path           # The skill being reviewed (SKILL.md + any code)
+  - issues_findings.json        # Components with known GitHub issues (from GitHub Issues Review Agent)
 checks:
+  - Read issues_findings.json FIRST
+  - Filter checks so that components flagged as `recommendation_blocked: true` are excluded from recommendations
   - Does the skill's domain have a relevant MCP server?
   - Would an MCP tool replace a fragile or slow subprocess call?
   - Is there a Browser Use, Brave Search, or Perplexity MCP that fits?
@@ -361,7 +365,8 @@ output: mcp_findings.json — array of {mcp_name, capability, integration_point,
 
 ```
 purpose: Review skill for runtime quality — artifact isolation, error handling, execution compliance
-agent: skill-reviewer
+agent: general-purpose
+fallback_note: If skill-reviewer is not a registered subtype, fall back to general-purpose. Do not proceed with an unverified subtype.
 inputs:
   - P:/.claude/docs/claude-skill-v1.0.md  # Skill authoring standard (terminal_id, artifact isolation)
   - plugin-dev:skill-development           # Live skill development guide (updated with plugin)

@@ -535,13 +535,10 @@ flowchart TD
     NewOrExisting -->|new| USM["/usm discovery"]
     NewOrExisting -->|existing| P1["Phase 1: DIAGNOSING"]
     P1 --> AVRun["av"]
-    P1 --> CraftLens["craft_lens_enforcer"]
 
     AVRun --> AF["av_findings"]
-    CraftLens --> CI["craft_issues"]
 
     AF --> P2["Phase 2: PLANNING"]
-    CI --> P2
 
     P2 --> USM2["/usm discovery"]
     USM2 --> Route{"Route findings by type"}
@@ -733,9 +730,9 @@ light: { success: '#16a34a', fallback: '#dc2626', discovery: '#7c3aed', entry: '
       <div class="stage-body">
         <div class="steps">
           <div class="step"><strong>av</strong> — verification, validation, correctness checking</div>
-          <div class="step"><strong>craft_lens_enforcer</strong> — imperative form check, third-person trigger check, SKILL.md body line count, progressive disclosure verification</div>
+          <div class="step"><strong>cert_gate pre-check</strong> — craft_lens checks (imperative form, trigger fidelity, body line count) run as warnings in Phase 5, not as a separate Phase 1 validator</div>
         </div>
-        <div class="data-flow">target_skill_path → av + craft_lens_enforcer → av_findings + craft_issues</div>
+        <div class="data-flow">target_skill_path → av → av_findings</div>
       </div>
     </div>
 
@@ -1127,10 +1124,11 @@ python __lib/run_fidelity.py &lt;skill_path&gt;    # Phase 4 fidelity</div>
       </div>
       <div class="stage-body">
         <div class="workflow-box">Phase 3 (EXECUTING)
-  ├── skill-specific sub-skills (ship, creator, development, audit)
-  ├── Hook Review Agent      → hook_findings.json
-  ├── Agent Review Agent    → agent_findings.json
-  └── MCP Review Agent       → mcp_findings.json
+  └── GitHub Issues Review (gate first, before all other review) → issues_findings.json
+      ├── Hook Review Agent           → hook_findings.json
+      ├── Agent Review Agent         → agent_findings.json
+      ├── MCP Review Agent           → mcp_findings.json
+      └── Skill Impl Review          → runtime_findings.json
 
   └── All findings route back to Phase 2 (PLANNING) for incorporation</div>
         <div class="note">
