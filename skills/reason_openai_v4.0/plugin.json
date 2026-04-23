@@ -4,6 +4,5 @@
   "description": "Elite reasoning ecosystem — 5-layer system with command, hooks, subagents, MCP, and calibration loop.",
   "author": {
     "name": "Bruce Thomson"
-  },
-  "skills": "./"
+  }
 }

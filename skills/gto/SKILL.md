@@ -28,18 +28,18 @@ verification:
     - description: "Confirm GTO artifact file exists"
       tool: "Bash"
       args:
-        command: "ls -la P:/.claude/.artifacts/gto-artifact-*.json 2>/dev/null | tail -3 || echo 'NO ARTIFACT FOUND'"
+        command: "ls -la P:/.claude/.claude-state/gto-outputs/gto-artifact-*.json 2>/dev/null | tail -3 || echo 'NO ARTIFACT FOUND'"
     - description: "Show health score from artifact"
       tool: "Bash"
       args:
-        command: "python -c \"import glob,json; f=glob.glob('P:/.claude/.artifacts/gto-artifact-*.json'); print(json.load(open(f[-1])).get('health_score','MISSING')) if f else print('NO ARTIFACT')\" 2>/dev/null || echo 'CANNOT READ'"
+        command: "python -c \"import glob,json; f=glob.glob('P:/.claude/.claude-state/gto-outputs/gto-artifact-*.json'); print(json.load(open(f[-1])).get('health_score','MISSING')) if f else print('NO ARTIFACT')\" 2>/dev/null || echo 'CANNOT READ'"
     - description: "Confirm gap list is non-empty or explicitly empty"
       tool: "Bash"
       args:
-        command: "python -c \"import glob,json; f=glob.glob('P:/.claude/.artifacts/gto-artifact-*.json'); d=json.load(open(f[-1])); gaps=d.get('gaps',[]); print(f'{len(gaps)} gaps found') if f else print('NO ARTIFACT')\" 2>/dev/null || echo 'CANNOT READ'"
+        command: "python -c \"import glob,json; f=glob.glob('P:/.claude/.claude-state/gto-outputs/gto-artifact-*.json'); d=json.load(open(f[-1])); gaps=d.get('gaps',[]); print(f'{len(gaps)} gaps found') if f else print('NO ARTIFACT')\" 2>/dev/null || echo 'CANNOT READ'"
   summary_mode: evidence_only
   expected_artifacts:
-    - "P:/.claude/.artifacts/gto-artifact-{session_id}-{timestamp}.json"
+    - "P:/.claude/.claude-state/gto-outputs/gto-artifact-{session_id}-{timestamp}.json"
 ---
 # GTO v3.1 - Strategic Next-Step Advisor
 Reads session history to understand what happened, then recommends what skills to run next.

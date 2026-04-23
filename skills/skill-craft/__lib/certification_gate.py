@@ -73,6 +73,21 @@ def check(skill_path: str | Path) -> CertGateResult:
                 f"Trigger(s) listed but not referenced in body: {', '.join(hallucinated)}"
             )
 
+    # craft_lens: imperative form check — triggers should be actionable (start with / or be imperative verbs)
+    if triggers:
+        non_imperative = _find_non_imperative_triggers(triggers)
+        if non_imperative:
+            warnings.append(
+                f"Trigger(s) may not be in imperative form: {', '.join(non_imperative)}"
+            )
+
+    # craft_lens: progressive disclosure — large sections with heavy references should be summarized
+    large_sections = _find_large_reference_sections(content)
+    if large_sections:
+        warnings.append(
+            f"Large reference sections may need summarization: {', '.join(large_sections)}"
+        )
+
     return CertGateResult(
         passed=len(errors) == 0,
         errors=errors,
@@ -140,3 +155,68 @@ def _find_hallucinated_triggers(triggers: list[str], body_text: str) -> list[str
         if normalized not in body_text and t.lower() not in body_text:
             hallucinated.append(t)
     return hallucinated
+
+
+def _find_non_imperative_triggers(triggers: list[str]) -> list[str]:
+    """
+    Return triggers that don't look imperative (slash commands or clear verbs).
+    Slash commands (/skill) are considered properly formatted.
+    Others should be verb phrases or verb-noun pairs.
+    """
+    non_imperative = []
+    for t in triggers:
+        t_stripped = t.strip()
+        # Slash commands are correctly formatted
+        if t_stripped.startswith("/"):
+            continue
+        # Check for common verb patterns (starts with verb-like word)
+        verb_indicators = (
+            "add ", "create ", "build ", "make ", "update ", "fix ", "run ",
+            "check ", "find ", "show ", "list ", "get ", "set ", "use ",
+            "apply ", "implement ", "design ", "plan ", "review ", "audit ",
+            "craft ", "improve ", "generate ", "convert ", "migrate "
+        )
+        if not any(t_stripped.lower().startswith(v) for v in verb_indicators):
+            non_imperative.append(t)
+    return non_imperative
+
+
+def _find_large_reference_sections(content: str) -> list[str]:
+    """
+    Identify large sections (20+ consecutive non-empty lines) that are
+    reference-heavy — containing many file paths, URLs, or skill references.
+    These should use progressive disclosure (summarized, with references loaded as-needed).
+    """
+    lines = content.splitlines()
+    large_sections = []
+    i = 0
+    while i < len(lines):
+        # Skip to non-empty line
+        while i < len(lines) and not lines[i].strip():
+            i += 1
+        if i >= len(lines):
+            break
+
+        # Count consecutive non-empty lines
+        section_start = i
+        consecutive = 0
+        while i < len(lines) and lines[i].strip():
+            consecutive += 1
+            i += 1
+
+        if consecutive >= 20:
+            # Check if it's reference-heavy (many code块s, URLs, or skill paths)
+            section_lines = lines[section_start:i]
+            reference_count = sum(
+                1 for line in section_lines
+                if ("/" in line and ("skill" in line.lower() or ".md" in line.lower()))
+                or line.strip().startswith("```")
+                or "P:/" in line
+            )
+            if reference_count >= consecutive * 0.3:
+                # Extract section title (first heading or line)
+                title = section_lines[0].strip() if section_lines else f"lines {section_start}-{i}"
+                large_sections.append(title[:60])
+
+        i += 1
+    return large_sections

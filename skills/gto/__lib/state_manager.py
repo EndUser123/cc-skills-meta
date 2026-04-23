@@ -88,6 +88,22 @@ class StateManager:
     Each terminal writes to its own state directory. No shared mutable state.
     """
 
+    @staticmethod
+    def _resolve_project_root(project_root: Path | None) -> Path:
+        r"""Resolve project root, routing workspace root to .claude/.
+
+        When cwd is the workspace root (P:\), .claude/ exists and is the canonical
+        home for Claude Code state. This prevents dot-directories at workspace root.
+        """
+        if project_root:
+            return Path(project_root).resolve()
+        cwd = Path.cwd().resolve()
+        # Workspace root detection: cwd.name == '' means we're at a drive root
+        # and .claude existence confirms it's the Claude Code workspace root
+        if cwd.name == "" and (cwd / ".claude").exists():
+            return cwd / ".claude"
+        return cwd
+
     def __init__(self, project_root: Path | None = None, terminal_id: str | None = None):
         """Initialize state manager.
 
@@ -98,7 +114,7 @@ class StateManager:
         Raises:
             ValueError: If terminal_id contains unsafe characters
         """
-        self.project_root = Path(project_root or Path.cwd()).resolve()
+        self.project_root = self._resolve_project_root(project_root)
         self.terminal_id = terminal_id if terminal_id is not None else self._resolve_terminal_id()
 
         # CRITICAL: Validate terminal_id to prevent path traversal
@@ -108,18 +124,18 @@ class StateManager:
                 f"Must match {_TERMINAL_ID_PATTERN.pattern}"
             )
 
-        # State directory: .evidence/gto-state-{terminal_id}/
-        self.state_dir = self.project_root / ".evidence" / f"gto-state-{self.terminal_id}"
+        # State directory: .claude-state/gto-state-{terminal_id}/
+        self.state_dir = self.project_root / ".claude-state" / f"gto-state-{self.terminal_id}"
         self.state_file_path = self.state_dir / "state.json"
 
-        # History file: .evidence/gto-history-{terminal}.jsonl (terminal-isolated)
+        # History file: .claude-state/gto-history-{terminal}.jsonl (terminal-isolated)
         self.history_file_path = (
-            self.project_root / ".evidence" / f"gto-history-{self.terminal_id}.jsonl"
+            self.project_root / ".claude-state" / f"gto-history-{self.terminal_id}.jsonl"
         )
 
-        # Shared skill-usage log: .evidence/skill-usage.jsonl (shared across terminals)
+        # Shared skill-usage log: .claude-state/skill-usage.jsonl (shared across terminals)
         # Append-only, multi-terminal safe via file locking
-        self.skill_usage_log_path = self.project_root / ".evidence" / "skill-usage.jsonl"
+        self.skill_usage_log_path = self.project_root / ".claude-state" / "skill-usage.jsonl"
 
         # Current version
         self.current_version = CURRENT_VERSION

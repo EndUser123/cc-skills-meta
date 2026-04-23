@@ -493,7 +493,7 @@
 
   <div class="header">
     <h1>skill-craft — Unified Skill-Craft Orchestrator</h1>
-    <h2>Coordinates audit, ship, creator, and development with fidelity closing gates</h2>
+    <h2>Crafts, improves, and certifies skills that do what we want and do it optimally</h2>
   </div>
 
   <div class="stats">
@@ -559,13 +559,14 @@ flowchart TD
     CmdDev --> P3
 
     subgraph P3_EXECUTING ["Phase 3 EXECUTING"]
-        P3 --> AgentReview["Review Agents (pre-flight, parallel)"]
-        AgentReview --> HR["Hook Review → hook_findings.json"]
-        AgentReview --> AR["Agent Review → agent_findings.json"]
-        AgentReview --> MR["MCP Review → mcp_findings.json"]
-        HR --> Subs["Sub-skills: ship → creator → dev → audit"]
-        AR --> Subs
-        MR --> Subs
+        P3 --> GHR["GitHub Issues Review (gate before all other review)"]
+        GHR -.screening.-> RA["Review Agents (pre-flight, parallel)"]
+        RA --> HRA["Hook Review → hook_findings.json"]
+        RA --> AGA["Agent Review → agent_findings.json"]
+        RA --> MCPA["MCP Review → mcp_findings.json"]
+        HRA --> Subs["Sub-skills"]
+        AGA --> Subs
+        MCPA --> Subs
     end
 
     Subs --> P4["Phase 4: EVALUATING"]
@@ -730,7 +731,6 @@ light: { success: '#16a34a', fallback: '#dc2626', discovery: '#7c3aed', entry: '
       <div class="stage-body">
         <div class="steps">
           <div class="step"><strong>av</strong> — verification, validation, correctness checking</div>
-          <div class="step"><strong>cert_gate pre-check</strong> — craft_lens checks (imperative form, trigger fidelity, body line count) run as warnings in Phase 5, not as a separate Phase 1 validator</div>
         </div>
         <div class="data-flow">target_skill_path → av → av_findings</div>
       </div>

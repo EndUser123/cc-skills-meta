@@ -1160,9 +1160,9 @@ class GTOOrchestrator:
             result: Orchestrator result
             output_path: Optional path. Defaults to gto-outputs/gto-artifact-{timestamp}.json
         """
-        # Default to gto-outputs/ subdirectory like run_gto_monorepo.py
+        # Default to gto-outputs/ subdirectory under .claude-state/
         if output_path is None:
-            output_dir = self.project_root / ".evidence" / "gto-outputs"
+            output_dir = self.project_root / ".claude-state" / "gto-outputs"
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_path = output_dir / f"gto-artifact-{timestamp}.json"
 
@@ -1500,8 +1500,12 @@ if __name__ == "__main__":
     # Auto-detect terminal ID using canonical function
     terminal_id = _get_default_terminal_id()
 
-    # project_root removed from CLI args — always use cwd
-    project_root = Path.cwd()
+    # project_root removed from CLI args — route workspace root to .claude/
+    _cwd = Path.cwd().resolve()
+    if _cwd.name == "" and (_cwd / ".claude").exists():
+        project_root = _cwd / ".claude"
+    else:
+        project_root = _cwd
 
     # Run analysis
     # Subagents enabled by default unless --no-subagents is passed
@@ -1531,7 +1535,7 @@ if __name__ == "__main__":
         if output_path is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_path = (
-                config.project_root / ".evidence" / "gto-outputs" / f"gto-artifact-{timestamp}.json"
+                config.project_root / ".claude-state" / "gto-outputs" / f"gto-artifact-{timestamp}.json"
             )
         print(f"JSON artifact saved to: {output_path}")
 
