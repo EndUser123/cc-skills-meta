@@ -1,10 +1,10 @@
 ---
-name: reason_openai_v4.0
+name: reason_openai
 description: Elite reasoning ecosystem — command + hooks + subagents + MCP + calibration.
 enforcement: advisory
 workflow_steps:
   - id: layer1_command
-    description: "Use /reason_openai_v4.0 command with flags: mode, depth, force-choice, kill, invert, ship"
+    description: "Use /reason_openai command with flags: mode, depth, force-choice, kill, invert, ship"
   - id: layer2_hooks
     description: "UserPromptSubmit preflight → Stop agent quality gate → Stop log → Stop pending queue → SessionStart reminder"
   - id: layer3_subagents
@@ -16,7 +16,7 @@ workflow_steps:
 allowed-tools: Bash(pwd:*), Bash(ls:*), Bash(find:*), Bash(git:*), Bash(cat:*), Bash(head:*), Bash(sed:*), Bash(test:*), Bash(grep:*)
 ---
 
-# /reason_openai_v4.0 — Ecosystem Reference
+# /reason_openai — Ecosystem Reference
 
 The command is one layer. The ecosystem is five.
 
@@ -24,7 +24,7 @@ The command is one layer. The ecosystem is five.
 
 | # | Layer | Component | Purpose |
 |---|-------|-----------|---------|
-| 1 | Command | `/reason_openai_v4.0` slash command | Flagship reasoning + decision |
+| 1 | Command | `/reason_openai` slash command | Flagship reasoning + decision |
 | 2 | Hooks | `reason_openai_preflight.py` + `reason_openai_quality_gate.py` + `reason_openai_log.py` | Preflight context, output gate, usage logging |
 | 3 | Subagents | `red_team.md`, `implementation_realist.md`, `decision_editor.md` | Adversarial split when warranted |
 | 4 | MCP | GitHub, docs, browser | Grounded truth from live systems |
@@ -33,7 +33,7 @@ The command is one layer. The ecosystem is five.
 ## Hooks (install to `~/.claude/settings.json`)
 
 ### `UserPromptSubmit` — preflight
-Injects operating reminders when `/reason_openai_v4.0` is invoked.
+Injects operating reminders when `/reason_openai` is invoked.
 
 ### `Stop` — agent quality gate + log + pending queue
 1. `agent` (quality gate) — verifier agent checks decision-grade substance before allowing stop
@@ -83,7 +83,7 @@ Prefer grounded reasoning over elegant unsupported reasoning.
 
 **Windows (symlink):**
 ```cmd
-cmd //c mklink /J "C:\Users\brsth\.claude\plugins\reason_openai_v4.0" "P:\packages\cc-skills-meta\skills\reason_openai_v4.0"
+cmd //c mklink /J "C:\Users\brsth\.claude\plugins\reason_openai" "P:\packages\cc-skills-meta\skills\reason_openai"
 ```
 
 **Then in Claude Code:** `/reload-plugins`
@@ -92,18 +92,18 @@ The plugin is self-contained — no manual hook registration or file copying req
 
 ## Best test prompts
 ```
-/reason_openai_v4.0 this migration plan feels too neat
-/reason_openai_v4.0 --mode decide --force-choice postgres vs clickhouse for this workload
-/reason_openai_v4.0 --mode execute --ship I have too many competing priorities this week
-/reason_openai_v4.0 --mode review --depth board review this architecture for hidden failure modes
+/reason_openai this migration plan feels too neat
+/reason_openai --mode decide --force-choice postgres vs clickhouse for this workload
+/reason_openai --mode execute --ship I have too many competing priorities this week
+/reason_openai --mode review --depth board review this architecture for hidden failure modes
 ```
 
 ## Best flag combos
 ```
-/reason_openai_v4.0 --mode decide --force-choice ...   # stuck decisions
-/reason_openai_v4.0 --mode off --depth deep ...        # vague discomfort
-/reason_openai_v4.0 --mode review --depth board ...    # high-stakes critique
-/reason_openai_v4.0 --mode execute --ship ...          # thought → motion
-/reason_openai_v4.0 --kill ...                         # aggressive pruning
-/reason_openai_v4.0 --invert ...                      # failure path analysis
+/reason_openai --mode decide --force-choice ...   # stuck decisions
+/reason_openai --mode off --depth deep ...        # vague discomfort
+/reason_openai --mode review --depth board ...    # high-stakes critique
+/reason_openai --mode execute --ship ...          # thought → motion
+/reason_openai --kill ...                         # aggressive pruning
+/reason_openai --invert ...                      # failure path analysis
 ```
