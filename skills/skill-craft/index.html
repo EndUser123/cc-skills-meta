@@ -544,7 +544,7 @@ flowchart TD
     USM2 --> Route{"Route findings by type"}
     Route -->|Verification| AVRoute["av"]
     Route -->|Doc conversion| DocRun["/doc-to-skill"]
-    Route -->|Eval/Triggers| CreatorRun["/skill-creator:skill-creator"]
+    Route -->|Eval/Triggers| CreatorRun["skill-creator"]
     Route -->|Craft structure| DevRun["[placeholder]"]
     Route -->|Hooks| HookDev["[placeholder]"]
     Route -->|Agents| AgentDev["[placeholder]"]
@@ -756,7 +756,7 @@ light: { success: '#16a34a', fallback: '#dc2626', discovery: '#7c3aed', entry: '
           <div class="rung-arrow">&#8600;</div>
           <div class="rung">
             <span class="rung-label" style="background:var(--accent)">eval/triggers</span>
-            <div><span class="rung-name">/skill-creator:skill-creator</span><span class="rung-desc">Eval iteration, trigger optimization</span></div>
+            <div><span class="rung-name">skill-creator</span><span class="rung-desc">Eval iteration, trigger optimization</span></div>
           </div>
           <div class="rung-arrow">&#8600;</div>
           <div class="rung">
@@ -876,7 +876,7 @@ light: { success: '#16a34a', fallback: '#dc2626', discovery: '#7c3aed', entry: '
               <tr><th>Sub-skill</th><th>When to invoke</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>/skill-creator:skill-creator</code></td><td>Eval iteration, trigger optimization, description improvement</td></tr>
+              <tr><td><code>skill-creator</code></td><td>Eval iteration, trigger optimization, description improvement</td></tr>
               <tr><td><code>/skill-development</code></td><td>Progressive disclosure, SKILL.md structure, craft conventions</td></tr>
               <tr><td><code>/writing-skills</code></td><td>Skill documentation, prose quality, clarity improvements</td></tr>
               <tr><td><code>/doc-to-skill</code></td><td>Converting existing docs into a skill structure</td></tr>

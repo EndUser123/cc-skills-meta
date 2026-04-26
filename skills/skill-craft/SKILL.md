@@ -139,7 +139,7 @@ flowchart TD
     USM2 --> Route{"Route findings by type"}
     Route -->|Verification| AVRoute["av"]
     Route -->|Doc conversion| DocRun["/doc-to-skill"]
-    Route -->|Eval/Triggers| CreatorRun["/skill-creator:skill-creator"]
+    Route -->|Eval/Triggers| CreatorRun["skill-creator"]
     Route -->|Craft structure| DevRun["plugin-dev:skill-development"]
     Route -->|Hooks| HookDev["plugin-dev:hook-development"]
     Route -->|Agents| AgentDev["plugin-dev:agent-development"]
@@ -216,7 +216,7 @@ Route findings to the correct sub-skill by type:
 |-------------|-----------|-------------|
 | Verification/Correctness | `av` | Validate skill structure, output correctness |
 | Documentation conversion | `/doc-to-skill` | Convert existing docs into skill structure |
-| Eval iteration | `/skill-creator:skill-creator` | Trigger optimization, description improvement |
+| Eval iteration | `skill-creator` | Trigger optimization, description improvement |
 | Craft structure | [placeholder] | Progressive disclosure, SKILL.md lean |
 | Hook integration | [placeholder] | Add or improve hooks |
 | Agent definition | [placeholder] | Define agents within ecosystem |
@@ -507,7 +507,7 @@ Each downstream agent reads only its own file. Contract is structural, not promp
 
 **Step 2 — Sub-skills (after pre-flight):**
 ```
-invoke routed sub-skills per planning results (av, /doc-to-skill, /skill-creator, etc.)
+invoke routed sub-skills per planning results (av, /doc-to-skill, skill-creator, etc.)
 ```
 
 All findings from both validators and review agents route back to Phase 2 (PLANNING) for incorporation into the next planning cycle.
@@ -516,67 +516,7 @@ Each agent outputs a JSON artifact. If findings exist, route them to the appropr
 
 ## HTML Artifact Authoring
 
-When skill-craft generates or rewrites an `index.html` page for a skill, apply these rules to avoid the common breakage patterns.
-
-### CSS Rules
-
-| Rule | Why |
-|------|-----|
-| **No duplicate selectors** | A second `.mermaid-container {}` rule overwrites the first. Merge all properties into one rule. |
-| **`line-height: 0` on container** | Prevents unwanted vertical space below the SVG. Always pair with `overflow-x: auto`. |
-| **`max-width: 100%; height: auto` on SVG** | Makes diagram responsive. Never set fixed pixel width on the SVG itself. |
-
-### HTML Structure
-
-```
-.diagram-wrapper          ← position: relative; overflow: hidden
-  ├── .mermaid-container ← line-height: 0; contains <pre class="mermaid">
-  └── .zoom-controls      ← position: absolute; bottom/right inside .diagram-wrapper
-```
-
-**Critical: `.zoom-controls` must be a sibling of `.mermaid-container`, not a child.**
-
-Reason: `setTheme()` (and any similar JS that replaces `container.innerHTML`) destroys all descendants. If `.zoom-controls` is inside `.mermaid-container`, the zoom buttons vanish on theme toggle.
-
-### Mermaid CDN
-
-Use the CDN import for ESM bundles — never a local copy:
-
-```html
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-</script>
-```
-
-Local ESM bundles fail because the mermaid ESM file references code-splitting chunks (e.g. `chunk-267PNR3T.mjs`) that cannot be downloaded independently. The CDN serves the full bundled version correctly.
-
-### TOC Toggle
-
-Attach the click listener via `addEventListener` inside a `DOMContentLoaded` handler — **never inline `onclick`**:
-
-```javascript
-window.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('tocToggle');
-  const toc  = document.getElementById('toc');
-  if (btn && toc) {
-    btn.addEventListener('click', () => {
-      toc.classList.toggle('collapsed');
-      document.body.classList.toggle('toc-hidden');
-    });
-  }
-});
-```
-
-Inline `onclick="..."` combined with a DOMContentLoaded listener causes **double-fire**: both fire on the same click, toggling twice → no net state change.
-
-### DOMContentLoaded Timing with Module Scripts
-
-`<script type="module">` is always deferred — it runs **after** `DOMContentLoaded` fires. This means code that registers event listeners inside `window.addEventListener('DOMContentLoaded', ...)` runs before the module script executes. If your TOC init depends on module code having already run, move it after the module import or use a different ready signal.
-
-### Testing
-
-- **Click testing**: Use native `.click()` in test harnesses — `js("el.click()")` via CDP harness may not dispatch events the same way as a real browser click.
-- **Visual verification**: Take screenshots rather than relying on DOM query results when validating that diagrams rendered or toggles worked.
+Delegate to `/skill-to-page` sub-skill for all HTML generation.
 
 ## Sub-skill Recommendations
 
@@ -584,7 +524,8 @@ When a finding type maps to a known sub-skill, invoke it directly. Also proactiv
 
 | Sub-skill | When to invoke |
 |-----------|----------------|
-| `/skill-creator:skill-creator` | Eval iteration, trigger optimization, description improvement |
+| `/skill-to-page` | Generating or updating `index.html` for any skill |
+| `skill-creator` | Eval iteration, trigger optimization, description improvement |
 | `plugin-dev:skill-development` | Progressive disclosure, SKILL.md structure, craft conventions |
 | `/doc-to-skill` | Converting existing docs into a skill structure |
 | `plugin-dev:hook-development` | Adding or improving hooks for the skill |
@@ -671,34 +612,212 @@ For a plugin named `reason_openai_v4.0` with a skill at `skills/reason_openai_v4
 
 ### Installing a Local Plugin
 
-**Windows (symlink):**
-```bash
-cmd //c mklink /J "C:/Users/brsth/.claude/plugins/plugin-name" "P:/path/to/plugin-name"
+**Preferred: Local marketplace** — best for plugins you maintain in-repo and want to install via `/plugin install`.
+
+#### 1. Marketplace Structure (flat, no `plugins/` subdirectory)
+
+```
+P:/packages/.claude-marketplace/
+├── .gitignore
+├── your-plugin/            ← flat, NOT plugins/your-plugin/
+│   ├── .claude-plugin/
+│   │   └── plugin.json
+│   ├── hooks/
+│   │   └── hooks.json      ← must exist (can be {})
+│   ├── commands/           ← must have at least one file (e.g., .gitkeep)
+│   └── skills/
+│       └── your-skill/
+│           └── SKILL.md
+└── another-plugin/
+    └── ...
 ```
 
-**Unix/macOS:**
+> **Note**: Empty `commands/` and `agents/` directories don't commit to git. Add a `.gitkeep` placeholder to each:
+> ```
+> touch commands/.gitkeep agents/.gitkeep
+> git add commands/.gitkeep agents/.gitkeep
+> ```
+
+#### 2. Register the Marketplace (once)
+
+The marketplace source is tracked in `~/.claude/plugins/known_marketplaces.json` (not `settings.json`):
+
 ```bash
-ln -s /full/path/to/plugin ~/.claude/plugins/plugin-name
+/plugin marketplace add file:///P:/packages/.claude-marketplace local
 ```
 
-**Via CLI (copies, not symlinks):**
-```bash
-claude plugin add ./path/to/plugin
+This creates an entry like:
+```json
+"local": {
+  "source": { "source": "git", "url": "file:///P:/packages/.claude-marketplace" },
+  "installLocation": "C:\\Users\\brsth\\.claude\\plugins\\marketplaces\\local"
+}
 ```
 
-After symlink/copy, run `/reload-plugins` in Claude Code. The plugin auto-registers hooks via `hooks/hooks.json`, skills via `skills/../` (plugin root), and agents from the `agents/` directory.
+#### 3. Add Plugin Entry to `marketplace.json`
+
+`/plugin install` searches `marketplace.json`, not the filesystem. Every plugin must have an entry:
+
+```bash
+# Edit marketplace manifest
+code "C:/Users/brsth/.claude/plugins/marketplaces/local/.claude-plugin/marketplace.json"
+```
+
+Add to `plugins` array:
+```json
+{
+  "name": "your-plugin",
+  "version": "1.0.0",
+  "description": "Your plugin description",
+  "source": "./your-plugin",
+  "keywords": ["keyword1", "keyword2"]
+}
+```
+
+#### 4. Install from the Marketplace
+
+```bash
+/plugin install your-plugin@local
+```
+
+#### 5. Refresh after Plugin Updates
+
+```bash
+cd "C:/Users/brsth/.claude/plugins/marketplaces/local" && git pull
+/plugin install your-plugin@local
+```
+
+#### 6. Direct Registration (Fallback)
+
+If `/plugin install` fails with "Plugin not found in marketplace 'local'", use direct registration:
+
+**Step A — Copy plugin files to cache** (excluding `.git/` to prevent submodule creation):
+```bash
+cp -r P:/packages/your-plugin/. "C:/Users/brsth/.claude/plugins/cache/local/your-plugin/1.0.0/"
+```
+
+> **Prevent git submodules**: If the source plugin has a `.git/` directory, `cp -r` embeds it and git registers the copied directory as a submodule (mode 160000). Always copy excluding `.git`:
+> ```bash
+> cp -r --exclude=.git P:/packages/your-plugin/. "dest/"
+> # Or on Windows (Git Bash):
+> mkdir dest && cd dest && git init && git add . && git commit -m "..."
+> ```
+
+**Step B — Register in `installed_plugins.json`**:
+```json
+"your-plugin@local": [{
+  "scope": "user",
+  "installPath": "C:\\Users\\brsth\\.claude\\plugins\\cache\\local\\your-plugin\\1.0.0",
+  "version": "1.0.0",
+  "installedAt": "2026-04-25T00:00:00.000Z",
+  "lastUpdated": "2026-04-25T00:00:00.000Z",
+  "gitCommitSha": "<sha>"
+}]
+```
+
+> Get the sha: `cd "C:/Users/brsth/.claude/plugins/marketplaces/local" && git log -1 --format=%h your-plugin/.claude-plugin/plugin.json`
+
+**Step C — Reload**:
+```bash
+/reload-plugins
+```
+
+#### 8. Uninstall
+
+```bash
+/plugin uninstall your-plugin@local
+```
+Or remove from `installed_plugins.json` and delete the cache directory.
+
+#### 7. Troubleshooting
+
+| Symptom | Cause | Fix |
+|--------|-------|-----|
+| `Plugin not found in any marketplace` | Plugin not listed in `marketplace.json` | Add entry to `~/.claude/plugins/marketplaces/local/.claude-plugin/marketplace.json` with `source` path — `/plugin install` searches the manifest, not the filesystem |
+| `Plugin not found in marketplace 'local'` | Marketplace cache not yet populated | `cd ~/.claude/plugins/marketplaces/local && git clone file:///P:/packages/.claude-marketplace .` |
+| Same error after cloning | Plugin has `.git/` embedded (submodule) | Re-copy with `cp -r --exclude=.git`, then `git rm --cached <path> && git add <path>` in marketplace |
+| Same error, cache has files | `known_marketplaces.json` entry missing or wrong | Verify entry at `~/.claude/plugins/known_marketplaces.json` |
+| `.claude-plugin/` invisible in `ls` | Windows/git bug — directory exists but hidden in `ls` | Use `find . -name plugin.json` or `test -d` to verify; `git ls-tree HEAD .claude-plugin/` |
+| `hooks/hooks.json` not loading | Empty file not committed | Ensure `hooks/hooks.json` exists and is committed (even if `{}`) |
+| `commands/` or `agents/` empty | Git doesn't track empty dirs | Add `.gitkeep` stub to each empty directory and commit |
+
+**Why marketplace over symlinks**: The marketplace system handles `$CLAUDE_PLUGIN_ROOT` resolution, caches the plugin at `~/.claude/plugins/cache/local/<name>/<version>/`, and registers hooks/skills/agents automatically. Symlinks require manual `settings.json` merging and don't get `$CLAUDE_PLUGIN_ROOT`.
+
+**Key cache paths**:
+| Path | Purpose |
+|------|---------|
+| `~/.claude/plugins/marketplaces/local/` | Git clone of marketplace repo |
+| `~/.claude/plugins/cache/local/<name>/<ver>/` | Installed plugin copy (where hooks run from) |
+| `~/.claude/plugins/installed_plugins.json` | Registry of all installed plugins |
+| `~/.claude/plugins/known_marketplaces.json` | Marketplace source registry (separate from `settings.json`) |
 
 ### Plugin Registration Summary
 
 | Component | Discovery | Registration |
 |-----------|-----------|--------------|
-| Skills | Auto from `skills` path in plugin.json | `/reload-plugins` |
+| Skills | Auto from `skills/` subdirectories | `/reload-plugins` after install |
 | Hooks | Auto from `hooks/hooks.json` at plugin root | Auto-merged on enable |
-| Agents | Auto from `agents/*.md` at plugin root | `/reload-plugins` |
-| MCP | Via `mcp_json.md` at plugin root | Per MCP server docs |
+| Agents | Auto from `agents/*.md` at plugin root | `/reload-plugins` after install |
+| MCP | Via `.mcp.json` at plugin root | Per MCP server docs |
 
 ### Common Mistakes
 
 1. **SKILL.md at root** — Must be `skills/<name>/SKILL.md`, not root `SKILL.md`
 2. **`skills: "./"` in manifest** — Wrong when manifest is in `.claude-plugin/`. Use `"../"` to point to plugin root
 3. **`commands/` for slash commands** — Legacy. Use `skills/<name>/SKILL.md` instead (creates `/plugin:skill` namespaced command)
+
+### Plugin Activation Guide
+
+When authoring a new plugin for local marketplace distribution, include this guide as `CLAUDE.md` at the plugin root so the plugin is self-documenting for activation and troubleshooting.
+
+```markdown
+# Plugin Name
+
+## Activation Checklist
+
+- [ ] `.claude-plugin/plugin.json` exists and `name` field is set
+- [ ] `hooks/hooks.json` exists (can be `{}` if no hooks)
+- [ ] `commands/` has at least one file (e.g., `.gitkeep` stub)
+- [ ] `agents/` has at least one file (e.g., `.gitkeep` stub)
+- [ ] `skills/<name>/SKILL.md` exists (skill entry point)
+
+## Structure
+
+| Directory | Required | Purpose |
+|-----------|----------|---------|
+| `.claude-plugin/` | Yes | Plugin manifest — must be named exactly `.claude-plugin` |
+| `skills/` | Yes | Auto-discovered skill subdirectories |
+| `hooks/` | Yes | Auto-merged event handlers (`hooks.json` must exist) |
+| `commands/` | Recommended | Slash command sources |
+| `agents/` | Recommended | Subagent definitions |
+
+## Key Rules
+
+- **`.claude-plugin/` is not optional** — Claude Code scans for this exact directory name
+- **`hooks/hooks.json` must exist** even if empty — absence breaks hook registration
+- **Empty directories don't commit to git** — add `.gitkeep` to `commands/` and `agents/`
+- **`skills/` subdirs must contain `SKILL.md`** — not `README.md` or other names
+
+## Local Installation
+
+1. Add plugin to marketplace repo: `P:/packages/.claude-marketplace/<plugin-name>/`
+2. Copy to cache: `cp -r --exclude=.git P:/packages/<plugin-name>/. "C:/Users/brsth/.claude/plugins/cache/local/<plugin-name>/1.0.0/"`
+3. Register: add entry to `~/.claude/plugins/installed_plugins.json`
+4. Reload: `/reload-plugins`
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| Plugin not visible after install | Check `installed_plugins.json` entry and cache path |
+| Hooks not firing | Verify `hooks/hooks.json` exists and is valid JSON |
+| Skills not loading | Ensure `SKILL.md` is inside a named subdirectory of `skills/` |
+| `.claude-plugin/` invisible in `ls` | Use `test -d` or `git ls-tree` to verify — Windows hides it |
+
+## Marketplace Distribution
+
+The `known_marketplaces.json` tracks marketplace sources (not `settings.json`).
+Refresh cache after plugin updates: `cd ~/.claude/plugins/marketplaces/local && git pull`
+```
+
+**When to include this**: Add the above `CLAUDE.md` to every new plugin you create in the marketplace. The plugin should be self-documenting — a user or automated system picking up the plugin should know what's required for activation without reading `skill-craft`.

@@ -15,7 +15,7 @@ You are a senior software architect specializing in the **Claude Code Plugin eco
 ### Structure Philosophy
 
 **ALL logic must reside in specialized directories:**
-- `core/` — Python code (no `src/` directory)
+- `scripts/core/` — Python code (no `src/` directory)
 - `hooks/` — Hook configuration (hooks.json)
 - `skills/` — Auto-activating skills (SKILL.md files)
 - `commands/` — Slash commands (.md files)
@@ -43,7 +43,7 @@ You are a senior software architect specializing in the **Claude Code Plugin eco
 
 **Wrong:**
 ```python
-path = "P:/packages/gitready/core/main.py"  # Hardcoded path
+path = "P:/packages/gitready/scripts/core/main.py"  # Hardcoded path
 ```
 
 **Right:**
@@ -75,16 +75,16 @@ pytest tests/ --cov=core --cov-report=term-mvv
 
 ```bash
 # Sync version across all artifacts
-python core/sync.py
+python scripts/core/sync.py
 ```
 
 **What this does:**
-- Reads version from `core/__init__.py` (source of truth)
+- Reads version from `scripts/core/__init__.py` (source of truth)
 - Updates `.claude-plugin/plugin.json`
 - Updates `README.md` version references
 - Validates all changes
 
-**When to run:** After ANY version bump in `core/__init__.py`
+**When to run:** After ANY version bump in `scripts/core/__init__.py`
 
 ### Plugin Validation
 
@@ -116,15 +116,15 @@ claude --plugin-dir .
 
 ### Version Bumps
 
-1. Update `core/__init__.py`: `__version__ = "5.6.0"`
-2. Run `python core/sync.py` (updates everything else)
+1. Update `scripts/core/__init__.py`: `__version__ = "5.6.0"`
+2. Run `python scripts/core/sync.py` (updates everything else)
 3. Commit changes
 
 ### NotebookLM Media Generation
 
 ```bash
 # Update NotebookLM sources with latest code
-nlm source add --file core/main.py \
+nlm source add --file scripts/core/main.py \
                --file .claude-plugin/plugin.json \
                --file README.md \
                --file AGENTS.md \
@@ -145,9 +145,9 @@ Before finishing ANY task, you MUST:
 
 ### 1. Version Consistency
 
-- [ ] `core/__init__.py` version matches `.claude-plugin/plugin.json`
-- [ ] `README.md` version references match `core/__init__.py`
-- [ ] Run `python core/sync.py` if versions are out of sync
+- [ ] `scripts/core/__init__.py` version matches `.claude-plugin/plugin.json`
+- [ ] `README.md` version references match `scripts/core/__init__.py`
+- [ ] Run `python scripts/core/sync.py` if versions are out of sync
 
 ### 2. Diagram Validity
 
@@ -192,7 +192,7 @@ Before finishing ANY task, you MUST:
 gitready/
 ├── .claude-plugin/          # Plugin metadata
 │   └── plugin.json          # Name, description, author
-├── core/                    # Python code (NOT src/)
+├── scripts/core/                    # Python code (NOT src/)
 │   ├── __init__.py          # Version definition
 │   ├── main.py              # Version retrieval API
 │   └── sync.py              # Version synchronization
@@ -213,7 +213,7 @@ gitready/
 
 ## Non-Negotiable Design Principles
 
-1. **Plugin structure is mandatory** — `.claude-plugin/`, `core/`, `hooks/` directories required
+1. **Plugin structure is mandatory** — `.claude-plugin/`, `scripts/core/`, `hooks/` directories required
 2. **Semantic versioning required** — Version must be MAJOR.MINOR.PATCH format
 3. **No stderr in hooks** — Claude Code treats stderr as fatal errors
 4. **CLAUDE_PLUGIN_ROOT usage** — All paths must use this env var for portability
@@ -225,11 +225,11 @@ gitready/
 
 ### Issue: Version Mismatch
 
-**Symptom**: README.md says v5.5.5, but `core/__init__.py` says v5.5.0
+**Symptom**: README.md says v5.5.5, but `scripts/core/__init__.py` says v5.5.0
 
-**Fix**: Run `python core/sync.py` to synchronize versions
+**Fix**: Run `python scripts/core/sync.py` to synchronize versions
 
-**Prevention**: Always update `core/__init__.py` first, then run sync script
+**Prevention**: Always update `scripts/core/__init__.py` first, then run sync script
 
 ### Issue: Author Fields are Placeholders
 
@@ -274,16 +274,16 @@ After any code changes:
 
 ```bash
 # 1. Check version sync
-python core/sync.py
+python scripts/core/sync.py
 
 # 2. Run linter
-ruff check core/
+ruff check scripts/core/
 
 # 3. Run tests
 pytest tests/ -v
 
 # 4. Verify plugin structure
-ls -la .claude-plugin/ core/ hooks/
+ls -la .claude-plugin/ scripts/core/ hooks/
 ```
 
 ---
@@ -300,8 +300,8 @@ ls -la .claude-plugin/ core/ hooks/
 3. Download artifacts: `nlm download`
 
 **Key sources to upload:**
-- `core/__init__.py` — Version definition
-- `core/main.py` — Core logic
+- `scripts/core/__init__.py` — Version definition
+- `scripts/core/main.py` — Core logic
 - `.claude-plugin/plugin.json` — Plugin metadata
 - `README.md` — User documentation
 - `AGENTS.md` — This file (AI agent instructions)
@@ -332,7 +332,7 @@ ls -la .claude-plugin/ core/ hooks/
 ```bash
 # Check hook script for stderr writes
 grep -r "stderr" hooks/
-grep -r "sys.stderr" core/
+grep -r "sys.stderr" scripts/core/
 ```
 
 **Fix**: Replace all stderr writes with stdout
@@ -346,7 +346,7 @@ grep -r "sys.stderr" core/
 grep -r "5\.[0-9]\.[0-9]" README.md
 ```
 
-**Fix**: Run `python core/sync.py` again, or manually update remaining references
+**Fix**: Run `python scripts/core/sync.py` again, or manually update remaining references
 
 ### Plugin not discovered by Claude Code
 
@@ -402,9 +402,9 @@ python -m json.tool .claude-plugin/plugin.json
 
 Before submitting PR:
 
-1. **Run version sync**: `python core/sync.py`
+1. **Run version sync**: `python scripts/core/sync.py`
 2. **Run tests**: `pytest tests/ -v`
-3. **Run linter**: `ruff check core/`
+3. **Run linter**: `ruff check scripts/core/`
 4. **Update documentation**: README.md, AGENTS.md if needed
 5. **Verify hooks**: Ensure no stderr writes
 

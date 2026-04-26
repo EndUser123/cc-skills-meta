@@ -16,7 +16,7 @@ Enhanced the `/trace` skill with advanced visualization capabilities and full de
 ### 1. ✅ Call Graph Auto-Generation Recommendations (HIGH Priority)
 
 **What**: Automated recommendations to generate call graphs for code TRACE
-**Where**: `core/tracer.py` - `generate_call_graph_recommendation()`
+**Where**: `scripts/scripts/core/tracer.py` - `generate_call_graph_recommendation()`
 **Trigger**: Automatically included in code TRACE reports
 
 **Implementation**:
@@ -53,7 +53,7 @@ dot -Tpng trace_callgraph.dot -o trace_callgraph.png
 ### 2. ✅ Mermaid Flowchart Export from State Tables (MEDIUM Priority)
 
 **What**: Automatic conversion of TRACE state tables to Mermaid flowcharts
-**Where**: `core/tracer.py` - `state_table_to_mermaid()`
+**Where**: `scripts/scripts/core/tracer.py` - `state_table_to_mermaid()`
 **Trigger**: Automatically included in TRACE reports for scenarios with state tables
 
 **Implementation**:
@@ -89,7 +89,7 @@ flowchart TD
 ### 3. ✅ Program Slicing Recommendations (LOW Priority)
 
 **What**: Recommendations for program slicing when circular dependencies detected
-**Where**: `core/tracer.py` - `generate_program_slicing_recommendation()`
+**Where**: `scripts/scripts/core/tracer.py` - `generate_program_slicing_recommendation()`
 **Trigger**: Automatically included when TRACE findings mention circular dependencies
 
 **Implementation**:
@@ -156,7 +156,7 @@ pycg <file> --package __main__ > trace_deps.txt
 ## Files Modified
 
 ### Core Changes
-1. **`core/tracer.py`**
+1. **`scripts/scripts/core/tracer.py`**
    - Added imports: `subprocess`, `sys`
    - Added `state_table_to_mermaid()` method to TraceReport
    - Added `generate_call_graph_recommendation()` method to TraceReport
@@ -232,7 +232,7 @@ Open `templates/TRACE_VISUALIZATION_TEMPLATES.md` and verify:
 ### 8. ✅ Evidence Saturation Detection (MEDIUM Priority)
 
 **What**: Detect when TRACE has sufficient evidence coverage using Jaccard similarity
-**Where**: `core/tracer.py` - `EvidenceSaturationChecker` class
+**Where**: `scripts/scripts/core/tracer.py` - `EvidenceSaturationChecker` class
 **Usage**: Automatic validation of TRACE completeness
 
 **Implementation**:
@@ -259,7 +259,7 @@ is_complete = checker.is_trace_complete(scenarios)
 ### 9. ✅ Red Flag Detection (HIGH Priority)
 
 **What**: Validate TRACE findings for anti-debugging patterns
-**Where**: `core/tracer.py` - `TraceReport.validate_quality()` method
+**Where**: `scripts/scripts/core/tracer.py` - `TraceReport.validate_quality()` method
 **Usage**: Automatic quality check before accepting TRACE report
 
 **Implementation**:
@@ -285,7 +285,7 @@ red_flags = report.validate_quality()
 ### 10. ✅ ACH Scenario Generation (MEDIUM Priority)
 
 **What**: Generate comprehensive TRACE scenarios using Analysis of Competing Hypotheses framework
-**Where**: `core/tracer.py` - `ACHScenarioGenerator` class
+**Where**: `scripts/scripts/core/tracer.py` - `ACHScenarioGenerator` class
 **Usage**: Enhanced scenario generation covering all 6 ACH categories
 
 **Implementation**:
@@ -312,7 +312,7 @@ scenarios = generator.generate_ach_scenarios(target_path, content, "code")
 ### 11. ✅ Timeline Visualization for RCA (HIGH Priority)
 
 **What**: Generate Mermaid timeline diagrams for debugRCA incident reports
-**Where**: `core/tracer.py` - `generate_rca_timeline_mermaid()` function
+**Where**: `scripts/scripts/core/tracer.py` - `generate_rca_timeline_mermaid()` function
 **Usage**: debugRCA Phase 1 (Gather) incident timeline visualization
 
 **Implementation**:
@@ -341,7 +341,7 @@ mermaid = generate_rca_timeline_mermaid(events, "Database Outage")
 ### 12. ✅ Call Graph Hypothesis Generation (LOW Priority)
 
 **What**: Generate hypotheses from call graph analysis for RCA Phase 2
-**Where**: `core/tracer.py` - `generate_hypotheses_from_call_graph()` function
+**Where**: `scripts/scripts/core/tracer.py` - `generate_hypotheses_from_call_graph()` function
 **Usage**: Automated hypothesis generation during debugRCA Isolate phase
 
 **Implementation**:
@@ -369,7 +369,7 @@ hypotheses = generate_hypotheses_from_call_graph("src/main.py")
 ### 13. ✅ CKS Findings Persistence (HIGH Priority)
 
 **What**: Store TRACE findings to CKS for cross-session pattern recognition
-**Where**: `core/tracer.py` - `TraceReport.persist_to_cks()` method
+**Where**: `scripts/scripts/core/tracer.py` - `TraceReport.persist_to_cks()` method
 **Usage**: Automatic persistence after TRACE completion
 
 **Implementation**:
@@ -396,7 +396,7 @@ stored_count = report.persist_to_cks()
 ### 14. ✅ Differential TRACE (MEDIUM Priority)
 
 **What**: Compare TRACE results between working and broken versions
-**Where**: `core/tracer.py` - `DifferentialTracer` class
+**Where**: `scripts/scripts/core/tracer.py` - `DifferentialTracer` class
 **Usage**: Differential debugging for version comparison
 
 **Implementation**:
@@ -442,7 +442,7 @@ comparison = diff_tracer.compare_traces()
 ## Files Modified
 
 ### Core Changes
-1. **`core/tracer.py`** (MAJOR ENHANCEMENT)
+1. **`scripts/scripts/core/tracer.py`** (MAJOR ENHANCEMENT)
    - Added imports: `subprocess`, `sys`, `re`, `Optional`
    - Added `TraceReport.validate_quality()` - Red flag detection
    - Added `TraceReport.persist_to_cks()` - CKS findings storage
@@ -455,7 +455,7 @@ comparison = diff_tracer.compare_traces()
    - Added `DifferentialTracer` class - Version comparison
 
 ### New Files (Blocked by Hook)
-2. **`core/tracer_enhanced.py`** - Blocked by MISPLACED_MODULE hook
+2. **`scripts/core/tracer_enhanced.py`** - Blocked by MISPLACED_MODULE hook
    - Alternative: Integrated all functionality directly into `tracer.py`
    - All features available via main `tracer.py` module
 

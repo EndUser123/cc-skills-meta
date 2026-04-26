@@ -11,7 +11,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.tracer import TraceIssue, Tracer, TraceScenario
+from scripts.core.tracer import TraceIssue, Tracer, TraceScenario
 
 
 class CodeTracer(Tracer):

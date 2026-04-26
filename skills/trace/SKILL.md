@@ -206,8 +206,8 @@ The `/code` skill Phase 3.5 (TRACE) delegates to `/trace code:<file>`. The deleg
 
 - `SKILL.md` - Skill definition (this file)
 - `__main__.py` - Entry point with CLI argument parsing
-- `core/tracer.py` - Core TRACE methodology
-- `core/state_table.py` - State table creation
+- `scripts/scripts/core/tracer.py` - Core TRACE methodology
+- `scripts/core/state_table.py` - State table creation
 - `adapters/code_tracer.py` - Code TRACE adapter (implemented)
 - `adapters/skill_tracer.py` - Skill TRACE adapter (extension point)
 - `adapters/workflow_tracer.py` - Workflow TRACE adapter (extension point)

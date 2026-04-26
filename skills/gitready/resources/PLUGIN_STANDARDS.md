@@ -1,8 +1,8 @@
 # Claude Code Plugin Standards — Authoritative Reference
 
 **Source**: plugin-dev:plugin-structure (official Claude Code plugin documentation)
-**Version**: 5.6.0
-**Last Updated**: 2026-03-14
+**Version**: 5.26.0
+**Last Updated**: 2026-04-24
 
 ## ⚠️ CRITICAL CORRECTIONS
 

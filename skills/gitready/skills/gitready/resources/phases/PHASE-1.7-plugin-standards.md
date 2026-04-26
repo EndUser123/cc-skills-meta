@@ -12,12 +12,18 @@
 - Offers auto-cleanup with confirmation
 - **NO ARGUMENTS REQUIRED** - runs automatically
 
-**Standards Source**: OFFICIAL Claude Code plugin documentation from:
-- **plugin-dev:plugin-structure** (authoritative source)
-- **plugin-dev:plugin-settings** (configuration reference)
-- **plugin-dev:create-plugin** (creation workflow)
+**Standards Source** (live, dynamic):
+```
+/plugin-dev:plugin-structure
+```
 
-### OFFICIAL Claude Code Plugin Structure
+Invoke the skill and capture its authoritative output, then diff against the target directory.
+
+**⚠️ CRITICAL CORRECTION FROM v5.26.0**:
+- ❌ **WRONG**: `core/` directory is NOT in official spec
+- ✅ **CORRECT**: Python code in `scripts/` or component directories
+- ✅ **CORRECT**: Components at ROOT level (not nested in `.claude-plugin/`)
+- ✅ **CORRECT**: Dynamic invocation keeps validation in sync with official spec
 
 **Required Directories**:
 - **`.claude-plugin/`** - Plugin metadata (contains ONLY `plugin.json`)
@@ -28,12 +34,7 @@
 - **`agents/`** - Subagent definitions (.md files)
 - **`skills/`** - Agent skills (subdirectories with `SKILL.md`)
 - **`hooks/`** - Hook configuration (`hooks.json`)
-- **`scripts/`** - Helper scripts and utilities (Python code goes here)
-
-**⚠️ CRITICAL CORRECTION FROM v5.6.0**:
-- ❌ **WRONG**: `core/` directory is NOT in official spec
-- ✅ **CORRECT**: Python code in `scripts/` or component directories
-- ✅ **CORRECT**: Components at ROOT level (not nested in `.claude-plugin/`)
+- **`scripts/`** - Helper scripts and utilities
 
 **Required Files** (root):
 - **`README.md`** - Portfolio documentation

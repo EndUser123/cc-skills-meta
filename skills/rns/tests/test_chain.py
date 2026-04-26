@@ -10,7 +10,7 @@ import pytest
 
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from core.chain import (
+from scripts.core.chain import (
     CrossSessionAction,
     ChainRNSResult,
     _extract_actions_from_text,
@@ -128,7 +128,7 @@ class TestReadTranscriptText:
             + "\n",
             encoding="utf-8",
         )
-        from core.chain import _read_transcript_text
+        from scripts.core.chain import _read_transcript_text
 
         text = _read_transcript_text(transcript)
         assert "user: fix the bug" in text
@@ -144,7 +144,7 @@ class TestReadTranscriptText:
             + "\n",
             encoding="utf-8",
         )
-        from core.chain import _read_transcript_text
+        from scripts.core.chain import _read_transcript_text
 
         text = _read_transcript_text(transcript)
         assert "user: hello" in text
@@ -152,7 +152,7 @@ class TestReadTranscriptText:
 
     def test_old_format_ignored_without_sender_field(self, tmp_path: Path) -> None:
         """Old format without sender field should NOT be extracted as new format."""
-        from core.chain import _read_transcript_text
+        from scripts.core.chain import _read_transcript_text
 
         # Entry with type='user' but no 'message.content' — should be ignored
         # (only new format has message.content)

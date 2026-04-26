@@ -1,16 +1,16 @@
 ---
 name: reason_openai
-description: Elite reasoning ecosystem — command + hooks + subagents + MCP + calibration.
+description: Elite reasoning ecosystem — command + hooks + subagents + existing tools + calibration.
 enforcement: advisory
 workflow_steps:
   - id: layer1_command
     description: "Use /reason_openai command with flags: mode, depth, force-choice, kill, invert, ship"
   - id: layer2_hooks
-    description: "UserPromptSubmit preflight → Stop agent quality gate → Stop log → Stop pending queue → SessionStart reminder"
+    description: "UserPromptSubmit preflight → Stop command quality gate → Stop log → Stop pending queue → SessionStart reminder"
   - id: layer3_subagents
     description: "red_team attacks, implementation_realist critiques, decision_editor compresses, each with SubagentStop quality gate"
-  - id: layer4_mcp
-    description: "Connect GitHub, docs, browser for grounded reasoning with live data"
+  - id: layer4_tools
+    description: "Use existing tools: GH CLI (github), /explore + /context7 + search-research (docs), browser-harness (browser)"
   - id: calibrate
     description: "Log every invocation to JSONL; pending queue for review; analyze with reason_openai_analyze.py; update CLAUDE.md"
 allowed-tools: Bash(pwd:*), Bash(ls:*), Bash(find:*), Bash(git:*), Bash(cat:*), Bash(head:*), Bash(sed:*), Bash(test:*), Bash(grep:*)
@@ -27,7 +27,7 @@ The command is one layer. The ecosystem is five.
 | 1 | Command | `/reason_openai` slash command | Flagship reasoning + decision |
 | 2 | Hooks | `reason_openai_preflight.py` + `reason_openai_quality_gate.py` + `reason_openai_log.py` | Preflight context, output gate, usage logging |
 | 3 | Subagents | `red_team.md`, `implementation_realist.md`, `decision_editor.md` | Adversarial split when warranted |
-| 4 | MCP | GitHub, docs, browser | Grounded truth from live systems |
+| 4 | Tools | GH CLI, /explore, /context7, search-research, browser-harness | Existing tools provide grounded truth — no MCP servers needed |
 | 5 | Calibration | `reason_openai_analyze.py` + `reason_openai_analyze.md` | Personal feedback loop |
 
 ## Hooks (install to `~/.claude/settings.json`)
@@ -35,8 +35,8 @@ The command is one layer. The ecosystem is five.
 ### `UserPromptSubmit` — preflight
 Injects operating reminders when `/reason_openai` is invoked.
 
-### `Stop` — agent quality gate + log + pending queue
-1. `agent` (quality gate) — verifier agent checks decision-grade substance before allowing stop
+### `Stop` — command quality gate + log + pending queue
+1. `command` (quality gate) — `reason_openai_quality_gate.py` checks transcript for required sections before allowing stop
 2. `command` — `reason_openai_log.py` logs invocation to `~/.claude/logs/reason_openai_log.jsonl`
 3. `command` — `reason_openai_pending_queue.py` writes to `reason_openai_pending.jsonl`
 
@@ -74,10 +74,74 @@ When hooks, subagents, MCP servers, repo context, or tools can materially improv
 Prefer one verified insight over five plausible guesses.
 Prefer grounded reasoning over elegant unsupported reasoning.
 
-## MCP priorities
-1. GitHub — PRs, issues, commit history
-2. Docs/knowledge — fresh library/API docs
-3. Browser/Playwright — validate flows, check behavior
+## External tools (Layer 4)
+1. **GitHub** — GH CLI: PR context, issue history, commit diffs
+2. **Docs/knowledge** — /explore + /context7 + search-research
+3. **Browser** — browser-harness for live validation
+
+## Execution
+
+The `reason_openai_router.py` script handles mode detection and routing.
+
+```bash
+cd "P:/packages/cc-skills-meta/skills/reason_openai"
+python3 reason_openai_router.py --prompt "$ARGUMENTS"
+```
+
+**Modes** (auto-detected or forced with `--mode`):
+- `decide` — force a clear recommendation with justification
+- `review` — critique existing answer, surface hidden flaws
+- `off` — exploratory; diagnose what's wrong rather than answer
+- `diagnose` — root-cause analysis
+- `optimize` — performance, cost, latency improvements
+- `design` — options and architecture creation
+- `execute` — move from thought to action
+
+**Depths** (auto-selected or forced with `--depth`):
+- `local` — single-model reasoning, structured output prompt
+- `targeted` — local + one subagent (red_team or implementation_realist)
+- `tribunal` — local + all three subagents (red_team, implementation_realist, decision_editor)
+
+**Standard output contract** (all modes):
+```
+Route chosen:
+Best current conclusion:
+Why it wins:
+Strongest challenge:
+Biggest uncertainty:
+Best next action:
+Ignore:
+Minority warning:
+```
+
+### Subagent dispatch (targeted / tribunal depth)
+
+When depth is `targeted` or `tribunal`, invoke subagents using the Agent() tool with the subagent definitions at:
+- `P:/packages/cc-skills-meta/skills/reason_openai/agents/red_team.md`
+- `P:/packages/cc-skills-meta/skills/reason_openai/agents/implementation_realist.md`
+- `P:/packages/cc-skills-meta/skills/reason_openai/agents/decision_editor.md`
+
+**Targeted depth** — invoke one subagent based on mode:
+- `diagnose`, `optimize`, `review` → **red_team** (attack the hypothesis)
+- `design`, `execute`, `decide` → **implementation_realist** (pressure-test practicality)
+
+**Tribunal depth** — invoke all three in sequence:
+1. **red_team** → find hidden flaws
+2. **implementation_realist** → test execution realism
+3. **decision_editor** → compress to final recommendation
+
+**Subagent prompt composition**:
+```
+You are <subagent_name>. Read your definition at P:/packages/cc-skills-meta/skills/reason_openai/agents/<subagent_name>.md
+
+User query: <original prompt>
+Local reasoning: <output from local reasoning step>
+Mode: <mode>
+
+Follow your output contract exactly. Write findings to your response.
+```
+
+**Synthesis** — after subagents complete, synthesize all outputs into the standard contract format. The `decision_editor` output is the primary source; `red_team` and `implementation_realist` outputs inform and challenge the conclusion.
 
 ## Installation
 

@@ -7,8 +7,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from core.chain import CrossSessionAction
-from core.render import (
+from scripts.core.chain import CrossSessionAction
+from scripts.core.render import (
     DOMAIN_MAP,
     ACTION_ORDER,
     PRIORITY_ORDER,
@@ -255,7 +255,7 @@ class TestRenderActions:
         """Domains with same explicit_order and same count sort by name."""
         # git (5) and deps (6) have different explicit_order, so test tiebreak
         # by checking alphabetical: deps < git < other alphabetically
-        from core.render import _domain_sort_key
+        from scripts.core.render import _domain_sort_key
         action = CrossSessionAction(domain="quality", action="recover",
                                   priority="high", description="x")
         key_deps = _domain_sort_key("deps", [action])

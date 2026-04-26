@@ -8,6 +8,7 @@ dist/
 build/
 .benchmarks/
 *.json.bak
+.coverage
 
 # Session state artifacts
 .claude/

@@ -25,7 +25,7 @@ if str(_hooks_lib) not in sys.path:
 
 from adapters.code_tracer import CodeTracer
 from adapters.skill_tracer import SkillTracer
-from core.tracer import Tracer
+from scripts.core.tracer import Tracer
 
 DOMAIN_ADAPTERS = {
     "code": CodeTracer,

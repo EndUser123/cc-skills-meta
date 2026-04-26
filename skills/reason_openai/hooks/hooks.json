@@ -3,7 +3,7 @@
   "hooks": {
     "UserPromptSubmit": [
       {
-        "matcher": ".*reason.*",
+        "matcher": ".*\\/reason_openai.*",
         "hooks": [
           {
             "type": "command",
@@ -43,6 +43,18 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/reason_openai_session_reminder.py",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/reason_openai_subagent_stop.py",
+            "timeout": 30
           }
         ]
       }
