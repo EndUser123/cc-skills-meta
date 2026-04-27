@@ -1,7 +1,7 @@
 ---
 name: recap
 description: Catch up on all sessions in this terminal via checkpoint chain traversal and surface unresolved assumptions, contract gaps, Contract Authority Packet gaps, and resume risks
-version: 1.4.0
+version: 1.5.0
 status: stable
 category: session
 enforcement: strict
@@ -63,6 +63,10 @@ The script extracts structured data via regex and presents it in a format compat
 - **Duration**: {duration if available}
 - **Goal**: {goal}
 
+### Modified Files
+- `{file_path}`
+- `{file_path}`
+
 ### Original Request
 - **User Request**: "{extracted request}"
 - **Trigger**: {trigger context}
@@ -116,8 +120,14 @@ The script extracts structured data via regex and presents it in a format compat
 ### Raw Context
 {condensed text for full transcript access}
 ```
-> **⚠️ Note:** The `### Raw Context` section is condensed by `_condense_transcript()` with a 2000-character budget per session. Content beyond that limit is silently dropped — the structured fields above are the primary evidence source. Full transcript access requires reading the raw transcript file directly.
+> **⚠️ Note:** The `### Raw Context` section is condensed by `_condense_transcript()` with a 2000-character budget per session. When `### Modified Files` is present, AID distillation replaces Raw Context with AST-level code structure. Content beyond that limit is silently dropped — the structured fields above are the primary evidence source. Full transcript access requires reading the raw transcript file directly.
 
+
+### Project Context Backdrop
+
+Before synthesizing session narratives, establish project context.
+
+Call `mcp__aid__distill_directory` on the project root with `recursive=false`, `include_implementation=false`. Present the result as a collapsible `## Project Context` section at the top of synthesis. Skip this step for `/recap brief` mode or if the AID MCP tool is unavailable.
 
 ### Response Synthesis (LLM task after script output)
 
@@ -145,7 +155,23 @@ When responding to `/recap`, apply reasoning to the script output plus the raw t
 - missing proof that resume/consumer paths really worked
 - missing, stale, or ignored `Contract Authority Packet` state for contract-sensitive work
 
+**Verification Queue**: For each unverified item surfaced above, generate a `/tldr-deep` command with the specific function or file name. Prioritize:
+- **HIGH**: Blocking items that prevent forward progress
+- **MEDIUM**: Code-level verification gaps (untested paths, unverified integration)
+- **LOW**: Process-level gaps (documentation, cleanup)
+
+Commands are suggestions only — `/recap` does not execute verification.
+
 Present synthesis as a per-session narrative in the response, not replacing the script output but complementing it.
+
+### Code Structure Enrichment
+
+For sessions with `### Modified Files`, call `mcp__aid__distill_file` on up to 5 files with `include_implementation=false`. The distilled output (function signatures, class hierarchy) serves dual purpose:
+
+1. **Replaces regex-extracted “actions”** with actual function/class changes in synthesis
+2. **Replaces `### Raw Context`** with AST-level structure instead of the 2000-char condensed transcript
+
+Regex extraction remains as fallback for sessions without identifiable file changes. Sessions without Modified Files keep the `### Raw Context` fallback.
 
 ## Usage
 
@@ -156,13 +182,18 @@ Present synthesis as a per-session narrative in the response, not replacing the 
 
 ## Routing Behavior
 
-`/recap` may suggest lower skills when the reconstructed session history shows missing gates:
+`/recap` uses intent detection to suggest follow-up commands. Map session patterns to the most relevant skill (max 3 suggestions per recap):
 
-- suggest `/gto` when current gaps or stale assumptions are unclear
-- suggest `/design` when unresolved state or contract decisions appear in prior sessions
-- suggest `/verify` when work was discussed or implemented but not actually proven
-- suggest `/pre-mortem` when sessions are classified Complex or Chaotic (risk escalation)
-- suggest `/chat-to-decisions` when open items from the Parking Lot need formal ADR output
+| Intent Detected | Follow-Up Command | When to Suggest |
+|----------------|-------------------|-----------------|
+| Navigation / lost context | `/gto` | Current gaps or stale assumptions are unclear |
+| Architecture decisions | `/design` | Unresolved state or contract decisions in prior sessions |
+| Complexity hotspots | `/tldr-deep` then `/refactor` | Sessions with many modified files or complex changes |
+| Debugging / root cause | `/diagnose` or `/rca` | Sessions with unresolved bugs or error patterns |
+| Impact verification | `/verify` | Work discussed or implemented but not actually proven |
+| Data flow tracing | `/trace` | Sessions touching data pipelines or state management |
+
+`/pre-mortem` remains the escalation path for Complex or Chaotic sessions (risk escalation).
 
 `/recap` should not implement fixes itself.
 

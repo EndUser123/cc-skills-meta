@@ -1024,6 +1024,53 @@ def truncate(s: str, max_len: int = 100) -> str:
     return s[: max_len - 3] + "..."
 
 
+_SKIP_SUFFIXES = frozenset({".json", ".lock", ".pyc", ".pyo", ".toml"})
+_SKIP_SEGMENTS = frozenset({"__pycache__", "node_modules", ".git"})
+
+
+def _extract_modified_files(entries: list[dict[str, Any]]) -> list[str]:
+    """Scan transcript entries for Edit/Write tool_use blocks and extract file paths.
+
+    Skips noise files (.json, .lock, .toml, __pycache__/, node_modules/).
+
+    Args:
+        entries: Transcript entries for a session
+
+    Returns:
+        Deduplicated list of file paths
+    """
+    seen: set[str] = set()
+    result: list[str] = []
+
+    for entry in entries:
+        content = entry.get("content")
+        if content is None:
+            content = entry.get("message", {}).get("content")
+        if not isinstance(content, list):
+            continue
+        for block in content:
+            if not isinstance(block, dict):
+                continue
+            if block.get("type") != "tool_use":
+                continue
+            if block.get("name") not in ("Edit", "Write"):
+                continue
+            inp = block.get("input", {})
+            if not isinstance(inp, dict):
+                continue
+            path = inp.get("file_path", "")
+            if not path or path in seen:
+                continue
+            if Path(path).suffix.lower() in _SKIP_SUFFIXES:
+                continue
+            if any(seg in path for seg in _SKIP_SEGMENTS):
+                continue
+            seen.add(path)
+            result.append(path)
+
+    return result
+
+
 def _summarize_session(entries: list[dict[str, Any]], session_id: str | None) -> dict[str, Any]:
     """Summarize a session from its entries.
 
@@ -1096,6 +1143,7 @@ def _summarize_session(entries: list[dict[str, Any]], session_id: str | None) ->
         "actions": semantic["actions"],
         "decisions": semantic["decisions"],
         "outcomes": semantic["outcomes"],
+        "modified_files": _extract_modified_files(entries),
         # Raw transcript text for LLM reasoning — replaces garbled regex extraction
         "transcript": _condense_transcript(entries),
     }
@@ -1207,6 +1255,14 @@ def format_recap(
             if session.get("last_goal"):
                 lines.append(f"- **Goal**: {session['last_goal']}")
             lines.append("")
+
+            # Modified Files (from Edit/Write tool_use blocks)
+            modified = session.get("modified_files", [])
+            if modified:
+                lines.append("### Modified Files")
+                for path in modified[:10]:
+                    lines.append(f"- `{path}`")
+                lines.append("")
 
             # Original Request / Trigger (extracted from early session content)
             if session.get("original_request"):

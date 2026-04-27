@@ -13,14 +13,14 @@ workflow_steps:
   - "Run deterministic analysis (orchestrator --skip-agents)"
   - "Dispatch domain analyzer agent via Agent tool"
   - "Run full orchestrator to merge results"
-  - "Display artifact and human-readable findings"
+  - "Display findings in RNS domain-grouped format with Do ALL footer"
 ---
 
 # GTO v4.0 — Gap-to-Opportunity Analysis
 
 ## Overview
 
-GTO runs gap analysis on the current codebase, producing RNS-compatible machine output and human-readable findings. It uses deterministic detectors first, then optionally dispatches subagents for deeper analysis.
+GTO runs gap analysis on the current codebase, producing RNS-compatible machine output and displaying findings in RNS domain-grouped format. It uses deterministic detectors first, then optionally dispatches subagents for deeper analysis.
 
 ## Execution Directive
 
@@ -52,12 +52,25 @@ cd "P:/packages/cc-skills-meta" && python -m skills.gto.orchestrator --mode full
 
 ### Step 4: Display Results
 
-Read and display the artifact:
+Read the artifact:
 ```bash
 cat ".claude/.artifacts/{terminal_id}/gto/outputs/artifact.json"
 ```
 
-Show the human-readable findings and summary to the user.
+Render the findings using the **RNS display format**. Read the canonical format spec before rendering:
+
+```
+Read file: skills/gto/__lib/machine_render.py
+```
+
+This module defines the domain map, emoji assignments, subletter numbering, and the full RNS pipe-delimited machine format. Use the same domain groupings and emoji when rendering the human-readable display.
+
+The display must follow the `/rns` output format:
+- Domain-grouped sections with emoji headers: `{num} {emoji} {DOMAIN} ({count})`
+- Domain-numbered items: `{num}{letter} [{action}/{priority}] Description @ file:line`
+- Sort within domain: recover > prevent > realize, then CRITICAL > HIGH > MEDIUM > LOW
+- Footer: `0 — Do ALL Recommended Next Actions (N items)`
+- No markdown fences around the RNS output
 
 ## Modes
 

@@ -472,3 +472,164 @@ class TestErrorMessages:
         assert "Session chain broken" not in source, "Should not have 'chain broken' jargon"
         assert "degrading to unified chain" not in source, "Should not have 'degrading' jargon"
         assert "Returning empty session list" not in source, "Should not have technical return value description"
+
+
+class TestExtractModifiedFiles:
+    """Tests for _extract_modified_files() — scans Edit/Write tool_use blocks."""
+
+    @pytest.fixture(autouse=True)
+    def _import_recap(self):
+        skill_path = Path("P:/.claude/skills/recap")
+        if str(skill_path) not in sys.path:
+            sys.path.insert(0, str(skill_path))
+        from recap import _extract_modified_files
+        self.extract = _extract_modified_files
+
+    def test_extracts_edit_and_write_paths(self):
+        entries = [
+            {
+                "type": "assistant",
+                "content": [
+                    {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/src/main.py"}},
+                    {"type": "tool_use", "name": "Write", "input": {"file_path": "P:/src/utils.py"}},
+                ],
+            },
+        ]
+        result = self.extract(entries)
+        assert result == ["P:/src/main.py", "P:/src/utils.py"]
+
+    def test_deduplicates_paths(self):
+        entries = [
+            {
+                "type": "assistant",
+                "content": [
+                    {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/src/main.py"}},
+                    {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/src/main.py"}},
+                ],
+            },
+        ]
+        result = self.extract(entries)
+        assert result == ["P:/src/main.py"]
+
+    def test_skips_noise_files(self):
+        entries = [
+            {
+                "type": "assistant",
+                "content": [
+                    {"type": "tool_use", "name": "Write", "input": {"file_path": "P:/package.json"}},
+                    {"type": "tool_use", "name": "Write", "input": {"file_path": "P:/poetry.lock"}},
+                    {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/__pycache__/cache.pyc"}},
+                    {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/node_modules/react/index.js"}},
+                    {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/src/app.py"}},
+                    {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/pyproject.toml"}},
+                ],
+            },
+        ]
+        result = self.extract(entries)
+        assert result == ["P:/src/app.py"]
+
+    def test_empty_input_returns_empty(self):
+        assert self.extract([]) == []
+        assert self.extract([{"type": "user", "content": "hello"}]) == []
+
+    def test_message_content_path(self):
+        """Extract from message.content when top-level content is absent."""
+        entries = [
+            {
+                "type": "assistant",
+                "message": {
+                    "content": [
+                        {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/src/handler.py"}},
+                    ],
+                },
+            },
+        ]
+        result = self.extract(entries)
+        assert result == ["P:/src/handler.py"]
+
+    def test_summarize_session_includes_modified_files(self):
+        """_summarize_session return dict includes modified_files."""
+        skill_path = Path("P:/.claude/skills/recap")
+        if str(skill_path) not in sys.path:
+            sys.path.insert(0, str(skill_path))
+        from recap import _summarize_session
+
+        entries = [
+            {
+                "type": "user",
+                "sessionId": "s1",
+                "content": "fix the bug",
+            },
+            {
+                "type": "assistant",
+                "sessionId": "s1",
+                "content": [
+                    {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/src/bug.py"}},
+                ],
+            },
+        ]
+        result = _summarize_session(entries, "s1")
+        assert "modified_files" in result
+        assert result["modified_files"] == ["P:/src/bug.py"]
+
+    def test_format_recap_includes_modified_files_section(self):
+        """format_recap() output contains ### Modified Files when files present."""
+        skill_path = Path("P:/.claude/skills/recap")
+        if str(skill_path) not in sys.path:
+            sys.path.insert(0, str(skill_path))
+        from recap import format_recap
+
+        sessions = [{
+            "session_id": "s1",
+            "entry_count": 2,
+            "user_message_count": 1,
+            "assistant_message_count": 1,
+            "duration": None,
+            "token_usage": {"total_tokens": 0, "input_tokens": 0, "output_tokens": 0},
+            "priority_score": 0,
+            "last_goal": "test goal",
+            "problem": None,
+            "fix": None,
+            "action": None,
+            "problems": [],
+            "fixes": [],
+            "actions": [],
+            "decisions": [],
+            "outcomes": [],
+            "modified_files": ["P:/src/main.py", "P:/src/utils.py"],
+            "transcript": None,
+        }]
+        output = format_recap(sessions, "terminal-1")
+        assert "### Modified Files" in output
+        assert "P:/src/main.py" in output
+        assert "P:/src/utils.py" in output
+
+    def test_format_recap_omits_modified_files_when_empty(self):
+        """format_recap() omits ### Modified Files when no files modified."""
+        skill_path = Path("P:/.claude/skills/recap")
+        if str(skill_path) not in sys.path:
+            sys.path.insert(0, str(skill_path))
+        from recap import format_recap
+
+        sessions = [{
+            "session_id": "s1",
+            "entry_count": 2,
+            "user_message_count": 1,
+            "assistant_message_count": 1,
+            "duration": None,
+            "token_usage": {"total_tokens": 0, "input_tokens": 0, "output_tokens": 0},
+            "priority_score": 0,
+            "last_goal": "test goal",
+            "problem": None,
+            "fix": None,
+            "action": None,
+            "problems": [],
+            "fixes": [],
+            "actions": [],
+            "decisions": [],
+            "outcomes": [],
+            "modified_files": [],
+            "transcript": None,
+        }]
+        output = format_recap(sessions, "terminal-1")
+        assert "### Modified Files" not in output
