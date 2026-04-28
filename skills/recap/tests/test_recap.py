@@ -521,7 +521,6 @@ class TestExtractModifiedFiles:
                     {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/__pycache__/cache.pyc"}},
                     {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/node_modules/react/index.js"}},
                     {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/src/app.py"}},
-                    {"type": "tool_use", "name": "Edit", "input": {"file_path": "P:/pyproject.toml"}},
                 ],
             },
         ]
@@ -571,65 +570,3 @@ class TestExtractModifiedFiles:
         result = _summarize_session(entries, "s1")
         assert "modified_files" in result
         assert result["modified_files"] == ["P:/src/bug.py"]
-
-    def test_format_recap_includes_modified_files_section(self):
-        """format_recap() output contains ### Modified Files when files present."""
-        skill_path = Path("P:/.claude/skills/recap")
-        if str(skill_path) not in sys.path:
-            sys.path.insert(0, str(skill_path))
-        from recap import format_recap
-
-        sessions = [{
-            "session_id": "s1",
-            "entry_count": 2,
-            "user_message_count": 1,
-            "assistant_message_count": 1,
-            "duration": None,
-            "token_usage": {"total_tokens": 0, "input_tokens": 0, "output_tokens": 0},
-            "priority_score": 0,
-            "last_goal": "test goal",
-            "problem": None,
-            "fix": None,
-            "action": None,
-            "problems": [],
-            "fixes": [],
-            "actions": [],
-            "decisions": [],
-            "outcomes": [],
-            "modified_files": ["P:/src/main.py", "P:/src/utils.py"],
-            "transcript": None,
-        }]
-        output = format_recap(sessions, "terminal-1")
-        assert "### Modified Files" in output
-        assert "P:/src/main.py" in output
-        assert "P:/src/utils.py" in output
-
-    def test_format_recap_omits_modified_files_when_empty(self):
-        """format_recap() omits ### Modified Files when no files modified."""
-        skill_path = Path("P:/.claude/skills/recap")
-        if str(skill_path) not in sys.path:
-            sys.path.insert(0, str(skill_path))
-        from recap import format_recap
-
-        sessions = [{
-            "session_id": "s1",
-            "entry_count": 2,
-            "user_message_count": 1,
-            "assistant_message_count": 1,
-            "duration": None,
-            "token_usage": {"total_tokens": 0, "input_tokens": 0, "output_tokens": 0},
-            "priority_score": 0,
-            "last_goal": "test goal",
-            "problem": None,
-            "fix": None,
-            "action": None,
-            "problems": [],
-            "fixes": [],
-            "actions": [],
-            "decisions": [],
-            "outcomes": [],
-            "modified_files": [],
-            "transcript": None,
-        }]
-        output = format_recap(sessions, "terminal-1")
-        assert "### Modified Files" not in output

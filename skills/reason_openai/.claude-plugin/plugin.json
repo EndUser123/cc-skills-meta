@@ -1,0 +1,8 @@
+{
+  "name": "reason_openai",
+  "version": "4.0.0",
+  "description": "Elite reasoning ecosystem — command + hooks + subagents + existing tools + calibration.",
+  "author": {
+    "name": "Bruce Thomson"
+  }
+}

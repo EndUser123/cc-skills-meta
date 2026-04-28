@@ -7,16 +7,13 @@ enforcement: advisory
 workflow_steps:
   - Assess query complexity
   - Classify task type
-  - Build internal draft with claims
+  - Build internal draft with claims — treat the requested mechanism as a capability target: if the named path is unavailable, generate alternatives across native/workaround/architecture-redesign. Mark each as robust, brittle, version-dependent, or speculative.
   - Dispatch to external roles (verify/redteam/alternative) if nontrivial
   - Reconcile contradictions
   - Finalize answer with evidence labels
 triggers:
   - /reason_ppx
-suggest:
-  - /think
-  - /ai-pcli
-  - /reason
+suggest: []
 ---
 
 # /reason_ppx — Python-Backed Hybrid Reasoning Orchestrator

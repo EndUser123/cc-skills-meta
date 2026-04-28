@@ -63,9 +63,20 @@ Meta-cognitive and workflow skills for Claude Code — retrospectives, gap analy
 
 All runtime artifacts write to:
 
+```
+.claude/.artifacts/{terminal_id}/{skill_name}/
+```
 
+| Artifact type | Destination |
+|--------------|-------------|
+| Runtime proof/evidence (artifact-proof.json, workflow-model.json) | `.claude/.artifacts/{terminal_id}/{skill_name}/` |
+| Generated documentation (index.html) | Target skill's directory, alongside SKILL.md |
+| Temporary/intermediate files | `.claude/.artifacts/{terminal_id}/{skill_name}/tmp/` |
 
-Skills MUST NOT write state to their own directory or to the package root.
+**Rules:**
+- `terminal_id` ensures concurrent sessions do not overwrite each other's artifacts
+- Skills MUST NOT write state to their own directory or to the package root
+- Generated documentation (index.html) is the exception — it belongs next to the skill it documents
 
 ## Scripts / Forked Tools
 

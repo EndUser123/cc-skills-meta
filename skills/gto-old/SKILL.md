@@ -2,7 +2,7 @@
 name: gto-old
 version: 3.6.0
 status: "stable"
-description: Analyze what happened in this session and recommend what to do next. Detects: what skills were used, what wasn't completed, what gaps exist, what other skills should be invoked (like /pre-mortem after code changes, /critique after reviews, /git after edits).
+description: "Analyze what happened in this session and recommend what to do next. Detects: what skills were used, what wasn't completed, what gaps exist, what other skills should be invoked (like /pre-mortem after code changes, /critique after reviews, /git after edits)."
 category: analysis
 enforcement: strict
 triggers:

@@ -29,7 +29,22 @@ _STATE_DIR = Path.home() / ".claude" / "state"
 
 
 def _get_session_id_from_env() -> str:
-    """Get session ID from environment."""
+    """Get session ID, preferring identity.json over env vars.
+
+    identity.json is written fresh at session start and survives compaction.
+    CLAUDE_SESSION_ID may be empty or stale.
+    """
+    wt = os.environ.get("WT_SESSION")
+    if wt:
+        identity_path = Path.home() / ".claude" / ".artifacts" / f"console_{wt}" / "identity.json"
+        if identity_path.exists():
+            try:
+                data = json.loads(identity_path.read_text(encoding="utf-8"))
+                sid = data.get("claude", {}).get("session_id")
+                if sid:
+                    return sid
+            except (OSError, json.JSONDecodeError):
+                pass
     return os.environ.get("CLAUDE_SESSION_ID", "default")
 
 
@@ -1024,14 +1039,14 @@ def truncate(s: str, max_len: int = 100) -> str:
     return s[: max_len - 3] + "..."
 
 
-_SKIP_SUFFIXES = frozenset({".json", ".lock", ".pyc", ".pyo", ".toml"})
+_SKIP_SUFFIXES = frozenset({".json", ".lock", ".pyc", ".pyo"})
 _SKIP_SEGMENTS = frozenset({"__pycache__", "node_modules", ".git"})
 
 
 def _extract_modified_files(entries: list[dict[str, Any]]) -> list[str]:
     """Scan transcript entries for Edit/Write tool_use blocks and extract file paths.
 
-    Skips noise files (.json, .lock, .toml, __pycache__/, node_modules/).
+    Skips noise files (.json, .lock, __pycache__/, node_modules/).
 
     Args:
         entries: Transcript entries for a session
@@ -1039,6 +1054,8 @@ def _extract_modified_files(entries: list[dict[str, Any]]) -> list[str]:
     Returns:
         Deduplicated list of file paths
     """
+    import os
+
     seen: set[str] = set()
     result: list[str] = []
 
@@ -1061,7 +1078,8 @@ def _extract_modified_files(entries: list[dict[str, Any]]) -> list[str]:
             path = inp.get("file_path", "")
             if not path or path in seen:
                 continue
-            if Path(path).suffix.lower() in _SKIP_SUFFIXES:
+            _, ext = os.path.splitext(path)
+            if ext.lower() in _SKIP_SUFFIXES:
                 continue
             if any(seg in path for seg in _SKIP_SEGMENTS):
                 continue

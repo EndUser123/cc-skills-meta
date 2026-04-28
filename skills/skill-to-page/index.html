@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>skill-to-page | 2.0.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── Variables ─────────────────────────────────────── */
+    :root {
+      --font-body: "Inter", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+      --bg: #0f1115;
+      --surface: #151922;
+      --surface-2: #1b2130;
+      --surface-3: #222a3a;
+      --text: #e8edf5;
+      --text-muted: #a8b3c7;
+      --text-faint: #7e889b;
+      --border: rgba(255,255,255,0.10);
+      --border-strong: rgba(255,255,255,0.16);
+      --accent: #66b3ff;
+      --accent-soft: rgba(102,179,255,0.14);
+      --shadow: 0 10px 30px rgba(0,0,0,0.22);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+
+      --toc-width: 18rem;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Base ─────────────────────────────────────────── */
+    body {
+      font-family: var(--font-body);
+      color: var(--text);
+      background: radial-gradient(circle at top, rgba(102,179,255,0.06), transparent 28%), var(--bg);
+      line-height: 1.55;
+      letter-spacing: -0.01em;
+      min-height: 100vh;
+    }
+
+    /* ── Typography ────────────────────────────────────── */
+    h1 { font-size: clamp(1.9rem, 2.5vw, 2.4rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; }
+    h2 { font-size: clamp(1rem, 1.4vw, 1.25rem); font-weight: 650; letter-spacing: -0.02em; line-height: 1.2; }
+    h3, h4 { font-size: 0.95rem; font-weight: 600; letter-spacing: -0.01em; }
+    h2 { text-transform: uppercase; letter-spacing: 0.07em; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin: 1.75rem 0 0.6rem; }
+    h2:first-of-type { margin-top: 0; }
+    p, li { color: var(--text-muted); font-size: 0.875rem; line-height: 1.6; }
+    code, pre, .mono { font-family: var(--font-mono); font-size: 0.875em; font-variant-ligatures: none; }
+
+    /* ── Layout ───────────────────────────────────────── */
+    .page-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+    .main-content {
+      flex: 1;
+      transition: max-width 180ms ease, margin-left 180ms ease;
+      padding: 2rem 2rem 5rem;
+      max-width: calc(100vw - var(--toc-width) - 4rem);
+      margin-left: var(--toc-width);
+    }
+    body.toc-hidden .main-content {
+      margin-left: 0;
+      max-width: calc(100vw - 4rem);
+    }
+
+    /* ── TOC ─────────────────────────────────────────── */
+    .toc {
+      position: fixed; top: 0; left: 0;
+      width: var(--toc-width); height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: left 180ms ease, opacity 180ms ease;
+    }
+    .toc.collapsed { left: calc(-1 * var(--toc-width) + 40px); opacity: 0; pointer-events: none; }
+    @media (max-width: 960px) {
+      .toc.collapsed { left: 0; transform: translateX(-100%); opacity: 1; }
+    }
+    .toc-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .toc-header h2 { margin: 0; font-size: 0.68rem; }
+    .toc-controls { display: flex; gap: 0.4rem; align-items: center; }
+    .toc-btn {
+      background: var(--surface-2); border: 1px solid var(--border-strong);
+      color: var(--text); width: 2rem; height: 2rem;
+      border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 140ms ease, border-color 140ms ease;
+    }
+    .toc-btn:hover { background: var(--surface-3); border-color: var(--accent); }
+    .toc-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    #tocToggle {
+      position: fixed; top: 1rem; left: 0; z-index: 200;
+      background: var(--surface-2); border: 1px solid var(--border-strong);
+      color: var(--text); width: 2.5rem; height: 2.5rem;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer; font-size: 1rem; line-height: 1;
+      transition: background 140ms ease, border-color 140ms ease;
+    }
+    #tocToggle:hover { background: var(--surface-3); border-color: var(--accent); }
+    #tocToggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    @media (max-width: 960px) {
+      #tocToggle { display: none; }
+    }
+    .toc-body { flex: 1; overflow-y: auto; padding: 0.75rem 1rem 1rem; }
+    .toc-body ul { list-style: none; }
+    .toc-body li { margin-bottom: 0.15rem; }
+    .toc-body a {
+      color: var(--text-muted); text-decoration: none; font-size: 0.83rem;
+      display: block; padding: 0.3rem 0.5rem; border-radius: 6px;
+      transition: color 140ms ease, background-color 140ms ease;
+    }
+    .toc-body a:hover { color: var(--text); background: var(--surface-2); }
+    .toc-body a[aria-current="true"] { color: var(--accent); background: var(--accent-soft); }
+
+    /* ── Section cards ─────────────────────────────────── */
+    section, .card, .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.00)), var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+    section + section { margin-top: 0.85rem; }
+
+    /* ── Hero ─────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #151922 0%, #0f1115 100%);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 280px; height: 100%;
+      background: radial-gradient(circle at top right, rgba(102,179,255,0.08), transparent 60%);
+      pointer-events: none;
+    }
+    .hero-top { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; flex-wrap: wrap; position: relative; }
+    .hero h1 { margin-right: 0.25rem; }
+    .badge {
+      display: inline-block; font-size: 0.68rem; font-weight: 600;
+      padding: 0.18rem 0.5rem; border-radius: 99px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-version { background: rgba(102,179,255,0.14); color: var(--accent); border: 1px solid rgba(102,179,255,0.25); }
+    .badge-status { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+    .badge-strict { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+    .hero p { font-size: 0.9rem; color: var(--text-muted); position: relative; }
+
+    /* ── Quick Facts ─────────────────────────────────── */
+    .quick-facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 0.6rem;
+    }
+    .fact {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.7rem 0.85rem;
+      display: flex; align-items: flex-start; gap: 0.55rem;
+      transition: border-color 140ms ease;
+    }
+    .fact:hover { border-color: var(--border-strong); }
+    .fact-icon { font-size: 1.05rem; flex-shrink: 0; margin-top: 0.05rem; }
+    .fact-text { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+    .fact-text strong { color: var(--text); font-weight: 600; display: block; margin-bottom: 0.1rem; font-size: 0.83rem; }
+
+    /* ── Code blocks ─────────────────────────────────── */
+    pre {
+      position: relative;
+      overflow: auto;
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-md);
+      background: #0d1017;
+      border: 1px solid var(--border-strong);
+      color: #d9e2f2;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+    .code-inline {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      color: var(--accent);
+      font-size: 0.8em;
+    }
+
+    /* ── Copy buttons ────────────────────────────────── */
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem; right: 0.5rem;
+      opacity: 0;
+      transform: translateY(-1px);
+      transition: opacity 160ms ease, transform 160ms ease, background 160ms ease;
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      cursor: pointer;
+    }
+    pre:hover .copy-btn,
+    .copy-btn:focus-visible { opacity: 1; transform: translateY(0); }
+    .copy-btn:hover { background: var(--accent-soft); color: var(--text); border-color: var(--accent); }
+    .copy-btn.copied { opacity: 1; color: #4ade80; border-color: rgba(74,222,128,0.3); }
+
+    /* ── Mermaid ─────────────────────────────────────── */
+    .mermaid-container {
+      line-height: 0;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      overflow: auto;
+    }
+    .mermaid-container svg { max-width: 100%; height: auto; }
+
+    /* ── Proof summary ───────────────────────────────── */
+    .proof-summary {
+      background: linear-gradient(180deg, rgba(102,179,255,0.04), rgba(255,255,255,0.01)), #10141d;
+      border: 1px solid rgba(102,179,255,0.14);
+      border-radius: var(--radius-lg);
+      padding: 0.9rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .proof-summary h3 { color: var(--accent); font-size: 0.68rem; font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.65rem; }
+    .proof-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .proof-item {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.78rem;
+    }
+    .proof-item .pi-label { color: var(--text-faint); font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .proof-item .pi-value { font-weight: 600; color: var(--text); }
+    .proof-item .pi-ok { color: #4ade80; }
+    .proof-item .pi-fail { color: #f87171; }
+
+    /* ── Accordion ───────────────────────────────────── */
+    .step {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00)), var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      margin-bottom: 0.55rem;
+      overflow: hidden;
+      transition: border-color 140ms ease;
+    }
+    .step:hover { border-color: var(--border-strong); }
+    .step-header {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      user-select: none;
+      transition: background 140ms ease;
+    }
+    .step-header:hover { background: var(--surface-2); }
+    .step-header h3 { font-size: 0.875rem; font-weight: 600; }
+    .step-header .chevron {
+      transition: transform 200ms ease;
+      font-size: 0.7rem; color: var(--text-faint);
+    }
+    .step.open .step-header .chevron { transform: rotate(180deg); }
+    .step-body {
+      display: none;
+      padding: 0.75rem 1rem 0.9rem;
+      border-top: 1px solid var(--border);
+    }
+    .step.open .step-body { display: block; }
+    .step-body p { margin-bottom: 0.45rem; font-size: 0.85rem; }
+    .step-body p:last-child { margin-bottom: 0; }
+
+    /* ── Badges ───────────────────────────────────────── */
+    .gate-badge {
+      display: inline-block;
+      font-weight: 700;
+      color: #ffd7a8;
+      border: 1px solid rgba(255,190,120,0.25);
+      background: rgba(146,64,14,0.20);
+      font-size: 0.65rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      vertical-align: middle;
+    }
+    .route-badge {
+      display: inline-block;
+      color: #d7c5ff;
+      background: rgba(124,58,237,0.16);
+      border: 1px solid rgba(124,58,237,0.25);
+      font-size: 0.65rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      vertical-align: middle;
+    }
+    .terminal-badge {
+      display: inline-block;
+      color: #b9f3c5;
+      background: rgba(22,101,52,0.18);
+      border: 1px solid rgba(74,222,128,0.2);
+      font-size: 0.65rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      vertical-align: middle;
+    }
+
+    /* ── Labels ──────────────────────────────────────── */
+    .label-row {
+      display: flex; gap: 0.4rem; flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+    .kv {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 0.3rem 0.75rem;
+      align-items: start;
+      margin-top: 0.4rem;
+    }
+    .kv dt { color: var(--text-faint); font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; padding-top: 0.1rem; }
+    .kv dd { color: var(--text); font-size: 0.83rem; }
+
+    /* ── Artifact cards ───────────────────────────────── */
+    .artifact-card {
+      background: linear-gradient(180deg, rgba(102,179,255,0.04), rgba(255,255,255,0.01)), #10141d;
+      border: 1px solid rgba(102,179,255,0.14);
+      border-radius: var(--radius-lg);
+      padding: 0.9rem 1rem;
+    }
+    .artifact-card h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+    .artifact-card p { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+    .path-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+    }
+    .path-row code {
+      flex: 1;
+      font-size: 0.75rem;
+      color: var(--accent);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ── Card grids ─────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+    }
+    .card h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .card p { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* ── Search ───────────────────────────────────────── */
+    #searchWrap { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
+    #searchWrap input {
+      flex: 1; max-width: 320px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem;
+      font-family: var(--font-body);
+      transition: border-color 140ms ease;
+    }
+    #searchWrap input::placeholder { color: var(--text-faint); }
+    #searchWrap input:focus { outline: none; border-color: var(--accent); }
+    #clearSearch {
+      background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text-muted); padding: 0.5rem 0.75rem;
+      border-radius: 8px; cursor: pointer; font-size: 0.83rem;
+      font-family: var(--font-body);
+      transition: color 140ms ease, border-color 140ms ease;
+    }
+    #clearSearch:hover { color: var(--text); border-color: var(--border-strong); }
+    .no-results { display: none; color: var(--text-faint); font-size: 0.83rem; margin-bottom: 0.75rem; padding: 0.5rem; }
+    .no-results.show { display: block; }
+
+    /* ── :target highlight ────────────────────────────── */
+    :target {
+      scroll-margin-top: 1rem;
+      animation: targetFlash 1.2s ease;
+    }
+    @keyframes targetFlash {
+      0%   { box-shadow: 0 0 0 0 rgba(102,179,255,0.35); }
+      100% { box-shadow: 0 0 0 10px rgba(102,179,255,0); }
+    }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 960px) {
+      .toc { left: 0 !important; transform: translateX(-100%) !important; }
+      .toc:not(.collapsed) { transform: translateX(0) !important; }
+      .main-content { margin-left: 0; max-width: calc(100vw - 4rem); }
+      body.toc-hidden .main-content { max-width: calc(100vw - 4rem); }
+      .quick-facts { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+    @media (max-width: 600px) {
+      .main-content { padding: 1rem 1rem 4rem; }
+      .card-grid { grid-template-columns: 1fr; }
+      .hero { padding: 1.1rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <button id="tocToggle" aria-label="Toggle table of contents" title="Toggle TOC" aria-expanded="true">☰</button>
+  <div class="page-shell">
+    <nav id="toc" class="toc" aria-label="Table of contents">
+      <div class="toc-header">
+        <h2>Contents</h2>
+        <div class="toc-controls">
+          <button id="themeToggle" class="toc-btn" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+        </div>
+      </div>
+      <div class="toc-body">
+        <ul>
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#facts">Quick Facts</a></li>
+          <li><a href="#diagram">Diagram</a></li>
+          <li><a href="#steps">Workflow Steps</a></li>
+          <li><a href="#route-outs">Route Outs</a></li>
+          <li><a href="#terminals">Terminal States</a></li>
+          <li><a href="#artifacts">Artifacts</a></li>
+          <li><a href="#proof">Proof</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <!-- Hero -->
+      <section id="overview">
+        <div class="hero">
+          <div class="hero-top">
+            <h1>skill-to-page</h1>
+            <span class="badge badge-version">v2.0.0</span>
+            <span class="badge badge-strict">strict</span>
+            <span class="badge badge-status">active</span>
+          </div>
+          <p>Transform a skill's <span class="code-inline">SKILL.md</span> into a self-contained, navigable HTML page — with Mermaid diagram, searchable accordions, TOC, theme toggle, and proof metadata.</p>
+        </div>
+      </section>
+
+      <!-- Quick Facts -->
+      <section id="facts">
+        <div class="quick-facts">
+          <div class="fact">
+            <span class="fact-icon">🔗</span>
+            <span class="fact-text"><strong>9 workflow steps</strong>From reading SKILL.md through emitting proof metadata</span>
+          </div>
+          <div class="fact">
+            <span class="fact-icon">🚦</span>
+            <span class="fact-text"><strong>2 mandatory gates</strong>S5 (Mermaid) and S8 (Artifact) must both pass</span>
+          </div>
+          <div class="fact">
+            <span class="fact-icon">🔍</span>
+            <span class="fact-text"><strong>13 browser checks</strong>CDP verification: render, TOC, zoom, search, accordion, console</span>
+          </div>
+          <div class="fact">
+            <span class="fact-icon">📄</span>
+            <span class="fact-text"><strong>4 artifact types</strong>index.html, workflow-model.json, artifact-proof.json, diagram.mmd</span>
+          </div>
+          <div class="fact">
+            <span class="fact-icon">🎯</span>
+            <span class="fact-text"><strong>1 route-out</strong>Delegation to /skill-to-page sub-skill on critic failure</span>
+          </div>
+          <div class="fact">
+            <span class="fact-icon">✅</span>
+            <span class="fact-text"><strong>1 terminal state</strong>Proof metadata emitted — skill terminates successfully</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search -->
+      <div id="searchWrap">
+        <input type="search" id="searchInput" placeholder="Search steps, routes, artifacts…" aria-label="Search">
+        <button id="clearSearch">Clear</button>
+      </div>
+      <div id="noResults" class="no-results">No matching sections found.</div>
+
+      <!-- Diagram -->
+      <section id="diagram">
+        <h2>Diagram</h2>
+        <div class="mermaid-container">
+          <pre class="mermaid">%%{ init: { 'theme': 'dark', 'flowchart': { 'curve': 'basis', 'nodeSpacing': 40, 'rankSpacing': 50 } } }%%
+flowchart TD
+
+    classDef step fill:#1e40af,stroke:#1e3a8a,color:#ffffff,stroke-width:2px
+    classDef route-out fill:#7c3aed,stroke:#6d28d9,color:#ffffff,stroke-width:2px
+    classDef terminal fill:#166534,stroke:#14532d,color:#ffffff,stroke-width:2px
+    classDef gate fill:#92400e,stroke:#78350f,color:#ffffff,stroke-width:2px
+
+    Start(["🎯 skill-to-page"])
+    S1["Step 1: read_skill_source"]
+    S2["Step 2: extract_workflow_model"]
+    S3["Step 3: detect_source_gaps"]
+    S4["Step 4: design_mermaid_diagram"]
+    S5{"S5 critic gate?"}
+    S6["Step 6: generate_html"]
+    S7["Step 7: browser_verify_artifact"]
+    S8{"S8 critic gate?"}
+    S9["Step 9: emit_proof_metadata"]
+    End(["✅ proof_emitted"])
+    RouteOut(["↪ delegate_to_skill_to_page"])
+
+    Start --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 -->|pass| S6
+    S5 -->|fail| RouteOut
+    S6 --> S7
+    S7 --> S8
+    S8 -->|pass| S9
+    S8 -->|fail| RouteOut
+    S9 --> End
+
+    class S1,S2,S3,S4,S6,S7 step
+    class S5,S8 gate
+    class RouteOut route-out
+    class End terminal</pre>
+        </div>
+      </section>
+
+      <!-- Proof Summary -->
+      <div class="proof-summary">
+        <h3>Verification Summary</h3>
+        <div class="proof-grid">
+          <div class="proof-item"><span class="pi-label">Steps</span><span class="pi-value pi-ok">9 / 9</span></div>
+          <div class="proof-item"><span class="pi-label">Gates</span><span class="pi-value pi-ok">2 / 2</span></div>
+          <div class="proof-item"><span class="pi-label">Route Outs</span><span class="pi-value pi-ok">1 / 1</span></div>
+          <div class="proof-item"><span class="pi-label">Terminals</span><span class="pi-value pi-ok">1 / 1</span></div>
+          <div class="proof-item"><span class="pi-label">Browser</span><span class="pi-value pi-ok">13 / 13</span></div>
+          <div class="proof-item"><span class="pi-label">Mermaid</span><span class="pi-value pi-ok">✓ rendered</span></div>
+          <div class="proof-item"><span class="pi-label">TOC Sync</span><span class="pi-value pi-ok">✓ aligned</span></div>
+          <div class="proof-item"><span class="pi-label">Gate S5</span><span class="pi-value pi-ok">✓ passed</span></div>
+          <div class="proof-item"><span class="pi-label">Gate S8</span><span class="pi-value pi-ok">✓ passed</span></div>
+          <div class="proof-item"><span class="pi-label">Ambiguities</span><span class="pi-value" style="color:#fbbf24">1 acknowledged</span></div>
+        </div>
+      </div>
+
+      <!-- Workflow Steps -->
+      <section id="steps">
+        <h2>Workflow Steps</h2>
+
+        <div class="step" id="step-1">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 1 — Read Skill Source</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Read the target skill's <span class="code-inline">SKILL.md</span>. Extract frontmatter, workflow_steps, description, triggers, prose routing, checklists/gating questions, terminal states, artifacts, sub-skills, and verification expectations.</p>
+            <div class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">P:/.claude/skills/{target}/SKILL.md</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">raw_skill_content</span></dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step-2">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 2 — Extract Workflow Model</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Build a normalized internal workflow model. The model is the source of truth for Mermaid generation, accordion sections, TOC, verification checks, and proof metadata.</p>
+            <div class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">raw_skill_content</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">workflow-model.json</span></dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step-3">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 3 — Detect Source Gaps</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Cross-check for prose-only routing, checklist branching, conditional steps shown as unconditional, missing descriptions, unrepresented terminal states or artifacts, and naming mismatches.</p>
+            <div class="label-row"><span class="gate-badge">Gate</span><code class="code-inline">ambiguities.length === 0 OR ambiguities_recorded === true</code></div>
+            <div class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">raw_skill_content</span>, <span class="code-inline">workflow-model.json</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">workflow-model.json</span> (updated)</dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step-4">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 4 — Design Mermaid Diagram</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Generate Mermaid from the workflow model. Rules: <span class="code-inline">flowchart TD</span>, <span class="code-inline">curve:'basis'</span>, <span class="code-inline">nodeSpacing:40</span>, <span class="code-inline">rankSpacing:50</span>, ≤40 char labels, classDefs by node type.</p>
+            <div class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">workflow-model.json</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">diagram.mmd</span></dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step-5">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 5 — Mermaid Critic Review</h3>
+            <span class="gate-badge">Gate</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Spawn <span class="code-inline">agent:general-purpose</span> to validate diagram. Checks: traceability, crossings (must be 0), label clarity, edge labeling, readability at 50% zoom, syntax validity, coverage of all model elements, theme-safe colors.</p>
+            <div class="label-row"><span class="gate-badge">Gate</span><code class="code-inline" style="font-size:0.7rem">crossings==0 AND syntax_errors==[] AND legibility_score>=0.8 AND missing_steps==[] AND missing_route_outs==[] AND missing_terminal_states==[] AND dark_theme_contrast_ok==true AND light_theme_text_readable==true</code></div>
+            <div class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">diagram.mmd</span>, <span class="code-inline">workflow-model.json</span></dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step-6">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 6 — Generate HTML</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Build index.html from the workflow model: hero card, quick facts, Mermaid diagram, accordion per step, route-outs section, terminal states section, artifact cards with copy-to-clipboard paths, proof summary, theme toggle, search UI, responsive layout.</p>
+            <div class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">workflow-model.json</span>, <span class="code-inline">diagram.mmd</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">index.html</span></dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step-7">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 7 — Browser Verify Artifact</h3>
+            <span class="badge" style="background:rgba(102,179,255,0.12);color:var(--accent);border:1px solid rgba(102,179,255,0.2);font-size:0.62rem;padding:0.1rem 0.4rem;border-radius:99px;text-transform:uppercase;letter-spacing:0.06em">Orchestrator Only</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Orchestrator-only CDP verification. 13 checks: file exists, Mermaid renders, TOC links resolve, TOC initial state synced, content reflow, theme toggle preserves viewport, zoom/reset, drag-to-pan, wheel zoom, search finds sections, accordion works, no duplicate listeners, no console errors.</p>
+            <div class="kv">
+              <dt>Timeout</dt><dd><span class="code-inline">120000ms</span> total, <span class="code-inline">30s</span> per check</dd>
+              <dt>Inputs</dt><dd><span class="code-inline">index.html</span></dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step-8">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 8 — Artifact Critic Review</h3>
+            <span class="gate-badge">Gate</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Spawn <span class="code-inline">agent:general-purpose</span> to verify fidelity. Checks: HTML represents workflow model, step coverage, no invented routes (blocking), TOC initial state sync (blocking), TOC handler atomicity (blocking).</p>
+            <div class="label-row"><span class="gate-badge">Gate</span><code class="code-inline">no_invented_routes==true AND toc_initial_state_synced==true AND toc_handler_atomic==true</code></div>
+            <div class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">index.html</span>, <span class="code-inline">workflow-model.json</span>, <span class="code-inline">diagram.mmd</span></dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step-9">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 9 — Emit Proof Metadata</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Write <span class="code-inline">workflow-model.json</span>, <span class="code-inline">artifact-proof.json</span>, and <span class="code-inline">diagram.mmd</span> to the artifacts directory.</p>
+            <div class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">workflow-model.json</span>, <span class="code-inline">verification_result</span>, <span class="code-inline">critic_results</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">artifact-proof.json</span>, <span class="code-inline">workflow-model.json</span>, <span class="code-inline">diagram.mmd</span></dd>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Route Outs -->
+      <section id="route-outs">
+        <h2>Route Outs</h2>
+        <div class="card-grid">
+          <div class="card">
+            <h4>delegate_to_skill_to_page</h4>
+            <p>When a critic gate fails, route to the /skill-to-page sub-skill for re-processing or delegation.</p>
+            <div class="kv" style="margin-top:0.5rem">
+              <dt>Target</dt><dd><span class="code-inline">skill-to-page sub-skill</span></dd>
+              <dt>Trigger</dt><dd>skill-craft routes here during EXECUTING</dd>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Terminal States -->
+      <section id="terminals">
+        <h2>Terminal States</h2>
+        <div class="card-grid">
+          <div class="card">
+            <h4>proof_emitted</h4>
+            <p>All artifacts written to disk. Skill terminates successfully. No further steps.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Artifacts -->
+      <section id="artifacts">
+        <h2>Artifacts</h2>
+        <div class="card-grid">
+          <div class="artifact-card">
+            <h4>📄 index.html</h4>
+            <p>Self-contained navigable HTML page — Mermaid diagram, TOC, search, theme toggle, accordion steps, proof summary.</p>
+            <div class="path-row">
+              <code id="path-index">P:/.claude/skills/{target}/index.html</code>
+              <button class="copy-btn" onclick="copyPath(this, 'P:/.claude/skills/{target}/index.html')">Copy</button>
+            </div>
+          </div>
+          <div class="artifact-card">
+            <h4>📋 workflow-model.json</h4>
+            <p>Normalized extracted workflow model — steps, decision points, route-outs, terminal states, artifacts, gaps, ambiguities.</p>
+            <div class="path-row">
+              <code id="path-model">.claude/.artifacts/{terminal_id}/skill-to-page/{target}/workflow-model.json</code>
+              <button class="copy-btn" onclick="copyPath(this, '.claude/.artifacts/{terminal_id}/skill-to-page/{target}/workflow-model.json')">Copy</button>
+            </div>
+          </div>
+          <div class="artifact-card">
+            <h4>📊 artifact-proof.json</h4>
+            <p>Proof metadata with coverage metrics, browser verification results, and critic gate pass/fail status.</p>
+            <div class="path-row">
+              <code id="path-proof">.claude/.artifacts/{terminal_id}/skill-to-page/{target}/artifact-proof.json</code>
+              <button class="copy-btn" onclick="copyPath(this, '.claude/.artifacts/{terminal_id}/skill-to-page/{target}/artifact-proof.json')">Copy</button>
+            </div>
+          </div>
+          <div class="artifact-card">
+            <h4>🗺️ diagram.mmd</h4>
+            <p>Raw Mermaid source for the workflow diagram — validates against workflow model.</p>
+            <div class="path-row">
+              <code id="path-diagram">.claude/.artifacts/{terminal_id}/skill-to-page/{target}/diagram.mmd</code>
+              <button class="copy-btn" onclick="copyPath(this, '.claude/.artifacts/{terminal_id}/skill-to-page/{target}/diagram.mmd')">Copy</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Proof -->
+      <section id="proof">
+        <h2>Proof Metadata</h2>
+        <div class="proof-summary">
+          <div class="proof-grid">
+            <div class="proof-item"><span class="pi-label">Skill</span><span class="pi-value">skill-to-page</span></div>
+            <div class="proof-item"><span class="pi-label">Version</span><span class="pi-value">2.0.0</span></div>
+            <div class="proof-item"><span class="pi-label">Generator</span><span class="pi-value">skill-to-page v2.0.0 (self-test)</span></div>
+            <div class="proof-item"><span class="pi-label">Source</span><span class="pi-value" style="font-size:0.72rem;color:var(--accent)">P:/packages/cc-skills-meta/skills/skill-to-page/SKILL.md</span></div>
+            <div class="proof-item"><span class="pi-label">Artifact</span><span class="pi-value" style="font-size:0.72rem;color:var(--accent)">P:/packages/cc-skills-meta/skills/skill-to-page/index.html</span></div>
+            <div class="proof-item"><span class="pi-label">Ambiguities</span><span class="pi-value" style="color:#fbbf24">1 acknowledged</span></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      flowchart: { curve: 'basis', nodeSpacing: 40, rankSpacing: 50 }
+    });
+
+    // Copy buttons on <pre> blocks
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.querySelector('.copy-btn')) return;
+      const btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.type = 'button';
+      btn.textContent = 'Copy';
+      btn.setAttribute('aria-label', 'Copy code block');
+      btn.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(pre.innerText);
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1200);
+      });
+      pre.appendChild(btn);
+    });
+
+    // Hash tracking for :target
+    if (window.location.hash) {
+      const el = document.querySelector(window.location.hash);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
+    }
+
+    // TOC toggle — button lives outside nav (always visible, left:0)
+    window.initTocToggle = function() {
+      const btn = document.getElementById('tocToggle');
+      const toc = document.getElementById('toc');
+      if (!btn || !toc) return;
+      const isMobile = window.matchMedia('(max-width: 960px)').matches;
+
+      // Sync initial state: if mobile OR nav already collapsed, hide nav
+      if (isMobile || toc.classList.contains('collapsed')) {
+        document.body.classList.add('toc-hidden');
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        btn.setAttribute('aria-expanded', 'true');
+      }
+
+      btn.addEventListener('click', () => {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        toc.classList.toggle('collapsed', expanded);
+        document.body.classList.toggle('toc-hidden', expanded);
+        btn.setAttribute('aria-expanded', String(!expanded));
+      });
+    };
+
+    // Accordion
+    window.toggleStep = function(header) {
+      const step = header.closest('.step');
+      step.classList.toggle('open');
+    };
+
+    // Copy path
+    window.copyPath = function(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+      });
+    };
+
+    // Search
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const noResults = document.getElementById('noResults');
+    const allSteps = document.querySelectorAll('.step');
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase();
+      let visible = 0;
+      allSteps.forEach(s => {
+        const text = s.textContent.toLowerCase();
+        const show = text.includes(q);
+        s.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      noResults.classList.toggle('show', visible === 0 && q.length > 0);
+    });
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      allSteps.forEach(s => s.style.display = '');
+      noResults.classList.remove('show');
+    });
+
+    // Theme toggle
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const isDark = root.style.getPropertyValue('--bg') === '#0f1115' || root.style.getPropertyValue('--bg') === '';
+      if (isDark) {
+        root.style.setProperty('--bg', '#f8fafc');
+        root.style.setProperty('--surface', '#ffffff');
+        root.style.setProperty('--surface-2', '#f1f5f9');
+        root.style.setProperty('--surface-3', '#e2e8f0');
+        root.style.setProperty('--text', '#0f172a');
+        root.style.setProperty('--text-muted', '#475569');
+        root.style.setProperty('--text-faint', '#94a3b8');
+        root.style.setProperty('--border', 'rgba(0,0,0,0.10)');
+        root.style.setProperty('--border-strong', 'rgba(0,0,0,0.16)');
+        root.style.setProperty('--accent', '#0369a1');
+        root.style.setProperty('--accent-soft', 'rgba(3,105,161,0.12)');
+        root.style.setProperty('--shadow', '0 8px 24px rgba(0,0,0,0.10)');
+        mermaid.initialize({ startOnLoad: true, theme: 'forest', flowchart: { curve: 'basis', nodeSpacing: 40, rankSpacing: 50 } });
+      } else {
+        root.style.setProperty('--bg', '#0f1115');
+        root.style.setProperty('--surface', '#151922');
+        root.style.setProperty('--surface-2', '#1b2130');
+        root.style.setProperty('--surface-3', '#222a3a');
+        root.style.setProperty('--text', '#e8edf5');
+        root.style.setProperty('--text-muted', '#a8b3c7');
+        root.style.setProperty('--text-faint', '#7e889b');
+        root.style.setProperty('--border', 'rgba(255,255,255,0.10)');
+        root.style.setProperty('--border-strong', 'rgba(255,255,255,0.16)');
+        root.style.setProperty('--accent', '#66b3ff');
+        root.style.setProperty('--accent-soft', 'rgba(102,179,255,0.14)');
+        root.style.setProperty('--shadow', '0 10px 30px rgba(0,0,0,0.22)');
+        mermaid.initialize({ startOnLoad: true, theme: 'dark', flowchart: { curve: 'basis', nodeSpacing: 40, rankSpacing: 50 } });
+      }
+    });
+
+    initTocToggle();
+  </script>
+</body>
+</html>

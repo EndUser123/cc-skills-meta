@@ -4,16 +4,26 @@ description: Adaptive reasoning gate for SDLC work - choose depth, chain frames,
 version: "3.0.0"
 status: stable
 category: meta
+enforcement: advisory
 triggers:
   - /think
 aliases:
   - /think
-
 suggest:
+  - /reason_openai
+  - /genius
   - /truth
   - /decision-tree
   - /sequential-thinking
-  - /analyze
+workflow_steps:
+  - id: infer_subject
+    description: "Infer the actual subject from prompt and conversation context"
+  - id: choose_depth
+    description: "Select reasoning depth appropriate to risk and uncertainty"
+  - id: apply_frames
+    description: "Chain reasoning frames as warranted"
+  - id: verify
+    description: "Verify claims before settling"
 ---
 
 # /think
@@ -201,10 +211,14 @@ Return:
 
 For open-ended or strategy-heavy prompts, use this structure:
 
-1. Best answer.
-2. Strongest alternative and why it loses.
-3. One premise or assumption worth challenging.
-4. What evidence or constraint would change the recommendation.
+1. Restate the real capability target in one sentence.
+2. Evaluate the direct path.
+3. Best answer.
+4. Strongest alternative and why it loses.
+5. One premise or assumption worth challenging.
+6. What evidence or constraint would change the recommendation.
+
+For requests with a named mechanism: start by confirming the capability target, then evaluate the direct path before presenting alternatives. See **Capability Target Principle** for the full evaluation ladder.
 
 Rerun the branch comparison internally before finalizing the answer. Do not wait for user pushback to reassess whether another branch is stronger.
 
@@ -290,6 +304,18 @@ Use frame chains only when they expose different failure modes or decision crite
 
 Do not chain more than needed. A short chain that changes the answer is better than a long chain that repeats the same idea.
 
+## Capability Target Principle
+
+Treat the requested mechanism as a capability target, not a feature gate. The user's named path is one way to achieve the goal — not the only way.
+
+- Identify the actual capability the user is trying to achieve.
+- If the named path is unavailable, brittle, or version-dependent, do not stop at "not possible."
+- Evaluate alternatives across three tiers: (1) native/direct, (2) workaround, (3) architecture-level redesign.
+- Candidates include: MCP tools, A2A/delegated agents, separate worker agents, routing tricks, gateway delegation, wrapper scripts, multi-session patterns, prompt contracts.
+- Mark each alternative explicitly: robust, brittle, version-dependent, or speculative.
+- Prefer capability-preserving alternatives over pedantic rejection. Give the simplest working architecture first, then stronger alternatives.
+- Be explicit about what is robust vs. brittle vs. speculative.
+
 ## Operating Rules
 
 - Do not print the full internal scaffold.
@@ -304,6 +330,7 @@ Do not chain more than needed. A short chain that changes the answer is better t
 - If the problem belongs in investigation mode, do not stop at a symptom label. State a hypothesis, a discriminating test, and the provisional conclusion.
 - If the prompt is creative or open-ended, include at least one non-obvious option and one premise-challenging option before recommending.
 - If another option is materially stronger, explicitly re-rank it before answering rather than rationalizing the first choice.
+- If the direct path to a requested mechanism is unavailable or brittle, propose a capability-preserving alternative before rejecting. See **Capability Target Principle**.
 - If a challenger agent would materially improve the answer, recommend it proactively instead of pretending the internal pass is always enough.
 - If a frame is a poor fit for the problem, switch frames instead of forcing the answer through it.
 - If a recommendation depends on an unproven idea, say so and separate the recommendation from the discovery plan.

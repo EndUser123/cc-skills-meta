@@ -11,13 +11,8 @@ workflow_steps:
   - Dispatch to internal Reflexion or external CLIs based on routing decision
   - Run multi-round critique/reflection if complex
   - Fuse evidence and produce labeled output
-triggers:
-  - /reason
-suggest:
-  - /think
-  - /ai-pcli
-  - /sequential-thinking
-  - /decision-tree
+triggers: []
+suggest: []
 ---
 
 # /reason — Unified Hybrid Reasoning Engine (2026 Architecture)
@@ -106,14 +101,14 @@ Step 3: Route based on decision
 - **Complex / High-stakes** → Full hybrid cascade with debate rounds and hierarchical decomposition.
 
 3. **Multi-Round Reflexion Engine** (core brain — evolved from original /think)
-   - **Generate**: Synthesize strongest consensus from all available sources (internal + external).
+   - **Generate**: Synthesize strongest consensus from all available sources (internal + external). Treat the requested mechanism as a capability target — if the named path is unavailable, generate capability-preserving alternatives across: native/direct, workaround, and architecture-level redesign. Mark each alternative as robust, brittle, version-dependent, or speculative.
    - **Critique**: Cross-model analysis + evidence labeling + gap detection + solo-dev tradeoff callout. Uses your existing ACG workflow where appropriate.
    - **Improve**: Refined final answer with frame chaining only when it meaningfully changes the outcome.
    - Optional 1–2 debate/reflexion rounds: critiques are fed back to external models or run internally.
    - Always ends with **Evidence Fusion Layer**: confidence matrix + explicit Verified/Inferred/Unproven labels on every major claim.
 
 ### 3. Multi-Round Reflexion Engine (core brain — evolved from original /think)
-- **Generate**: Synthesize strongest consensus from all available sources (internal + external).
+- **Generate**: Synthesize strongest consensus from all available sources (internal + external). Treat the requested mechanism as a capability target — if the named path is unavailable, generate capability-preserving alternatives across: native/direct, workaround, and architecture-level redesign. Mark each alternative as robust, brittle, version-dependent, or speculative.
 - **Critique**: Cross-model analysis + evidence labeling + gap detection + solo-dev tradeoff callout.
 - **Decision Theory Pass**: Score each candidate on: expected upside, downside risk, reversibility, time to feedback, energy cost, dependency load, compounding potential, robustness.
 - **Bias Check**: Detect sunk cost, status quo bias, loss aversion, overconfidence, confirmation bias, novelty bias, analysis paralysis, emotional relief disguised as logic.

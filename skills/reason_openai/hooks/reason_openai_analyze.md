@@ -13,7 +13,7 @@ Reads `~/.claude/logs/reason_openai_log.jsonl` and prints:
 ## Running it
 
 ```bash
-python P:/packages/cc-skills-meta/skills/reason_openai/hooks/reason_openai_analyze.py
+cd "P:/packages/cc-skills-meta" && uv run python -m skills.reason_openai.hooks.reason_openai_analyze
 ```
 
 Or ask naturally: *"what patterns am I repeating in /reason_openai?"*
