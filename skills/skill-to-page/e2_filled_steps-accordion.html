@@ -1,0 +1,111 @@
+<section id="steps">
+        <h2>Workflow Steps</h2>
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+      
+        <article class="step" id="step-1">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 1 — Read SKILL.md</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Read the target skill's SKILL.md completely. Extract frontmatter, workflow_steps, description, triggers, routing, terminal states, and artifacts.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step-2">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 2 — Build Artifact Plan</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Design the page structure from the workflow model. Emit artifact-plan.json with section order, content bindings, and ui_config.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step-3">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 3 — Design Mermaid</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Generate the Mermaid diagram from the normalized workflow model — not from prose. Apply layout rules, color-coded classDefs, and edge labels.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step-4">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 4 — Mermaid Critic</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Validate the diagram: zero edge crossings, all nodes labeled, all edges labeled, readable at 50/100/150% zoom. Gate: crossings==0 AND syntax valid.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step-5">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 5 — Emit HTML</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Assemble index.html from template skeleton files. Fill content slots from artifact-plan.json. CSS/JS come from templates only — never generated from prose.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step-6">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 6 — Static Validate</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Run S1–S19 regex checks on index.html: tocToggle sibling, nav#toc class, CSS properties, element presence, content-model binding.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step-7">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 7 — Runtime Validate</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Launch browser via browser-harness. Verify page loads, TOC visible by default, step header present, search input exists, Mermaid pre present, resize handle present, zoom controls, copy buttons.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step-8">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 8 — External Critic</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Run an independent LLM critic against the HTML. Contract checks: no_invented_routes, toc_initial_state_synced, toc_handler_atomic, html_represents_workflow_model, steps_complete, no_internal_policy_prose.</p>
+          </div>
+        </article>
+
+        <article class="step" id="step-9">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 9 — Emit Proof Metadata</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Write workflow-model.json, artifact-proof.json, and diagram.mmd to the artifacts directory. Skill terminates successfully.</p>
+          </div>
+        </article>
+</section>

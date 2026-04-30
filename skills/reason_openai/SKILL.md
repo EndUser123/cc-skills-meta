@@ -1,10 +1,7 @@
 ---
 name: reason_openai
 description: Decision Quality Engine — cognitive amplification for moments when your thinking detects weakness.
-version: "5.1.0"
-status: stable
-category: meta
-enforcement: advisory
+enforcement: none
 triggers:
   - /reason_openai
 workflow_steps:
@@ -20,7 +17,6 @@ workflow_steps:
     description: "Dedupe + conflict analysis — anti-majoritarian weighting, preserve minority reports"
   - id: stage6_synthesize
     description: "Final synthesis with regret analysis, warning signs, and discriminating test"
-allowed-tools: Bash(pwd:*), Bash(ls:*), Bash(find:*), Bash(git:*), Bash(cat:*), Bash(head:*), Bash(sed:*), Bash(test:*), Bash(grep:*)
 ---
 
 # /reason_openai — Decision Quality Engine

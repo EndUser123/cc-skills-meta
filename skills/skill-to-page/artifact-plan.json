@@ -1,0 +1,62 @@
+{
+  "skill_name": "skill-to-page",
+  "version": "2.0.0",
+  "template": "default-docs-v1",
+  "template_version": "v1",
+  "page_structure": {
+    "sections": [
+      { "id": "overview", "type": "hero" },
+      { "id": "facts", "type": "quick-facts" },
+      { "id": "diagram", "type": "mermaid" },
+      { "id": "steps", "type": "accordion" },
+      { "id": "route-outs", "type": "route-out-list" },
+      { "id": "terminals", "type": "terminal-list" },
+      { "id": "artifacts", "type": "artifact-cards" },
+      { "id": "proof", "type": "proof-metadata" }
+    ]
+  },
+  "ui_config": {
+    "palette": "tailwind-modern",
+    "toc_width": "18rem",
+    "toc_breakpoint": 960,
+    "diagram_height_initial": 480,
+    "diagram_height_min": 200,
+    "diagram_height_max": 800
+  },
+  "mermaid_source": "flowchart TD\n    Start([\"🎯 Start\"]) --> A[\"📖 Stage A\\nRead SKILL.md\"]\n    A --> B[\"📋 Stage B\\nBuild Artifact Plan\"]\n    B --> C[\"🎨 Stage C\\nDesign Mermaid\"]\n    C --> D{\"⚠️ Stage D\\nMermaid Critic\"}\n    D -->|fail| C\n    D -->|pass| E[\"⚙️ Stage E\\nEmit HTML\"]\n    E --> F[\"🔍 Stage F\\nStatic Validate\"]\n    F --> G[\"🌐 Stage G\\nRuntime Validate\"]\n    G --> H[\"📊 Stage H\\nExternal Critic\"]\n    H -->|fail| E\n    H -->|pass| End([\"✅ Done\"])\n    D -.->|route-out| Route[\"↪ Route-Out\\ndelegate_to_skill_to_page\"]",
+  "content_bindings": {
+    "skill_name": "skill-to-page",
+    "version": "2.0.0",
+    "description": "Transform a skill's SKILL.md into a self-contained, navigable HTML page — with Mermaid diagram, searchable accordions, TOC, theme toggle, and proof metadata.",
+    "steps": [
+      { "id": "stage_a", "name": "Read SKILL.md", "description": "Read the target skill's SKILL.md completely. Extract frontmatter, workflow_steps, description, triggers, routing, terminal states, and artifacts." },
+      { "id": "stage_b", "name": "Build Artifact Plan", "description": "Design the page structure from the workflow model. Emit artifact-plan.json with section order, content bindings, and ui_config." },
+      { "id": "stage_c", "name": "Design Mermaid", "description": "Generate the Mermaid diagram from the normalized workflow model — not from prose. Apply layout rules, color-coded classDefs, and edge labels." },
+      { "id": "stage_d", "name": "Mermaid Critic", "description": "Validate the diagram: zero edge crossings, all nodes labeled, all edges labeled, readable at 50/100/150% zoom. Gate: crossings==0 AND syntax valid." },
+      { "id": "stage_e", "name": "Emit HTML", "description": "Assemble index.html from template skeleton files. Fill content slots from artifact-plan.json. CSS/JS come from templates only — never generated from prose." },
+      { "id": "stage_f", "name": "Static Validate", "description": "Run S1–S19 regex checks on index.html: tocToggle sibling, nav#toc class, CSS properties, element presence, content-model binding." },
+      { "id": "stage_g", "name": "Runtime Validate", "description": "Launch browser via browser-harness. Verify page loads, TOC visible by default, step header present, search input exists, Mermaid pre present, resize handle present, zoom controls, copy buttons." },
+      { "id": "stage_h", "name": "External Critic", "description": "Run an independent LLM critic against the HTML. Contract checks: no_invented_routes, toc_initial_state_synced, toc_handler_atomic, html_represents_workflow_model, steps_complete, no_internal_policy_prose." },
+      { "id": "stage_i", "name": "Emit Proof Metadata", "description": "Write workflow-model.json, artifact-proof.json, and diagram.mmd to the artifacts directory. Skill terminates successfully." }
+    ],
+    "route_outs": [
+      { "id": "delegate", "target": "delegate_to_skill_to_page", "trigger": "skill-to-page invokes itself for nested skill documentation", "kind": "delegate" }
+    ],
+    "terminal_states": [
+      { "id": "proof_emitted", "name": "Proof Emitted", "description": "All proof metadata written — skill terminates successfully." }
+    ],
+    "artifacts": [
+      { "name": "index.html", "description": "Self-contained navigable HTML page with Mermaid diagram, TOC, search, theme toggle, accordion steps, proof summary.", "path": ".claude/.artifacts/{terminal_id}/skill-to-page/{target}/index.html" },
+      { "name": "workflow-model.json", "description": "Normalized internal workflow model — source of truth for Mermaid generation, accordion sections, TOC, and proof metadata.", "path": ".claude/.artifacts/{terminal_id}/skill-to-page/{target}/workflow-model.json" },
+      { "name": "artifact-proof.json", "description": "Proof metadata with coverage metrics, browser verification results, and critic gate pass/fail status.", "path": ".claude/.artifacts/{terminal_id}/skill-to-page/{target}/artifact-proof.json" },
+      { "name": "diagram.mmd", "description": "Raw Mermaid source for the workflow diagram — validates against workflow model.", "path": ".claude/.artifacts/{terminal_id}/skill-to-page/{target}/diagram.mmd" }
+    ]
+  },
+  "facts": [
+    "9 workflow steps",
+    "1 gate (Stage D)",
+    "1 route-out",
+    "1 terminal state",
+    "4 artifact types"
+  ]
+}

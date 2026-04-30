@@ -1,29 +1,29 @@
+"""Domain Analyzer Agent — enriches findings with project domain context.
+
+Reads initial findings from deterministic detectors and session analysis,
+then enriches them with domain-specific health assessments. The agent runs
+as a Claude Code subagent (spawned by the LLM following SKILL.md instructions)
+and writes structured JSON to the artifact directory.
+"""
 from __future__ import annotations
 
-"""
-Domain Analyzer Agent — spawned via Claude Code Agent tool.
-
-This module provides the agent specification and handoff contract
-for the domain analyzer subagent. The actual execution happens via
-Agent(subagent_type="general-purpose", prompt=...) in Claude Code.
-
-The agent reads a handoff JSON file, performs analysis, and writes
-results back to a designated output file.
-"""
-from pathlib import Path
 import json
+from pathlib import Path
 
 from . import parse_agent_result
-from ..models import Finding, AgentResult
+from ..models import AgentResult, Finding
 
 
-def write_handoff(path: Path, target: str, root: str, domains: list[str] | None = None) -> None:
-    """Write the handoff JSON for the domain analyzer agent."""
+def write_handoff(
+    path: Path,
+    findings: list[Finding],
+    project_context: dict,
+) -> None:
+    """Write findings + project context for the domain analyzer agent."""
     handoff = {
         "role": "domain_analyzer",
-        "target": target,
-        "root": root,
-        "domains": domains or ["quality", "tests", "docs", "security", "performance"],
+        "project": project_context,
+        "findings": [f.to_dict() for f in findings],
         "output_path": str(path.parent / "domain_analyzer_result.json"),
     }
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -31,5 +31,5 @@ def write_handoff(path: Path, target: str, root: str, domains: list[str] | None 
 
 
 def read_result(path: Path) -> AgentResult:
-    """Read the domain analyzer result from its output file."""
+    """Read the domain analyzer result."""
     return parse_agent_result(path, "domain_analyzer")

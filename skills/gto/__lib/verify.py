@@ -49,7 +49,8 @@ def verify_artifact(artifact_path: Path) -> dict[str, Any]:
     if isinstance(machine, list):
         has_rns_d = any(isinstance(line, str) and line.startswith("RNS|D|") for line in machine)
         has_rns_z = any(isinstance(line, str) and line.startswith("RNS|Z|") for line in machine)
-        if not has_rns_d:
+        has_findings = len(data.get("findings", [])) > 0
+        if not has_rns_d and has_findings:
             result["valid"] = False
             result["errors"].append("machine_output missing RNS|D| domain header")
         if not has_rns_z:

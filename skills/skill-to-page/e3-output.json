@@ -1,0 +1,18 @@
+{
+  "stage": "E3",
+  "status": "pass",
+  "css_parts": [
+    "shared-css.css",
+    "toc-css.css",
+    "section-css.css",
+    "diagram-css.css"
+  ],
+  "js_parts": [
+    "shared-scripts.js",
+    "diagram-scripts.js"
+  ],
+  "palette_note": "PALETTES already in diagram-scripts.js \u2014 not injected",
+  "css_size": 19440,
+  "js_size": 25034,
+  "errors": []
+}

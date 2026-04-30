@@ -1,20 +1,22 @@
+"""Findings Reviewer Agent — validates findings for quality and accuracy.
+
+Reviews findings for missing evidence, duplication, false positives,
+and severity misclassification. Runs as a Claude Code subagent.
+"""
 from __future__ import annotations
 
-"""
-Findings Reviewer Agent — spawned via Claude Code Agent tool.
-
-Reviews and validates findings from deterministic detectors and domain analyzers.
-Removes duplicates, adjusts severities, and ensures evidence quality.
-"""
-from pathlib import Path
 import json
+from pathlib import Path
 
 from . import parse_agent_result
-from ..models import Finding, AgentResult
+from ..models import AgentResult, Finding
 
 
-def write_handoff(path: Path, findings: list[Finding]) -> None:
-    """Write findings for the reviewer agent to evaluate."""
+def write_handoff(
+    path: Path,
+    findings: list[Finding],
+) -> None:
+    """Write findings for the reviewer agent."""
     handoff = {
         "role": "findings_reviewer",
         "findings": [f.to_dict() for f in findings],
@@ -25,5 +27,5 @@ def write_handoff(path: Path, findings: list[Finding]) -> None:
 
 
 def read_result(path: Path) -> AgentResult:
-    """Read the reviewer result from its output file."""
+    """Read the findings reviewer result."""
     return parse_agent_result(path, "findings_reviewer")

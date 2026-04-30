@@ -1,0 +1,39 @@
+{
+  "stage": "H",
+  "validator": "external-critic",
+  "checks": [
+    {
+      "check_id": "no_invented_routes",
+      "passed": true,
+      "evidence": "TOC links are all internal anchors (#overview, #facts, #diagram, #steps, #route-outs, #terminals, #artifacts, #proof). Mermaid diagram shows delegate_to_skill_to_page as a node label, not an href. #route-outs card maps to skill-craft routing trigger, consistent with SKILL.md. No external route targets present."
+    },
+    {
+      "check_id": "toc_initial_state_synced",
+      "passed": true,
+      "evidence": "aria-expanded='true' on tocToggle (line 517). initTocToggle() uses matchMedia('(min-width: 961px)').matches as initial tocIsOpen \u2014 true on desktop. nav#toc has no .collapsed class by default. TOC visible on desktop load."
+    },
+    {
+      "check_id": "toc_handler_atomic",
+      "passed": true,
+      "evidence": "All TOC toggle logic contained in initTocToggle() (lines 1280\u20131310). Single btn.addEventListener('click') at line 1306. State flip tocIsOpen=!tocIsOpen followed by applyTocState() inside the same listener. Not split across multiple listeners or files."
+    },
+    {
+      "check_id": "html_represents_workflow_model",
+      "passed": true,
+      "evidence": "SKILL.md workflow_steps has 9 entries (stage_a_source_extractor through stage_i_emit_proof_metadata). HTML accordion has 9 .step articles (#step-1 through #step-9, lines 652\u2013740), each with a Step N title and description. All 9 steps from the skill appear."
+    },
+    {
+      "check_id": "steps_complete",
+      "passed": true,
+      "evidence": "Every step card has h3 title (e.g., 'Step 1 \u2014 Read SKILL.md') and .step-body > p with description text. All 9 steps have non-empty content."
+    },
+    {
+      "check_id": "no_internal_policy_prose",
+      "passed": true,
+      "evidence": "No SKILL.md internal headings (Stage A/B/C, forbidden leakage rules, gap detection, mandatory checks, pipeline architecture prose) appear in the HTML. Section headings are generic (Overview, Quick Facts, Diagram, Workflow Steps, etc.). Step descriptions are templated summaries, not policy language."
+    }
+  ],
+  "gate_passed": true,
+  "gate_summary": "All 6 checks passed. Gate (no_invented_routes AND toc_initial_state_synced AND toc_handler_atomic) is true.",
+  "failed_checks": []
+}

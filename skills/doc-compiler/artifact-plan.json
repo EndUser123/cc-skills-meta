@@ -1,0 +1,248 @@
+{
+  "template": "default-docs-v1",
+  "template_version": "v1",
+  "page_structure": {
+    "sections": [
+      {
+        "id": "overview",
+        "type": "hero",
+        "title": "Overview"
+      },
+      {
+        "id": "facts",
+        "type": "quick-facts",
+        "items": []
+      },
+      {
+        "id": "diagram",
+        "type": "mermaid"
+      },
+      {
+        "id": "steps",
+        "type": "accordion",
+        "items": [
+          "step-1",
+          "step-2",
+          "step-3",
+          "step-4",
+          "step-5",
+          "step-6",
+          "step-7",
+          "step-8",
+          "step-9",
+          "step-10",
+          "step-11",
+          "step-12"
+        ]
+      },
+      {
+        "id": "route-outs",
+        "type": "route-out-list"
+      },
+      {
+        "id": "terminals",
+        "type": "terminal-list"
+      },
+      {
+        "id": "artifacts",
+        "type": "artifact-cards"
+      },
+      {
+        "id": "proof",
+        "type": "proof-metadata"
+      }
+    ]
+  },
+  "ui_config": {
+    "palette": "tailwind-modern",
+    "toc_width": "18rem",
+    "toc_breakpoint": 960,
+    "diagram_height_initial": 480,
+    "diagram_height_min": 200,
+    "diagram_height_max": 800
+  },
+  "mermaid_source": "%%{ init: { 'theme': 'dark', 'flowchart': { 'curve': 'basis', 'nodeSpacing': 60, 'rankSpacing': 80 }, 'htmlLabels': true } }%%\nflowchart TD\nclassDef step     fill:#1e40af,stroke:#60a5fa,stroke-width:2.5px,color:#ffffff,font-size:13px,font-weight:600\nclassDef gate     fill:#92400e,stroke:#fbbf24,stroke-width:3px,color:#fef3c7,font-weight:700\nclassDef terminal fill:#059669,stroke:#10b981,stroke-width:3px,color:#ffffff,font-weight:700\nclassDef routeout fill:#7c3aed,stroke:#c084fc,stroke-width:2px,color:#ede9fe,font-style:italic\nclassDef start    fill:#1e1b4b,stroke:#818cf8,stroke-width:3px,color:#c7d2fe,font-weight:700\n  START([Start])\n  step-1[\"stage_a_source_extractor\"]\n  class step-1 step\n  START --> step-1\n  step-2[\"stage_b_artifact_plan_builder\"]\n  class step-2 step\n  step-1 --> step-2\n  step-3[\"stage_c_mermaid_design\"]\n  class step-3 step\n  step-2 --> step-3\n  step-4[\"stage_d_mermaid_critic_review\"]\n  class step-4 step\n  step-3 --> step-4\n  step-5[\"stage_e1_loader\"]\n  class step-5 step\n  step-4 --> step-5\n  step-6[\"stage_e2_binder\"]\n  class step-6 step\n  step-5 --> step-6\n  step-7[\"stage_e3_assembler\"]\n  class step-7 step\n  step-6 --> step-7\n  step-8[\"stage_e4_writer\"]\n  class step-8 step\n  step-7 --> step-8\n  step-9[\"stage_f_static_validator\"]\n  class step-9 step\n  step-8 --> step-9\n  step-10[\"stage_g_artifact_proof\"]\n  class step-10 step\n  step-9 --> step-10\n  step-11[\"stage_h_external_critic\"]\n  class step-11 step\n  step-10 --> step-11\n  step-12[\"stage_i_emit_proof_metadata\"]\n  class step-12 step\n  step-11 --> step-12\n",
+  "mermaid_config": {
+    "curve": "basis",
+    "nodeSpacing": 40,
+    "rankSpacing": 50
+  },
+  "toc_config": {
+    "width": "18rem",
+    "breakpoint": 960
+  },
+  "css_contract": {
+    "toggle_position": "fixed",
+    "toggle_left": "0",
+    "toc_transition": "left",
+    "no_transform_on_desktop": true,
+    "toggle_outside_nav": true,
+    "mobile_toggle_display": "flex"
+  },
+  "content_bindings": {
+    "name": "skill-to-page",
+    "version": "2.0.0",
+    "description": "Transform a skill's SKILL.md into a navigable, verified index.html with Mermaid diagrams, TOC, search, viewport controls, provenance, and proof-oriented verification.",
+    "steps": [
+      {
+        "id": "step-1",
+        "index": 1,
+        "name": "stage_a_source_extractor",
+        "display_name": "stage_a_source_extractor",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-2",
+        "index": 2,
+        "name": "stage_b_artifact_plan_builder",
+        "display_name": "stage_b_artifact_plan_builder",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-3",
+        "index": 3,
+        "name": "stage_c_mermaid_design",
+        "display_name": "stage_c_mermaid_design",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-4",
+        "index": 4,
+        "name": "stage_d_mermaid_critic_review",
+        "display_name": "stage_d_mermaid_critic_review",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-5",
+        "index": 5,
+        "name": "stage_e1_loader",
+        "display_name": "stage_e1_loader",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-6",
+        "index": 6,
+        "name": "stage_e2_binder",
+        "display_name": "stage_e2_binder",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-7",
+        "index": 7,
+        "name": "stage_e3_assembler",
+        "display_name": "stage_e3_assembler",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-8",
+        "index": 8,
+        "name": "stage_e4_writer",
+        "display_name": "stage_e4_writer",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-9",
+        "index": 9,
+        "name": "stage_f_static_validator",
+        "display_name": "stage_f_static_validator",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-10",
+        "index": 10,
+        "name": "stage_g_artifact_proof",
+        "display_name": "stage_g_artifact_proof",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-11",
+        "index": 11,
+        "name": "stage_h_external_critic",
+        "display_name": "stage_h_external_critic",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      },
+      {
+        "id": "step-12",
+        "index": 12,
+        "name": "stage_i_emit_proof_metadata",
+        "display_name": "stage_i_emit_proof_metadata",
+        "description": "",
+        "kind": "step",
+        "conditions": [],
+        "inputs": [],
+        "outputs": [],
+        "routes_to": [],
+        "artifacts_emitted": []
+      }
+    ],
+    "route_outs": [],
+    "terminal_states": [],
+    "artifacts": []
+  }
+}

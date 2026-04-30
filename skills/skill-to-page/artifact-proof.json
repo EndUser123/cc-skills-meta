@@ -1,0 +1,64 @@
+{
+  "stage": "G",
+  "validator": "runtime-browser",
+  "html_file": "P:\\packages\\cc-skills-meta\\skills\\skill-to-page\\index.html",
+  "summary": {
+    "passed": 10,
+    "failed": 0,
+    "total": 10
+  },
+  "checks": [
+    {
+      "id": "G-a1-page-loads",
+      "result": "pass",
+      "details": "title=\ud83d\udfe2 skill-to-page | 2.0.0"
+    },
+    {
+      "id": "G-a2-toc-toggle-exists",
+      "result": "pass",
+      "details": "True"
+    },
+    {
+      "id": "G-a3-toc-visible-default",
+      "result": "pass",
+      "details": "classes=toc"
+    },
+    {
+      "id": "G-a4-toc-toggle-tag",
+      "result": "pass",
+      "details": "tag=BUTTON"
+    },
+    {
+      "id": "G-a5-step-header",
+      "result": "pass",
+      "details": "True"
+    },
+    {
+      "id": "G-a6-search-input",
+      "result": "pass",
+      "details": "True"
+    },
+    {
+      "id": "G-a7-mermaid-pre",
+      "result": "pass",
+      "details": "True"
+    },
+    {
+      "id": "G-a8-resize-handle",
+      "result": "pass",
+      "details": "True"
+    },
+    {
+      "id": "G-a9-zoom-controls",
+      "result": "pass",
+      "details": "True"
+    },
+    {
+      "id": "G-a10-copy-buttons",
+      "result": "pass",
+      "details": "4"
+    }
+  ],
+  "screenshots_dir": "P:\\packages\\cc-skills-meta\\skills\\skill-to-page\\.stage_g_screenshots",
+  "note": "browser-harness CDP limitations: getBoundingClientRect returns null for detached elements, screenshot crashes daemon after use"
+}

@@ -1,0 +1,37 @@
+<section id="artifacts">
+        <h2>Artifacts</h2>
+        <div class="card-grid">
+          <article class="artifact-card">
+            <h4>📄 index.html</h4>
+            <p>{{artifact_description}}</p>
+            <div class="path-row">
+              <code id="path-index">{{index_path}}</code>
+              <button class="copy-btn" onclick="copyPath(this, '{{index_path}}')">Copy</button>
+            </div>
+          </article>
+          <article class="artifact-card">
+            <h4>📋 source-model.json</h4>
+            <p>Normalized extracted model — source of truth for diagrams, accordion sections, TOC, and proof metadata.</p>
+            <div class="path-row">
+              <code id="path-model">{{model_path}}</code>
+              <button class="copy-btn" onclick="copyPath(this, '{{model_path}}')">Copy</button>
+            </div>
+          </article>
+          <article class="artifact-card">
+            <h4>📊 artifact-proof.json</h4>
+            <p>Proof metadata with coverage metrics, browser verification results, and critic gate pass/fail status.</p>
+            <div class="path-row">
+              <code id="path-proof">{{proof_path}}</code>
+              <button class="copy-btn" onclick="copyPath(this, '{{proof_path}}')">Copy</button>
+            </div>
+          </article>
+          <article class="artifact-card">
+            <h4>🗺️ diagram.mmd</h4>
+            <p>Raw Mermaid source for the workflow diagram — validates against source model.</p>
+            <div class="path-row">
+              <code id="path-diagram">{{diagram_path}}</code>
+              <button class="copy-btn" onclick="copyPath(this, '{{diagram_path}}')">Copy</button>
+            </div>
+          </article>
+        </div>
+      </section>

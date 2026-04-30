@@ -9,7 +9,9 @@ artifact format after Write operations to the artifacts directory.
 from __future__ import annotations
 
 import json
+import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .common import is_gto_active, read_state, gto_state_dir, write_hook_output
@@ -27,6 +29,12 @@ def run(data: dict) -> dict | None:
     # Capture failures during GTO runs
     if _is_failure(tool_output):
         _capture_failure(tool_name, tool_input, tool_output)
+
+    # Record file changes for session-scoped tracking
+    if tool_name in ("Write", "Edit"):
+        file_path = tool_input.get("file_path", "")
+        if file_path:
+            _record_file_change(file_path)
 
     # Validate artifact writes
     if tool_name in ("Write", "Edit"):
@@ -60,6 +68,21 @@ def _capture_failure(tool_name: str, tool_input: dict, output: str) -> None:
         "output_snippet": output[:500],
     }
     with open(log_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def _record_file_change(file_path: str) -> None:
+    """Append a file change record to the session changes log."""
+    artifacts_dir = gto_state_dir().parent
+    log_path = artifacts_dir / "session_changes.jsonl"
+    entry = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "tool": "file-edit",
+        "file": file_path,
+        "session_id": os.environ.get("CLAUDE_SESSION_ID", ""),
+    }
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(log_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 

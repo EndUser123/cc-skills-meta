@@ -1,0 +1,37 @@
+<section id="artifacts">
+        <h2>Artifacts</h2>
+        <div class="card-grid">
+          <article class="artifact-card">
+            <h4>📄 index.html</h4>
+            <p>Self-contained navigable HTML page — Mermaid diagram, TOC, search, theme toggle, accordion steps, proof summary.</p>
+            <div class="path-row">
+              <code id="path-index">P:/.claude/skills/{target}/index.html</code>
+              <button class="copy-btn" onclick="copyPath(this, 'P:/.claude/skills/{target}/index.html')">Copy</button>
+            </div>
+          </article>
+          <article class="artifact-card">
+            <h4>📋 workflow-model.json</h4>
+            <p>Normalized extracted workflow model — steps, decision points, route-outs, terminal states, artifacts, gaps, ambiguities.</p>
+            <div class="path-row">
+              <code id="path-model">.claude/.artifacts/{terminal_id}/skill-to-page/{target}/workflow-model.json</code>
+              <button class="copy-btn" onclick="copyPath(this, '.claude/.artifacts/{terminal_id}/skill-to-page/{target}/workflow-model.json')">Copy</button>
+            </div>
+          </article>
+          <article class="artifact-card">
+            <h4>📊 artifact-proof.json</h4>
+            <p>Proof metadata with coverage metrics, browser verification results, and critic gate pass/fail status.</p>
+            <div class="path-row">
+              <code id="path-proof">.claude/.artifacts/{terminal_id}/skill-to-page/{target}/artifact-proof.json</code>
+              <button class="copy-btn" onclick="copyPath(this, '.claude/.artifacts/{terminal_id}/skill-to-page/{target}/artifact-proof.json')">Copy</button>
+            </div>
+          </article>
+          <article class="artifact-card">
+            <h4>🗺️ diagram.mmd</h4>
+            <p>Raw Mermaid source for the workflow diagram — validates against workflow model.</p>
+            <div class="path-row">
+              <code id="path-diagram">.claude/.artifacts/{terminal_id}/skill-to-page/{target}/diagram.mmd</code>
+              <button class="copy-btn" onclick="copyPath(this, '.claude/.artifacts/{terminal_id}/skill-to-page/{target}/diagram.mmd')">Copy</button>
+            </div>
+          </article>
+        </div>
+      </section>

@@ -1,6 +1,11 @@
 ---
 name: skill-creator
 description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+enforcement: none
+workflow_steps:
+  - draft
+  - test
+  - evaluate
 ---
 
 # Skill Creator
@@ -82,6 +87,35 @@ skill-name/
     ├── references/ - Docs loaded into context as needed
     └── assets/     - Files used in output (templates, icons, fonts)
 ```
+
+#### Frontmatter Fields
+
+**Hook-enforced fields** (only include if needed):
+- `required_tools` — enables tool gating
+- `depends_on_skills` — enables dependency validation
+- `workflow_steps` — enables step enforcement
+- `triggers` — enables slash command registration
+- `suggest` — enables integration validation
+- `enforcement` — REQUIRED: must be `none`, `advisory`, or `strict` (defaults to `strict` if omitted)
+
+**Inert fields** (never include — no hook reads them):
+- `context` — no hook validates this
+- `user-invocable` — no hook validates this
+- `argument-hint` — no hook validates this
+- `status` — no hook validates `active`/`inactive`
+- `aliases` — no hook validates this
+- `category` — no hook validates this
+
+**Minimum valid frontmatter:**
+```yaml
+---
+name: my-skill
+description: One-line purpose
+enforcement: none
+---
+```
+
+Adding inert fields wastes tokens and creates maintenance surface. Only add fields that do actual work.
 
 #### Progressive Disclosure
 

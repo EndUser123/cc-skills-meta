@@ -26,27 +26,24 @@ def redirect_artifacts(tmp_path):
 class TestParseArgs:
     def test_defaults(self):
         args = parse_args([])
-        assert args.mode == "full"
-        assert args.skip_agents is False
         assert args.terminal_id == "default"
+        assert args.session_id == ""
+        assert args.target is None
+        assert args.root == Path.cwd()
 
     def test_custom_args(self):
-        args = parse_args(["--mode", "quick", "--terminal-id", "t1", "--skip-agents"])
-        assert args.mode == "quick"
+        args = parse_args(["--terminal-id", "t1", "--session-id", "abc123"])
         assert args.terminal_id == "t1"
-        assert args.skip_agents is True
+        assert args.session_id == "abc123"
 
 
 class TestOrchestratorRun:
-    def test_quick_mode(self, project_dir):
+    def test_basic_run(self, project_dir):
         rc = run([
-            "--mode", "quick",
-            "--skip-agents",
             "--terminal-id", "test-term",
             "--session-id", "test-session",
             "--root", str(project_dir),
         ])
-        # rc may be 0 or 1 depending on git SHA availability in temp dirs
         assert rc in (0, 1)
 
         artifacts_dir = project_dir / ".claude" / ".artifacts" / "test-term" / "gto"
@@ -61,8 +58,8 @@ class TestOrchestratorRun:
 
     def test_state_completed(self, project_dir):
         run([
-            "--mode", "quick", "--skip-agents",
-            "--terminal-id", "t1", "--root", str(project_dir),
+            "--terminal-id", "t1",
+            "--root", str(project_dir),
         ])
         state_file = project_dir / ".claude" / ".artifacts" / "t1" / "gto" / "state" / "run_state.json"
         assert state_file.exists()
@@ -71,11 +68,46 @@ class TestOrchestratorRun:
 
     def test_machine_output_has_rns(self, project_dir):
         run([
-            "--mode", "quick", "--skip-agents",
-            "--terminal-id", "t1", "--root", str(project_dir),
+            "--terminal-id", "t1",
+            "--root", str(project_dir),
         ])
         artifact_path = project_dir / ".claude" / ".artifacts" / "t1" / "gto" / "outputs" / "artifact.json"
         data = json.loads(artifact_path.read_text(encoding="utf-8"))
         machine = data.get("machine_output", [])
         has_z = any(l.startswith("RNS|Z|") for l in machine)
         assert has_z  # RNS|Z|0|NONE always present
+
+    def test_carryover_preserved_when_no_collision(self, project_dir):
+        """Carryover finding with unique ID is preserved in output."""
+        from skills.gto.models import Finding, EvidenceRef
+        from skills.gto.__lib.carryover import save_carryover
+
+        artifacts_dir = project_dir / ".claude" / ".artifacts" / "t1" / "gto"
+        artifacts_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save a carryover finding with an ID the detector won't produce
+        stale = Finding(
+            id="CUSTOM-099",
+            title="Custom carryover finding",
+            description="A test carryover finding.",
+            source_type="carryover",
+            source_name="carryover",
+            domain="other",
+            gap_type="custom",
+            severity="low",
+            evidence_level="verified",
+            action="prevent",
+            priority="low",
+            evidence=[EvidenceRef(kind="test", value="carryover")],
+        )
+        save_carryover(artifacts_dir, [stale])
+
+        # Run orchestrator — it should preserve the carryover finding
+        run([
+            "--terminal-id", "t1",
+            "--root", str(project_dir),
+        ])
+        artifact_path = artifacts_dir / "outputs" / "artifact.json"
+        data = json.loads(artifact_path.read_text(encoding="utf-8"))
+        ids = [f["id"] for f in data["findings"]]
+        assert "CUSTOM-099" in ids

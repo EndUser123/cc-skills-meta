@@ -1,0 +1,26 @@
+{
+  "stage": "E2",
+  "status": "pass",
+  "templates_filled": [
+    "hero.html",
+    "facts.html",
+    "mermaid-panel.html",
+    "steps-accordion.html",
+    "route-outs.html",
+    "terminals.html",
+    "artifacts.html",
+    "proof-summary.html"
+  ],
+  "slot_fill_report": {
+    "hero.html": "filled",
+    "facts.html": "filled",
+    "mermaid-panel.html": "filled",
+    "steps-accordion.html": "filled",
+    "route-outs.html": "filled",
+    "terminals.html": "filled",
+    "artifacts.html": "filled",
+    "proof-summary.html": "filled"
+  },
+  "unfilled_slots": [],
+  "errors": []
+}

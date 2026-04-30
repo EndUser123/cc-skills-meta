@@ -1,20 +1,22 @@
+"""Action Normalizer Agent — converts findings into canonical RNS action items.
+
+Ensures each finding has valid domain, severity, action, priority, effort,
+and evidence_level fields suitable for RNS rendering. Runs as a Claude Code subagent.
+"""
 from __future__ import annotations
 
-"""
-Action Normalizer Agent — spawned via Claude Code Agent tool.
-
-Normalizes findings: ensures valid domains, severities, actions, priorities,
-and adds effort estimates for findings that lack them.
-"""
-from pathlib import Path
 import json
+from pathlib import Path
 
 from . import parse_agent_result
-from ..models import Finding, AgentResult
+from ..models import AgentResult, Finding
 
 
-def write_handoff(path: Path, findings: list[Finding]) -> None:
-    """Write findings for the normalizer agent to process."""
+def write_handoff(
+    path: Path,
+    findings: list[Finding],
+) -> None:
+    """Write findings for the action normalizer agent."""
     handoff = {
         "role": "action_normalizer",
         "findings": [f.to_dict() for f in findings],
@@ -25,5 +27,5 @@ def write_handoff(path: Path, findings: list[Finding]) -> None:
 
 
 def read_result(path: Path) -> AgentResult:
-    """Read the normalizer result from its output file."""
+    """Read the action normalizer result."""
     return parse_agent_result(path, "action_normalizer")

@@ -1,0 +1,37 @@
+{
+  "stage": "E1",
+  "status": "pass",
+  "template_version": "v1",
+  "templates_loaded": {
+    "base-shell.html": "622 chars",
+    "toc.html": "791 chars",
+    "shared-css.css": "2556 chars",
+    "toc-css.css": "2844 chars",
+    "section-css.css": "10845 chars",
+    "diagram-css.css": "3189 chars",
+    "shared-scripts.js": "7600 chars",
+    "diagram-scripts.js": "17432 chars",
+    "mermaid-palettes.json": "6915 chars",
+    "hero.html": "418 chars",
+    "facts.html": "918 chars",
+    "search-ui.html": "297 chars",
+    "mermaid-panel.html": "1987 chars",
+    "steps-accordion.html": "8257 chars",
+    "route-outs.html": "151 chars",
+    "terminals.html": "153 chars",
+    "artifacts.html": "1745 chars",
+    "proof-summary.html": "1375 chars"
+  },
+  "structure_elements": {
+    "toc_toggle": "base-shell.html",
+    "toc_element": "toc.html",
+    "mermaid_source": "mermaid-panel.html",
+    "resize_handle": "mermaid-panel.html",
+    "theme_toggle": "toc.html",
+    "search_input": "search-ui.html",
+    "diagram_viewport": "mermaid-panel.html",
+    "diagram_stage": "mermaid-panel.html",
+    "zoom_controls": "mermaid-panel.html"
+  },
+  "errors": []
+}

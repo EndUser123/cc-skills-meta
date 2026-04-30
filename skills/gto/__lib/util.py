@@ -18,5 +18,5 @@ def atomic_write_text(path: Path, text: str) -> None:
             os.unlink(tmp)
 
 
-def atomic_write_json(path: Path, payload: dict) -> None:
+def atomic_write_json(path: Path, payload: dict | list) -> None:
     atomic_write_text(path, json.dumps(payload, indent=2, ensure_ascii=False))

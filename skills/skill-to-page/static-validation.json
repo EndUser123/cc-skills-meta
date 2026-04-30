@@ -1,0 +1,137 @@
+{
+  "stage": "F",
+  "validator": "static-structural",
+  "html_file": "P:\\packages\\cc-skills-meta\\skills\\skill-to-page\\index.html",
+  "summary": {
+    "passed": 25,
+    "failed": 0,
+    "total": 25
+  },
+  "checks": [
+    {
+      "id": "S1  tocToggle sibling",
+      "result": "pass",
+      "details": "tocToggle must be immediate sibling of .page-shell, NOT inside nav.toc"
+    },
+    {
+      "id": "S2  nav#toc class=toc",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S3  TOC CSS block exists",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S4  position:fixed or absolute",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S5  left transition",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S6  no transform on desktop",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S7  pre#mermaidSource present",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S7b mermaidSource not empty",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S8  .diagram-shell CSS block",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S8b display:flex",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S8c flex-direction:column",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S9  .diagram-viewport CSS block",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S9b min-height:200px",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S10 diagram-resize-handle element",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S11 resize-handle CSS block",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S11b cursor:ns-resize",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S12 article.step elements",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S13 #themeToggle placement",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S14 searchInput element",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S14b clearSearch button",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S15 9 workflow steps present",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S16 gate badges present (if workflow-model has gates)",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S17 accordion toggle function",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S18 copy-to-clipboard for artifact paths",
+      "result": "pass",
+      "details": null
+    },
+    {
+      "id": "S19 proof-summary section",
+      "result": "pass",
+      "details": null
+    }
+  ]
+}

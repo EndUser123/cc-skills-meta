@@ -1,7 +1,7 @@
 ---
 name: gto
-description: "GTO v4.0 — Strategic gap-to-opportunity analysis with RNS-compatible output"
-version: "4.0.0"
+description: "GTO v4.1 — Session-aware gap-to-opportunity analysis with RNS-compatible output"
+version: "4.1.0"
 triggers:
   - "/gto"
   - "gap analysis"
@@ -10,47 +10,88 @@ triggers:
 category: analysis
 enforcement: advisory
 workflow_steps:
-  - "Run deterministic analysis (orchestrator --skip-agents)"
-  - "Dispatch domain analyzer agent via Agent tool"
-  - "Run full orchestrator to merge results"
+  - "Run deterministic analysis + session transcript analysis (orchestrator)"
+  - "Optionally spawn enrichment agents for domain analysis, review, and normalization"
   - "Display findings in RNS domain-grouped format with Do ALL footer"
 ---
 
-# GTO v4.0 — Gap-to-Opportunity Analysis
+# GTO v4.1 — Session-Aware Gap-to-Opportunity Analysis
 
 ## Overview
 
-GTO runs gap analysis on the current codebase, producing RNS-compatible machine output and displaying findings in RNS domain-grouped format. It uses deterministic detectors first, then optionally dispatches subagents for deeper analysis.
+GTO analyzes the current session's work — what was discussed, what was attempted, what remains incomplete — and produces RNS-compatible findings. It reads chat transcripts, handoff files, and session goals rather than doing heavy codebase scanning (that's /code, /test, /diagnose's job).
 
 ## Execution Directive
 
-When invoked, run the orchestrator and dispatch agent subanalyses:
-
-### Step 1: Run Deterministic Analysis
+### Step 1: Run Session-Aware Analysis
 
 ```bash
-cd "P:/packages/cc-skills-meta" && python -m skills.gto.orchestrator --mode full --skip-agents --terminal-id "$WT_SESSION" --session-id "$CLAUDE_SESSION_ID" --root .
+cd "P:/packages/cc-skills-meta" && python -m skills.gto.orchestrator --terminal-id "$WT_SESSION" --session-id "$CLAUDE_SESSION_ID" --root .
 ```
 
-This writes artifacts to `.claude/.artifacts/{terminal_id}/gto/`.
+This runs:
+1. **Deterministic detectors** — .git presence, README existence
+2. **Transcript resolution** — from identity.json (hook-captured, no scanning)
+3. **File edit extraction** — Edit/Write tool calls from session transcript
+4. **Session chain** — from session registry (terminal-scoped, no globbing)
+5. **Session goal detection** — extracts stated goals from user messages
+6. **Session outcome detection** — finds uncompleted goals, open questions, deferred items
+7. **Completion filtering** — removes outcomes that were actually completed
+8. **Carryover resolution** — marks findings as resolved if files were edited
+9. **Agent handoff writing** — writes handoff files for enrichment agents
+10. **Agent result reading** — merges any available agent enrichment results
+11. **Merge, dedupe, route** — combine all sources, route to owning skills
 
-### Step 2: Dispatch Domain Analyzer Agent (if mode != quick)
+Artifacts written to `.claude/.artifacts/{terminal_id}/gto/`.
 
-Spawn a subagent to perform deeper domain analysis:
+### Step 1.5: Agent Enrichment (Optional)
 
-```
-Agent(subagent_type="general-purpose",
-  description="GTO domain analysis",
-  prompt="You are a domain-specific code gap analyzer. Read the handoff file at .claude/.artifacts/{terminal_id}/gto/inputs/agent_handoff.json for your target and configuration. Analyze the codebase for gaps in quality, tests, docs, security, and performance. Write your findings as a JSON array to .claude/.artifacts/{terminal_id}/gto/inputs/domain_analyzer_result.json. Each finding must have: id, title, description, domain, gap_type, severity, action, priority, file (or null), line (or null), effort, unverified (boolean), evidence (array of {kind, value}). Maximum 15 findings.")
-```
-
-### Step 3: Run Full Orchestrator (merging agent results)
+Check if handoff files were written. If findings exist, spawn agents to enrich them:
 
 ```bash
-cd "P:/packages/cc-skills-meta" && python -m skills.gto.orchestrator --mode full --terminal-id "$WT_SESSION" --session-id "$CLAUDE_SESSION_ID" --root .
+test -f ".claude/.artifacts/{terminal_id}/gto/domain_analyzer_handoff.json" && echo "AGENTS_NEEDED" || echo "NO_AGENTS"
 ```
 
-### Step 4: Display Results
+If `AGENTS_NEEDED`, spawn agents **sequentially** (each builds on the previous):
+
+**Agent 1: Domain Analyzer** (subagent_type=general-purpose)
+- Read: `.claude/.artifacts/{terminal_id}/gto/domain_analyzer_handoff.json`
+- System prompt: from `skills/gto/agents/prompts.py` → `DOMAIN_ANALYZER_SYSTEM`
+- Instructions: Analyze the findings and project context. Add domain-specific insights. Write findings as JSON array to `.claude/.artifacts/{terminal_id}/gto/domain_analyzer_result.json`
+
+**Agent 2: Findings Reviewer** (subagent_type=general-purpose)
+- Read: `.claude/.artifacts/{terminal_id}/gto/findings_reviewer_handoff.json`
+- System prompt: from `skills/gto/agents/prompts.py` → `FINDINGS_REVIEWER_SYSTEM`
+- Instructions: Review findings for accuracy, reject false positives, adjust severity. Write results to `.claude/.artifacts/{terminal_id}/gto/findings_reviewer_result.json`
+
+**Agent 3: Action Normalizer** (subagent_type=general-purpose)
+- Read: `.claude/.artifacts/{terminal_id}/gto/action_normalizer_handoff.json`
+- System prompt: from `skills/gto/agents/prompts.py` → `ACTION_NORMALIZER_SYSTEM`
+- Instructions: Normalize findings into canonical RNS action items. Write results to `.claude/.artifacts/{terminal_id}/gto/action_normalizer_result.json`
+
+**Agent 4: Session Reviewer** (conditional — only if ambiguous outcomes exist)
+- Read: `.claude/.artifacts/{terminal_id}/gto/session_reviewer_handoff.json`
+- Instructions: Classify each outcome as `completed` or `open`, write to `session_reviewer_result.json`
+
+After agents complete, re-run the orchestrator to merge results:
+
+```bash
+cd "P:/packages/cc-skills-meta" && python -m skills.gto.orchestrator --terminal-id "$WT_SESSION" --session-id "$CLAUDE_SESSION_ID" --root .
+```
+
+The second run reads agent result files and merges them into the final artifact.
+
+### Step 1.6: Optional LLM Session Review
+
+If the deterministic completion checker left ambiguous outcomes:
+
+```bash
+test -f ".claude/.artifacts/{terminal_id}/gto/session_reviewer_handoff.json" && echo "REVIEW_NEEDED" || echo "NO_REVIEW"
+```
+
+If `REVIEW_NEEDED`, this is handled as Agent 4 above.
+
+### Step 2: Display Results
 
 Read the artifact:
 ```bash
@@ -72,46 +113,60 @@ The display must follow the `/rns` output format:
 - Footer: `0 — Do ALL Recommended Next Actions (N items)`
 - No markdown fences around the RNS output
 
-## Modes
+### Step 2.5: Forward-Looking Opportunity Analysis
 
-| Mode | Description |
-|------|-------------|
-| `full` | Deterministic + agent analysis (default) |
-| `quick` | Deterministic detectors only, no agents |
-| `agent-only` | Only agent analysis, skip deterministic |
+After rendering the deterministic findings, reason about what comes next based on the session transcript and work trajectory. This is the "Tasks and Opportunities" in Gaps, Tasks, and Opportunities.
 
-## Agent Dispatch Pattern
+Attend to these signals (among others) in the transcript:
 
-GTO uses Claude Code's Agent tool for subagent dispatch. Handoff is file-based:
+| Signal | What to notice |
+|--------|----------------|
+| **Incomplete work** | Features half-implemented, functions with TODO bodies, tests commented out, branches unmerged |
+| **Dependency chains** | A was completed but B depends on A and wasn't started — B is the natural next step |
+| **Deferred decisions** | "We'll deal with that later", "skip for now", "not in scope" — these are future work queued by the user |
+| **Work trajectory** | The pattern of what was done implies what comes next (wired agents → test them; created module → document it) |
+| **Avoidance signals** | Something mentioned once then skirted around — usually the hard or uncertain parts that will surface again |
+| **Recurring themes** | Same concern raised across multiple turns or sessions — high-confidence prediction it will come up again |
 
-1. Orchestrator writes handoff JSON to `inputs/agent_handoff.json`
-2. Agent reads handoff, performs analysis, writes results to `inputs/domain_analyzer_result.json`
-3. Orchestrator re-runs, picks up agent results, merges with deterministic findings
+For each predicted next action, render it as a `realize` action item in the RNS output with:
+- **Specific description**: not "add tests" but "write integration tests for agent handoff/result round-trip in domain_analyzer.py"
+- **Confidence indicator**: HIGH (dependency chain, explicitly deferred), MEDIUM (trajectory pattern), LOW (speculative)
+- **Evidence**: cite the transcript turn or finding that supports the prediction
 
-## Output Format
+Display order:
+1. **Signals observed** — list each signal detected in the transcript with the specific evidence (turn number, finding ID, file reference)
+2. **Predicted opportunities** — the actions that follow from those signals, rendered as RNS `realize` items
+3. Evidence precedes prediction, not the reverse — the reader should see the reasoning before the recommendation
 
-GTO produces RNS-compatible machine output:
+Rules:
+- Do NOT surface predictions that duplicate existing findings (those already appear as gaps)
+- Prefer 3-5 high-specificity predictions over 10 generic ones
+- If the session was exploratory with no clear trajectory, say so rather than forcing predictions
+- Frame predictions as opportunities the user can act on, not obligations
 
-```
-RNS|D|1|🔧|QUALITY
-RNS|A|1a|quality|E:~5min|recover/medium|description|file_ref|owner=/code|done=0|caused_by=|blocks=|unverified=0
-RNS|Z|0|NONE
-```
+## Session Data Sources
 
-This is compatible with `/rns` for cross-session action tracking.
+GTO reads from session-scoped sources (not global git state):
 
-## Artifact Location
+| Source | Purpose |
+|--------|---------|
+| `identity.json` | Hook-captured session_id, transcript_path, cwd |
+| `session_registry.jsonl` | Terminal-scoped session chain history |
+| `~/.claude/projects/*.jsonl` | Chat transcripts (tool call extraction, goal/outcome detection) |
+| `.claude/.artifacts/{terminal_id}/gto/carryover.json` | Persisted findings across runs |
+| `.claude/.artifacts/{terminal_id}/gto/*_handoff.json` | Agent input files |
+| `.claude/.artifacts/{terminal_id}/gto/*_result.json` | Agent output files |
 
-All artifacts are terminal-scoped:
-```
-.claude/.artifacts/{terminal_id}/gto/
-├── state/run_state.json
-├── inputs/agent_handoff.json
-├── inputs/domain_analyzer_result.json
-├── outputs/artifact.json
-├── logs/failures.jsonl
-└── carryover.json
-```
+## Agent System Prompts
+
+Agent prompts are defined in `skills/gto/agents/prompts.py`:
+
+| Agent | Prompt Constant | Purpose |
+|-------|----------------|---------|
+| Domain Analyzer | `DOMAIN_ANALYZER_SYSTEM` | Enrich findings with domain-specific health assessments |
+| Findings Reviewer | `FINDINGS_REVIEWER_SYSTEM` | Validate severity, reject false positives, dedupe |
+| Action Normalizer | `ACTION_NORMALIZER_SYSTEM` | Normalize into canonical RNS action items |
+| Session Reviewer | (in session_reviewer.py) | Classify ambiguous session outcomes |
 
 ## Gap-to-Skill Routing
 
@@ -125,7 +180,26 @@ Findings are automatically routed to owning skills:
 | security | /security |
 | perf | /perf |
 | invalidrepo | /git |
-| staledeps | /deps |
+| session_* | Review and act |
+
+## Artifact Location
+
+All artifacts are terminal-scoped:
+```
+.claude/.artifacts/{terminal_id}/gto/
+├── state/run_state.json
+├── outputs/artifact.json
+├── logs/failures.jsonl
+├── carryover.json
+├── domain_analyzer_handoff.json
+├── domain_analyzer_result.json
+├── findings_reviewer_handoff.json
+├── findings_reviewer_result.json
+├── action_normalizer_handoff.json
+├── action_normalizer_result.json
+├── session_reviewer_handoff.json
+└── session_reviewer_result.json
+```
 
 ## Verification
 
@@ -139,6 +213,8 @@ The stop hook verifies completion by checking:
 
 - Do NOT parse prose output for completion detection
 - Use state-driven verification only
-- Agent handoff is file-based, not API-based
 - Terminal-scoped artifacts prevent cross-terminal conflicts
-- Deterministic findings always take precedence over agent findings on merge
+- Session findings come from transcript analysis, not codebase scanning
+- Heavy codebase analysis should be routed to /code, /test, /diagnose — not done by GTO
+- Agents are optional enrichment — the orchestrator works without them
+- Agent results are merged on the next orchestrator run, not inline

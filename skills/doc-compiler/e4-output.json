@@ -1,0 +1,35 @@
+{
+  "stage": "E4",
+  "status": "pass",
+  "file_written": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html",
+  "file_size": 65149,
+  "dom_checks": {
+    "doctype": true,
+    "toc_toggle": true,
+    "toc_element": true,
+    "mermaid_source": true,
+    "resize_handle": true,
+    "theme_toggle": true,
+    "search_input": true,
+    "diagram_viewport": true,
+    "diagram_stage": true,
+    "zoom_controls": true,
+    "proof_summary": true,
+    "style_block": true,
+    "script_module": true,
+    "steps_present": true
+  },
+  "dom_failures": [],
+  "slot_fill_report": {
+    "hero.html": "filled",
+    "facts.html": "filled",
+    "search-ui.html": "template_only",
+    "mermaid-panel.html": "filled",
+    "steps-accordion.html": "filled",
+    "route-outs.html": "filled",
+    "terminals.html": "filled",
+    "artifacts.html": "filled",
+    "proof-summary.html": "filled"
+  },
+  "errors": []
+}

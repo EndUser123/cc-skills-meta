@@ -28,6 +28,10 @@ triggers:
   - 'add mermaid diagram'
 ---
 
+## Schema Reference
+
+The canonical frontmatter schema lives in `SKILL_SCHEMA.md` in this directory. It defines required fields, verification sections, artifact persistence, and evidence-bound verification patterns used by the certification gate and fidelity tracker.
+
 # skill-craft — Unified Skill-Craft Orchestrator
 
 Coordinates skill improvement through a 5-phase pipeline: **diagnosing → planning → executing → evaluating → gating**.
@@ -740,6 +744,34 @@ Or remove from `installed_plugins.json` and delete the cache directory.
 | `.claude-plugin/` invisible in `ls` | Windows/git bug — directory exists but hidden in `ls` | Use `find . -name plugin.json` or `test -d` to verify; `git ls-tree HEAD .claude-plugin/` |
 | `hooks/hooks.json` not loading | Empty file not committed | Ensure `hooks/hooks.json` exists and is committed (even if `{}`) |
 | `commands/` or `agents/` empty | Git doesn't track empty dirs | Add `.gitkeep` stub to each empty directory and commit |
+| Source changes not taking effect | Plugin loads from version-keyed cache, not source | Bump version (see below) — never delete cache dirs or copy source to cache manually |
+| `Hook load failed: expected record, received undefined` | `hooks/hooks.json` in cache has wrong format or is missing | Bump version + `/plugin marketplace update local` + `/reload-plugins` |
+
+### Version Bump Propagation (CRITICAL)
+
+The plugin system loads from **version-keyed cache** at `~/.claude/plugins/cache/local/<name>/<version>/`, not from source. Editing source files without bumping the version means the cached (active) copy is stale and changes are invisible.
+
+**When to bump**: Any edit to plugin source files under `P:/packages/<plugin-name>/` that should propagate to the running session.
+
+**Automated bump**: Use `/plugin-installer bump <name>` which updates all three files at once:
+```bash
+python3 "P:/packages/plugin-installer/scripts/plugin-audit-and-fix.py" --bump <name> --marketplace-root "P:/packages/.claude-marketplace"
+```
+
+**Three files that need the version update**:
+1. `P:/packages/<name>/.claude-plugin/plugin.json` — `version` field
+2. `P:/packages/.claude-marketplace/marketplace.json` — matching `version` in the plugin's entry
+3. `P:/packages/.claude-marketplace/.claude-plugin/marketplace.json` — matching `version` in the plugin's entry
+
+**Propagation workflow** (after bump):
+1. `/plugin marketplace update local`
+2. `/reload-plugins`
+3. `/doctor` to verify 0 errors
+
+**Do NOT**:
+- Delete cache directories manually — `installed_plugins.json` maps to specific version-keyed paths and deleting them breaks the mapping
+- Copy source to cache manually — creates untracked state
+- Skip the version bump — changes will not propagate without it
 
 **Why marketplace over symlinks**: The marketplace system handles `$CLAUDE_PLUGIN_ROOT` resolution, caches the plugin at `~/.claude/plugins/cache/local/<name>/<version>/`, and registers hooks/skills/agents automatically. Symlinks require manual `settings.json` merging and don't get `$CLAUDE_PLUGIN_ROOT`.
 
@@ -765,6 +797,8 @@ Or remove from `installed_plugins.json` and delete the cache directory.
 1. **SKILL.md at root** — Must be `skills/<name>/SKILL.md`, not root `SKILL.md`
 2. **`skills: "./"` in manifest** — Wrong when manifest is in `.claude-plugin/`. Use `"../"` to point to plugin root
 3. **`commands/` for slash commands** — Legacy. Use `skills/<name>/SKILL.md` instead (creates `/plugin:skill` namespaced command)
+4. **Editing source without bumping version** — Plugin loads from version-keyed cache, not source. Always `/plugin-installer bump <name>` after source edits, then `/plugin marketplace update local` + `/reload-plugins`
+5. **Deleting cache directories** — Breaks `installed_plugins.json` path references. Always bump version instead
 
 ### Plugin Activation Guide
 

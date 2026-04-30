@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
-"""GTO Orchestrator — main entry point for gap analysis runs.
+"""GTO Orchestrator — main entry point for session-aware gap analysis.
 
 Usage:
     python orchestrator.py [options]
 
-Runs deterministic detectors, optionally dispatches agent subanalyses,
-normalizes, deduplicates, routes, and renders findings as RNS-compatible
-machine output and human-readable reports.
+Runs deterministic detectors, session transcript analysis, carryover resolution,
+and produces RNS-compatible machine output.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .models import GTOArtifact
+from .models import GTOArtifact, Finding, EvidenceRef
 from .settings import GTOSettings
-from .agents import parse_agent_result
 from .__lib.context import get_git_sha
 from .__lib.detectors import run_basic_detectors
-from .__lib.carryover import load_carryover, save_carryover
+from .__lib.carryover import load_carryover_open_only, save_carryover, prune_carryover, apply_carryover_enrichment
+from .__lib.resolve import resolve_findings
+from .__lib.session_goal_detector import SessionGoalDetector
+from .__lib.session_outcome_detector import SessionOutcomeDetector, SessionOutcomeResult
+from .__lib.transcript import read_turns, extract_edited_files
 from .__lib.docs_followup import detect_docs_followup
 from .__lib.normalize import normalize_findings
 from .__lib.dedupe import dedupe_findings
@@ -30,31 +33,149 @@ from .__lib.route import route_findings
 from .__lib.dependency_order import order_findings
 from .__lib.freshness import classify_freshness
 from .__lib.targeting import resolve_target
-from .__lib.coverage import compute_coverage
+from .__lib.coverage import compute_coverage, compute_health_score
 from .__lib.evidence import write_artifact
 from .__lib.state import RunState, load_state, save_state
 from .__lib.verify import verify_artifact
+from .__lib.changelog import detect_changelog_findings
+from .__lib.invocation_tracker import check_invocations
+from .__lib.clustering import cluster_findings
+from .__lib.context_boundaries import context_boundary_findings
+from .__lib.impact_radius import enrich_with_impact_radius
+from .__lib.branch_awareness import adjust_for_branch
+from .__lib.stuckness import detect_stuckness
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="GTO Gap Analysis Orchestrator")
     parser.add_argument("--target", help="Target directory or project to analyze")
-    parser.add_argument("--mode", choices=["full", "quick", "agent-only"], default="full")
     parser.add_argument("--terminal-id", default="default")
     parser.add_argument("--session-id", default="")
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    parser.add_argument("--skip-agents", action="store_true", help="Skip agent subanalyses")
     return parser.parse_args(argv)
 
 
-def _read_agent_result(result_path: Path, agent_name: str) -> list:
-    """Read agent results from a result file if it exists."""
+def _resolve_transcript_from_identity(terminal_id: str) -> Path | None:
+    """Resolve transcript path from identity.json (hook-captured, no scanning)."""
+    artifacts_root = Path(os.environ.get("CLAUDE_ARTIFACTS_ROOT", "P:/.claude/.artifacts"))
+    identity_file = artifacts_root / terminal_id / "identity.json"
+    if not identity_file.exists():
+        return None
     try:
-        result = parse_agent_result(result_path, agent_name)
-        return result.findings if result.success else []
-    except Exception as exc:
-        print(f"GTO: agent {agent_name} result read failed: {exc}", file=sys.stderr)
+        data = json.loads(identity_file.read_text(encoding="utf-8"))
+        tp = data.get("claude", {}).get("transcript_path", "")
+        if tp and Path(tp).exists():
+            return Path(tp)
+    except (json.JSONDecodeError, OSError):
+        pass
+    return None
+
+
+def _load_session_chain(terminal_id: str) -> list[str]:
+    """Load session transcript paths from session registry for this terminal."""
+    registry_path = Path("P:/.claude/.artifacts/session_registry.jsonl")
+    if not registry_path.exists():
         return []
+    try:
+        import sys as _sys
+        _sys.path.insert(0, "P:/packages/snapshot/scripts/hooks/__lib")
+        from session_registry import query_registry
+    except ImportError:
+        return []
+    entries = query_registry(terminal_id=terminal_id, limit=20)
+    # Deduplicate by session_id, keep most recent per session, oldest-first order
+    seen: set[str] = set()
+    result: list[str] = []
+    for e in reversed(entries):
+        sid = e.get("session_id", "")
+        tp = e.get("transcript_path", "")
+        if sid and sid not in seen and tp and Path(tp).exists():
+            seen.add(sid)
+            result.append(tp)
+    return list(reversed(result))
+
+
+def _convert_outcome_findings(
+    outcome_result: object,
+    terminal_id: str,
+    session_id: str,
+    git_sha: str | None,
+) -> list[Finding]:
+    """Convert SessionOutcomeResult items to GTO Finding objects."""
+    findings: list[Finding] = []
+    items = getattr(outcome_result, "items", [])
+    if not items:
+        return findings
+
+    category_domain_map = {
+        "uncompleted_goal": "session",
+        "identified_task": "session",
+        "open_question": "session",
+        "deferred_item": "session",
+    }
+    category_severity_map = {
+        "uncompleted_goal": "medium",
+        "identified_task": "medium",
+        "open_question": "low",
+        "deferred_item": "low",
+    }
+
+    for idx, item in enumerate(items):
+        category = getattr(item, "category", "identified_task")
+        content = getattr(item, "content", "")
+        confidence = getattr(item, "confidence", 0.5)
+        recurrence = getattr(item, "recurrence_count", 1)
+        acknowledged = getattr(item, "acknowledged", False)
+
+        severity = "high" if recurrence >= 2 else category_severity_map.get(category, "low")
+
+        findings.append(
+            Finding(
+                id=f"SESSION-{category[:4].upper()}-{idx + 1:03d}",
+                title=content[:120],
+                description=f"Session outcome: {category} (recurrence={recurrence}, acknowledged={acknowledged})",
+                source_type="detector",
+                source_name="session_outcome_detector",
+                domain=category_domain_map.get(category, "session"),
+                gap_type=f"session_{category}",
+                severity=severity,
+                evidence_level="verified" if confidence >= 0.7 else "unverified",
+                action="recover",
+                priority=severity,
+                terminal_id=terminal_id,
+                session_id=session_id,
+                git_sha=git_sha,
+                evidence=[
+                    EvidenceRef(kind="session_outcome", value=category, detail=f"confidence={confidence}"),
+                ],
+            )
+        )
+
+    return findings
+
+
+def _extract_context(
+    transcript_path: Path | None,
+    items: list[object],
+    window: int = 5,
+) -> list[dict[str, str]]:
+    """Extract transcript turns surrounding each outcome item for LLM review."""
+    if not transcript_path or not transcript_path.exists() or not items:
+        return []
+    turns = read_turns(transcript_path)
+    if not turns:
+        return []
+    excerpts: list[dict[str, str]] = []
+    for item in items:
+        turn_num = getattr(item, "turn_number", 0)
+        if turn_num <= 0:
+            continue
+        idx = turn_num - 1
+        start = max(0, idx - window)
+        end = min(len(turns), idx + window + 1)
+        for t in turns[start:end]:
+            excerpts.append({"role": t.role, "content": t.content})
+    return excerpts
 
 
 def run(argv: list[str] | None = None) -> int:
@@ -66,7 +187,7 @@ def run(argv: list[str] | None = None) -> int:
         session_id=args.session_id,
         git_sha=get_git_sha(root),
         root=root,
-        mode=args.mode,
+        mode="full",
     )
 
     paths = settings.paths
@@ -76,6 +197,7 @@ def run(argv: list[str] | None = None) -> int:
     # Initialize state
     state_file = paths.state_dir / "run_state.json"
     state = load_state(state_file)
+    prev_git_sha = state.git_sha  # capture before overwrite
     state.run_id = f"{args.terminal_id}-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
     state.phase = "running"
     state.current_target = resolve_target(args.target, None, None)
@@ -87,58 +209,103 @@ def run(argv: list[str] | None = None) -> int:
     # Phase 1: Deterministic detectors
     findings = run_basic_detectors(root, args.terminal_id, args.session_id, settings.git_sha)
 
-    # Phase 2: Load carryover
-    carryover = load_carryover(paths.artifacts_dir)
-    if carryover:
-        findings.extend(carryover)
+    # Phase 1.1: Changelog detection — files changed since previous GTO run
+    changelog_findings = detect_changelog_findings(
+        root, prev_git_sha, settings.git_sha,
+        args.terminal_id, args.session_id, settings.git_sha,
+    )
+    findings.extend(changelog_findings)
 
-    # Phase 3: Agent analysis (skipped in quick mode or when --skip-agents)
-    agent_findings: list = []
-    if args.mode != "quick" and not args.skip_agents:
-        # Agent dispatch happens via SKILL.md instructions to Claude Code Agent tool
-        # The orchestrator prepares handoff files for agents to read
-        inputs_dir = paths.inputs_dir
-        inputs_dir.mkdir(parents=True, exist_ok=True)
+    # Capture changed files for carryover decay check
+    from .__lib.changelog import get_changed_files as _get_changed_files
+    changed_files_for_decay = (
+        _get_changed_files(root, prev_git_sha, settings.git_sha)
+        if prev_git_sha and settings.git_sha and prev_git_sha != settings.git_sha
+        else []
+    )
 
-        handoff = {
-            "mode": args.mode,
-            "target": state.current_target,
+    # Phase 1.5: Resolve transcript from identity.json (hook-captured, no scanning)
+    transcript_path = _resolve_transcript_from_identity(args.terminal_id)
+
+    # Phase 1.6: Extract files edited this session from transcript tool calls
+    session_edited_files = extract_edited_files(transcript_path, root) if transcript_path else []
+
+    # Phase 1.7: Build session chain from session registry
+    chain = _load_session_chain(args.terminal_id)
+
+    # Phase 1.8: Detect session goals from transcript chain
+    goal_result = None
+    if chain:
+        goal_result = SessionGoalDetector(root).detect_goal_from_chain(chain)
+
+    # Phase 1.9: Detect session outcomes (uncompleted goals, open questions, deferred items)
+    outcome_detector = SessionOutcomeDetector(root)
+    outcome_result = outcome_detector.detect(transcript_path, args.terminal_id)
+    session_findings = _convert_outcome_findings(outcome_result, args.terminal_id, args.session_id, settings.git_sha)
+
+    # Phase 1.10: Filter outcomes that were actually completed during the session
+    if outcome_result.items and transcript_path:
+        from .__lib.completion_checker import check_completions
+        filtered_items = check_completions(transcript_path, outcome_result.items)
+        if len(filtered_items) < len(outcome_result.items):
+            filtered_result = SessionOutcomeResult(
+                items=filtered_items, total_count=len(filtered_items)
+            )
+            session_findings = _convert_outcome_findings(
+                filtered_result, args.terminal_id, args.session_id, settings.git_sha
+            )
+        # Write handoff for optional LLM review of remaining ambiguous items
+        if filtered_items:
+            from .agents.session_reviewer import write_handoff
+            write_handoff(
+                paths.artifacts_dir / "session_reviewer_handoff.json",
+                filtered_items,
+                _extract_context(transcript_path, filtered_items),
+            )
+
+    findings.extend(session_findings)
+
+    # Phase 1.12: Context boundary detection — context switches within this session
+    boundary_findings = context_boundary_findings(
+        transcript_path, args.terminal_id, args.session_id, settings.git_sha,
+    )
+    findings.extend(boundary_findings)
+
+    # Phase 1.13: Skill invocation tracking — were previous recommendations actioned?
+    invocation_findings = check_invocations(
+        transcript_path, changelog_findings,
+        args.terminal_id, args.session_id, settings.git_sha,
+    )
+    findings.extend(invocation_findings)
+
+    # Phase 1.11: Write agent handoffs for LLM enrichment
+    if findings:
+        project_context = {
             "root": str(root),
-            "terminal_id": args.terminal_id,
-            "session_id": args.session_id,
             "git_sha": settings.git_sha,
-            "deterministic_findings_count": len(findings),
+            "terminal_id": args.terminal_id,
+            "has_readme": (root / "README.md").exists(),
+            "has_git": (root / ".git").exists(),
         }
-        handoff_file = inputs_dir / "agent_handoff.json"
-        handoff_file.write_text(json.dumps(handoff, indent=2), encoding="utf-8")
-
-        # Phase 3a: Domain analyzer — reads handoff, writes findings
-        agent_findings = _read_agent_result(
-            inputs_dir / "domain_analyzer_result.json", "domain_analyzer",
+        from .agents.domain_analyzer import write_handoff as write_domain_handoff
+        write_domain_handoff(
+            paths.artifacts_dir / "domain_analyzer_handoff.json",
+            findings,
+            project_context,
         )
 
-        # Phase 3b: Findings reviewer — validates and deduplicates agent findings
-        if agent_findings:
-            from .agents.findings_reviewer import write_handoff as reviewer_handoff
-            reviewer_handoff(inputs_dir / "reviewer_handoff.json", agent_findings)
-            reviewed = _read_agent_result(
-                inputs_dir / "findings_reviewer_result.json", "findings_reviewer",
-            )
-            if reviewed:
-                agent_findings = reviewed
-
-        # Phase 3c: Action normalizer — ensures valid domains/severities/actions
-        if agent_findings:
-            from .agents.action_normalizer import write_handoff as normalizer_handoff
-            normalizer_handoff(inputs_dir / "normalizer_handoff.json", agent_findings)
-            normalized = _read_agent_result(
-                inputs_dir / "action_normalizer_result.json", "action_normalizer",
-            )
-            if normalized:
-                agent_findings = normalized
+    # Phase 2: Load carryover (open only — resolved findings stay suppressed)
+    carryover = load_carryover_open_only(paths.artifacts_dir)
+    if carryover:
+        # Apply escalation/decay based on carry count and file changes
+        carryover = apply_carryover_enrichment(carryover, changed_files_for_decay)
+        # Drop carryover findings superseded by a current-run finding with the same ID
+        current_ids = {f.id for f in findings}
+        carryover = [f for f in carryover if f.id not in current_ids]
+        findings.extend(carryover)
 
     # Phase 4: Merge, normalize, dedupe, route, order
-    all_findings = merge_findings(findings, agent_findings)
+    all_findings = merge_findings(findings, [])
     all_findings = normalize_findings(all_findings)
 
     # Docs follow-up detection
@@ -146,23 +313,92 @@ def run(argv: list[str] | None = None) -> int:
     all_findings.extend(docs_findings)
 
     all_findings = dedupe_findings(all_findings)
+
+    # Phase 4.5: Resolve findings based on session edits
+    edited_file_set: set[str] = set()
+    for fp in session_edited_files:
+        try:
+            edited_file_set.add(str(fp.relative_to(root)).replace("\\", "/"))
+        except ValueError:
+            edited_file_set.add(str(fp).replace("\\", "/"))
+    all_findings = resolve_findings(all_findings, edited_file_set, root)
+
+    # Split: display excludes resolved, carryover includes them
+    carryover_findings = list(all_findings)
+    all_findings = [f for f in all_findings if f.status != "resolved"]
+
+    # Phase 4.7: Read agent enrichment results (written by LLM-spawned subagents)
+    from .agents.domain_analyzer import read_result as read_domain
+    from .agents.findings_reviewer import read_result as read_reviewer
+    from .agents.action_normalizer import read_result as read_normalizer
+
+    domain_result = read_domain(paths.artifacts_dir / "domain_analyzer_result.json")
+    if domain_result.success and domain_result.findings:
+        all_findings.extend(domain_result.findings)
+        all_findings = dedupe_findings(all_findings)
+
+    reviewer_result = read_reviewer(paths.artifacts_dir / "findings_reviewer_result.json")
+    if reviewer_result.success and reviewer_result.findings:
+        # Replace findings with reviewed versions (reviewer may reject/adjust)
+        reviewed_ids = {f.id for f in reviewer_result.findings}
+        all_findings = [f for f in all_findings if f.id not in reviewed_ids]
+        all_findings.extend(reviewer_result.findings)
+
+    normalizer_result = read_normalizer(paths.artifacts_dir / "action_normalizer_result.json")
+    if normalizer_result.success and normalizer_result.findings:
+        # Replace with normalized versions
+        normalized_ids = {f.id for f in normalizer_result.findings}
+        all_findings = [f for f in all_findings if f.id not in normalized_ids]
+        all_findings.extend(normalizer_result.findings)
+
+    # Write findings_reviewer and action_normalizer handoffs for next agent pass
+    if all_findings:
+        from .agents.findings_reviewer import write_handoff as write_reviewer_handoff
+        from .agents.action_normalizer import write_handoff as write_normalizer_handoff
+        write_reviewer_handoff(
+            paths.artifacts_dir / "findings_reviewer_handoff.json",
+            all_findings,
+        )
+        write_normalizer_handoff(
+            paths.artifacts_dir / "action_normalizer_handoff.json",
+            all_findings,
+        )
+
     all_findings = route_findings(all_findings)
     all_findings = order_findings(all_findings)
 
-    # Phase 5: Compute coverage
+    # Phase 4.8: Impact radius enrichment
+    all_findings = enrich_with_impact_radius(root, all_findings)
+
+    # Phase 4.9: Finding clustering
+    all_findings = cluster_findings(all_findings)
+
+    # Phase 4.10: Branch-aware priority adjustment
+    all_findings = adjust_for_branch(root, all_findings)
+
+    # Phase 4.11: Stuckness detection from session chain
+    stuckness_findings = detect_stuckness(
+        root, chain, carryover,
+        args.terminal_id, args.session_id, settings.git_sha,
+    )
+    all_findings.extend(stuckness_findings)
+
+    # Phase 5: Compute coverage + health score
     coverage = compute_coverage(all_findings)
 
     # Phase 6: Determine freshness
     freshness = classify_freshness(
-        artifact_git_sha=None,
+        artifact_git_sha=prev_git_sha,
         current_git_sha=settings.git_sha,
-        artifact_target=None,
+        artifact_target=state.current_target,
         current_target=state.current_target,
     )
 
+    health = compute_health_score(all_findings, freshness)
+
     # Phase 7: Build and write artifact
     artifact = GTOArtifact.empty(
-        mode=args.mode,
+        mode="full",
         terminal_id=args.terminal_id,
         session_id=args.session_id,
         target=state.current_target,
@@ -174,13 +410,15 @@ def run(argv: list[str] | None = None) -> int:
         "total_findings": len(all_findings),
         "by_severity": coverage.get("by_severity", {}),
         "by_domain": coverage.get("by_domain", {}),
+        "health": health,
     }
 
     artifact_path = paths.outputs_dir / "artifact.json"
     write_artifact(artifact_path, artifact, all_findings)
 
-    # Phase 8: Save carryover for future runs
-    save_carryover(paths.artifacts_dir, all_findings)
+    # Phase 8: Save carryover for future runs (includes resolved for dedup)
+    save_carryover(paths.artifacts_dir, carryover_findings)
+    prune_carryover(paths.artifacts_dir)
 
     # Phase 9: Update state
     state.phase = "completed"

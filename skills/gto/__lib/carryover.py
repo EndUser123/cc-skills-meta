@@ -1,10 +1,19 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 
 from ..models import Finding, EvidenceRef
 from .util import atomic_write_json
+
+# Severity escalation ladder — each step bumps one level
+SEVERITY_LADDER: dict[str, str] = {
+    "low": "medium",
+    "medium": "high",
+    "high": "critical",
+    "critical": "critical",
+}
 
 
 def load_carryover(artifacts_dir: Path) -> list[Finding]:
@@ -72,9 +81,82 @@ def load_carryover(artifacts_dir: Path) -> list[Finding]:
 
 
 def save_carryover(artifacts_dir: Path, findings: list[Finding]) -> None:
-    """Save unresolved findings as carryover for future runs."""
-    carryover = [f for f in findings if f.status == "open"]
+    """Save findings as carryover for future runs.
+
+    Persists open findings (to re-surface) and resolved findings (to suppress).
+    Rejected findings are discarded. Increments _carry_count on open findings.
+    """
+    carryover: list[Finding] = []
+    for f in findings:
+        if f.status == "rejected":
+            continue
+        # Increment carry count on open findings so future runs can escalate/decay
+        if f.status == "open":
+            count = f.metadata.get("_carry_count", 0) + 1
+            first_seen = f.metadata.get("_first_seen")
+            if first_seen is None:
+                from datetime import datetime, timezone
+                first_seen = datetime.now(timezone.utc).isoformat()
+            new_meta = {**f.metadata, "_carry_count": count, "_first_seen": first_seen}
+            f = replace(f, metadata=new_meta)
+        carryover.append(f)
+
     path = artifacts_dir / "carryover.json"
     data = [f.to_dict() for f in carryover]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    atomic_write_json(path, data)
+
+
+def load_carryover_open_only(artifacts_dir: Path) -> list[Finding]:
+    """Load only open (unresolved) carryover findings."""
+    return [f for f in load_carryover(artifacts_dir) if f.status == "open"]
+
+
+def apply_carryover_enrichment(
+    findings: list[Finding],
+    changed_files: list[str] | None = None,
+) -> list[Finding]:
+    """Apply escalation and decay to carryover findings.
+
+    Escalation: systemic/architectural findings carried 2+ times get severity bump
+    and "RECURRING" prefix on title.
+
+    Decay: local-scoped findings whose referenced file was changed get a staleness
+    note — the context that produced the finding may no longer exist.
+    """
+    enriched: list[Finding] = []
+    for f in findings:
+        count: int = f.metadata.get("_carry_count", 0)
+
+        if count >= 2 and f.scope in ("systemic", "architectural"):
+            new_sev = SEVERITY_LADDER.get(f.severity, f.severity)
+            title = f.title
+            if not title.startswith("RECURRING"):
+                title = f"RECURRING ({count}x): {title}"
+            f = replace(f, severity=new_sev, priority=new_sev, title=title)
+
+        elif count >= 3 and f.scope == "local" and f.file:
+            if changed_files and f.file in changed_files:
+                desc = f.description
+                tag = "[context may have changed]"
+                if tag not in desc:
+                    desc = f"{desc} {tag} — file modified since finding created"
+                f = replace(f, description=desc, evidence_level="unverified")
+
+        enriched.append(f)
+    return enriched
+
+
+def prune_carryover(artifacts_dir: Path, max_resolved: int = 50) -> None:
+    """Remove old resolved findings to prevent unbounded growth."""
+    findings = load_carryover(artifacts_dir)
+    open_findings = [f for f in findings if f.status != "resolved"]
+    resolved_findings = [f for f in findings if f.status == "resolved"]
+    if len(resolved_findings) <= max_resolved:
+        return
+    kept = resolved_findings[-max_resolved:]
+    all_findings = open_findings + kept
+    path = artifacts_dir / "carryover.json"
+    data = [f.to_dict() for f in all_findings]
     path.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_json(path, data)

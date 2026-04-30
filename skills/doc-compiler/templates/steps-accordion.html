@@ -1,0 +1,133 @@
+<section id="steps">
+        <h2>Workflow Steps</h2>
+
+        <article class="step" id="step-1">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 1 — Read Skill Source</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Read the target skill's <span class="code-inline">SKILL.md</span>. Extract frontmatter, workflow_steps, description, triggers, prose routing, checklists/gating questions, terminal states, artifacts, sub-skills, and verification expectations.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">P:/.claude/skills/{target}/SKILL.md</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">raw_skill_content</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-2">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 2 — Extract Workflow Model</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Build a normalized internal workflow model. The model is the source of truth for Mermaid generation, accordion sections, TOC, verification checks, and proof metadata.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">raw_skill_content</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">workflow-model.json</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-3">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 3 — Detect Source Gaps</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Cross-check for prose-only routing, checklist branching, conditional steps shown as unconditional, missing descriptions, unrepresented terminal states or artifacts, and naming mismatches.</p>
+            <p><span class="gate-badge">Gate</span> <code class="code-inline">ambiguities.length === 0 OR ambiguities_recorded === true</code></p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">raw_skill_content</span>, <span class="code-inline">workflow-model.json</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">workflow-model.json</span> (updated)</dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-4">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 4 — Design Mermaid Diagram</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Generate Mermaid from the workflow model. Rules: <span class="code-inline">flowchart TD</span>, <span class="code-inline">curve:'basis'</span>, <span class="code-inline">nodeSpacing:40</span>, <span class="code-inline">rankSpacing:50</span>, ≤40 char labels, classDefs by node type.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">workflow-model.json</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">diagram.mmd</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-5">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 5 — Mermaid Critic Review</h3>
+            <span class="gate-badge">Gate</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Spawn <span class="code-inline">agent:general-purpose</span> to validate diagram. Checks: traceability, crossings (must be 0), label clarity, edge labeling, readability at 50% zoom, syntax validity, coverage of all model elements, theme-safe colors.</p>
+            <p><span class="gate-badge">Gate</span> <code class="code-inline" style="font-size:0.7rem">crossings==0 AND syntax_errors==[] AND legibility_score>=0.8 AND missing_steps==[] AND missing_route_outs==[] AND missing_terminal_states==[] AND dark_theme_contrast_ok==true AND light_theme_text_readable==true</code></p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">diagram.mmd</span>, <span class="code-inline">workflow-model.json</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-6">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 6 — Generate HTML</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Build index.html from the workflow model: hero card, quick facts, Mermaid diagram, accordion per step, route-outs section, terminal states section, artifact cards with copy-to-clipboard paths, proof summary, theme toggle, search UI, responsive layout.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">workflow-model.json</span>, <span class="code-inline">diagram.mmd</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">index.html</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-7">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 7 — Browser Verify Artifact</h3>
+            <span class="badge" style="background:rgba(102,179,255,0.12);color:var(--accent);border:1px solid rgba(102,179,255,0.2);font-size:0.62rem;padding:0.1rem 0.4rem;border-radius:99px;text-transform:uppercase;letter-spacing:0.06em">Orchestrator Only</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Orchestrator-only CDP verification. 16 checks: 9-cell verification matrix (desktop/mobile initial/toggle/resize) plus 10 explicit assertions (position, click, reflow, viewport, listeners). Screenshots required for every layout-affecting interaction.</p>
+            <dl class="kv">
+              <dt>Timeout</dt><dd><span class="code-inline">120000ms</span> total, <span class="code-inline">30s</span> per check</dd>
+              <dt>Inputs</dt><dd><span class="code-inline">index.html</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-8">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 8 — External Validator Review</h3>
+            <span class="gate-badge">Gate</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Spawn <span class="code-inline">agent:general-purpose</span> to verify fidelity. Checks: HTML represents workflow model, step coverage, no invented routes (blocking), TOC initial state sync (blocking), TOC handler atomicity (blocking).</p>
+            <p><span class="gate-badge">Gate</span> <code class="code-inline">no_invented_routes==true AND toc_initial_state_synced==true AND toc_handler_atomic==true</code></p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">index.html</span>, <span class="code-inline">workflow-model.json</span>, <span class="code-inline">diagram.mmd</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-9">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 9 — Emit Proof Metadata</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Write <span class="code-inline">workflow-model.json</span>, <span class="code-inline">artifact-proof.json</span>, and <span class="code-inline">diagram.mmd</span> to the artifacts directory.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">workflow-model.json</span>, <span class="code-inline">verification_result</span>, <span class="code-inline">critic_results</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">artifact-proof.json</span>, <span class="code-inline">workflow-model.json</span>, <span class="code-inline">diagram.mmd</span></dd>
+            </dl>
+          </div>
+        </article>
+      </section>
