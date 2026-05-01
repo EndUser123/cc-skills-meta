@@ -133,29 +133,22 @@ Call `mcp__aid__distill_directory` on the project root with `recursive=false`, `
 
 When responding to `/recap`, apply reasoning to the script output plus the raw transcript context. For each session, synthesize:
 
-**Cynefin Domain**: Classify the problem type for each session:
-- **Clear**: Routine task, obvious solution (e.g., config edit, simple refactor)
-- **Complicated**: Requires analysis or expert knowledge (e.g., debugging, architecture)
-- **Complex**: Emergent behavior, no single right answer (e.g., integration issues, conflicting requirements)
-- **Chaotic**: Novel situation, no clear precedent (e.g., debugging mystery bugs, first-of-kind work)
+**What happened**: Numbered list of issues. Each item starts with an origin tag in brackets, then describes the issue. Origin tags:
+- `[user-reported]` — user explicitly raised this
+- `[discovered-during-fix]` — surfaced while working on something else
+- `[hook-failure]` — a hook caught or blocked something
+- `[skill-escalated]` — a skill routed here from another skill
+- `[regression]` — something that worked before broke
 
-**Problem**: What was the underlying issue? Not just the symptom — the root cause.
+Example: `[user-reported] Path refactoring broke imports in cc-skills-meta and claude-chain-miner`
 
 **What was done**: What actually changed (file edits, hooks, skills, configs). Be specific about the actual action.
 
-**Optimal fix**: What would the ideal solution have been? This may differ from what was done. Consider:
-- Was the fix a workaround vs. root cause resolution?
-- Was the approach optimal given the constraints?
-- Was anything missed or left incomplete?
+**In hindsight**: Was the approach right, given what we know now? Only include this section when the fix was a workaround, a detour was taken, or something was missed. Skip it when the fix was straightforward and correct.
 
-**Contract/resume gaps**: What assumptions were left unstated or unverified? Explicitly surface:
-- unresolved producer/consumer assumptions
-- incomplete handoff or restore logic
-- “discussed” vs “actually verified”
-- missing proof that resume/consumer paths really worked
-- missing, stale, or ignored `Contract Authority Packet` state for contract-sensitive work
+**Still pending**: Concrete next steps that were identified but not completed. Each item must be actionable — a command to run, a file to check, or a decision to make. If nothing is pending, omit this section entirely.
 
-**Verification Queue**: For each unverified item surfaced above, generate a `/tldr-deep` command with the specific function or file name. Prioritize:
+**Verification Queue**: For each unverified item, generate a `/tldr-deep` command with the specific function or file name. Prioritize:
 - **HIGH**: Blocking items that prevent forward progress
 - **MEDIUM**: Code-level verification gaps (untested paths, unverified integration)
 - **LOW**: Process-level gaps (documentation, cleanup)
@@ -193,7 +186,7 @@ Regex extraction remains as fallback for sessions without identifiable file chan
 | Impact verification | `/verify` | Work discussed or implemented but not actually proven |
 | Data flow tracing | `/trace` | Sessions touching data pipelines or state management |
 
-`/pre-mortem` remains the escalation path for Complex or Chaotic sessions (risk escalation).
+`/pre-mortem` remains the escalation path for sessions with unresolved risk or emergent behavior.
 
 `/recap` should not implement fixes itself.
 

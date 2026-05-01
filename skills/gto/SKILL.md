@@ -1,7 +1,7 @@
 ---
 name: gto
-description: "GTO v4.1 — Session-aware gap-to-opportunity analysis with RNS-compatible output"
-version: "4.1.0"
+description: "GTO v4.2 — Session-aware gap-to-opportunity analysis with RNS-compatible output"
+version: "4.2.0"
 triggers:
   - "/gto"
   - "gap analysis"
@@ -15,7 +15,7 @@ workflow_steps:
   - "Display findings in RNS domain-grouped format with Do ALL footer"
 ---
 
-# GTO v4.1 — Session-Aware Gap-to-Opportunity Analysis
+# GTO v4.2 — Session-Aware Gap-to-Opportunity Analysis
 
 ## Overview
 
@@ -120,9 +120,11 @@ The display must follow the `/rns` output format:
 
 ### Step 2.5: Forward-Looking Opportunity Analysis
 
-After rendering the deterministic findings, reason about what comes next based on the session transcript and work trajectory. This is the "Tasks and Opportunities" in Gaps, Tasks, and Opportunities.
+After rendering the deterministic findings, produce a structured gap-to-opportunity review. This is now partially automated via **Agent 5 (Gap Reviewer)** which receives pre-populated detector evidence and produces a FACT/INFERENCE/UNKNOWN/RECOMMENDATION review plus any new findings.
 
-Attend to these signals (among others) in the transcript:
+**If Agent 5 ran successfully** (check `gap_reviewer_result.json`), incorporate its review into the display. The review appears as a structured section after the RNS findings.
+
+**If Agent 5 did not run** (first pass, no agent results yet), perform the analysis manually based on these signals:
 
 | Signal | What to notice |
 |--------|----------------|

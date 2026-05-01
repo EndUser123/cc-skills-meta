@@ -1,28 +1,47 @@
 {
   "source_path": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html",
   "artifact_path": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html",
-  "generated_at": "2026-04-30T15:42:49.091885",
+  "generated_at": "2026-04-30T19:20:34.652306",
   "coverage": {
     "steps_declared": 12,
     "workflow_sections_rendered": 12,
     "elements_present": 42
   },
   "verification_matrix": {
-    "S5_mermaid_present": {
+    "desktop_initial": {
       "passed": true,
-      "reason": "mermaidSource element found"
+      "reason": "__ASSERT_PASS__\ntocToggle.position=fixed, main-content.marginLeft=0px\n__SNAP__:P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\desktop_initial.png\nP:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\desktop_initial.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\n",
+      "snapshot": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\desktop_initial.png",
+      "stdout": "__ASSERT_PASS__\ntocToggle.position=fixed, main-content.marginLeft=0px\n__SNAP__:P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\desktop_initial.png\n",
+      "stderr": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\desktop_initial.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\n"
     },
-    "S12_no_placeholders": {
-      "passed": true,
-      "reason": "no placeholders remain"
+    "desktop_close": {
+      "passed": false,
+      "reason": "Before: margin=0px, collapsed=False\nAfter: margin=0px, collapsed=False\n__ASSERT_FAIL__: toggle did not change state\n__SNAP__:P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\toc_toggle.png\nP:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\toc_toggle.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\n",
+      "snapshot": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\toc_toggle.png",
+      "stdout": "Before: margin=0px, collapsed=False\nAfter: margin=0px, collapsed=False\n__ASSERT_FAIL__: toggle did not change state\n__SNAP__:P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\toc_toggle.png\n",
+      "stderr": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\toc_toggle.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\n"
     },
-    "S9_steps_present": {
-      "passed": true,
-      "reason": "12 step elements rendered"
+    "theme_toggle_preserves_viewport": {
+      "passed": false,
+      "reason": "__ASSERT_FAIL__: themeToggle not found\n__SNAP__:P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\theme_toggle.png\nP:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\theme_toggle.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\n",
+      "snapshot": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\theme_toggle.png",
+      "stdout": "__ASSERT_FAIL__: themeToggle not found\n__SNAP__:P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\theme_toggle.png\n",
+      "stderr": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\theme_toggle.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\n"
     },
-    "coverage_steps": {
-      "passed": true,
-      "reason": "rendered 12/12 steps"
+    "accordion_toggle": {
+      "passed": false,
+      "reason": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\accordion.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\nTraceback (most recent call last):\n  File \"P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\accordion.py\", line 12, in <module>\n    headers[0].click()\n    ^^^^^^^^^^^^^^^^\nAttributeError: 'dict' object has no attribute 'click'\n",
+      "snapshot": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\accordion.png",
+      "stdout": "",
+      "stderr": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\accordion.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\nTraceback (most recent call last):\n  File \"P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\accordion.py\", line 12, in <module>\n    headers[0].click()\n    ^^^^^^^^^^^^^^^^\nAttributeError: 'dict' object has no attribute 'click'\n"
+    },
+    "search_filter": {
+      "passed": false,
+      "reason": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\search.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\n  File \"P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\search.py\", line 13\n    inp.dispatchEvent(new Event('input', {bubbles: true}))\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nSyntaxError: invalid syntax. Perhaps you forgot a comma?\n",
+      "snapshot": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\search.png",
+      "stdout": "",
+      "stderr": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\search.py:7: SyntaxWarning: invalid escape sequence '\\p'\n  new_tab(\"file:///P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html\")\n  File \"P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\_snapshots\\search.py\", line 13\n    inp.dispatchEvent(new Event('input', {bubbles: true}))\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nSyntaxError: invalid syntax. Perhaps you forgot a comma?\n"
     }
   },
   "toc_state": {
@@ -38,5 +57,10 @@
   "listener_integrity": {
     "theme_toggle_listener": true,
     "toc_toggle_listener": true
+  },
+  "runtime_verification": {
+    "passed": 1,
+    "total": 5,
+    "all_passed": false
   }
 }
