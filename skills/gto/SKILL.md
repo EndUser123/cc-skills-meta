@@ -73,6 +73,11 @@ If `AGENTS_NEEDED`, spawn agents **sequentially** (each builds on the previous):
 - Read: `.claude/.artifacts/{terminal_id}/gto/session_reviewer_handoff.json`
 - Instructions: Classify each outcome as `completed` or `open`, write to `session_reviewer_result.json`
 
+**Agent 5: Gap Reviewer** (context-enriched structured review)
+- Read: `.claude/.artifacts/{terminal_id}/gto/gap_reviewer_handoff.json`
+- System prompt: from `skills/gto/agents/prompts.py` → `GAP_REVIEW_SYSTEM`
+- Instructions: Produce a structured FACT/INFERENCE/UNKNOWN/RECOMMENDATION review plus any new gaps discovered. Write results to `.claude/.artifacts/{terminal_id}/gto/gap_reviewer_result.json`
+
 After agents complete, re-run the orchestrator to merge results:
 
 ```bash
@@ -167,6 +172,7 @@ Agent prompts are defined in `skills/gto/agents/prompts.py`:
 | Findings Reviewer | `FINDINGS_REVIEWER_SYSTEM` | Validate severity, reject false positives, dedupe |
 | Action Normalizer | `ACTION_NORMALIZER_SYSTEM` | Normalize into canonical RNS action items |
 | Session Reviewer | (in session_reviewer.py) | Classify ambiguous session outcomes |
+| Gap Reviewer | `GAP_REVIEW_SYSTEM` | Structured FACT/INFERENCE/UNKNOWN/RECOMMENDATION review with context injection |
 
 ## Gap-to-Skill Routing
 

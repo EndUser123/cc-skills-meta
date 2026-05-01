@@ -255,6 +255,8 @@ def run(argv: list[str] | None = None) -> int:
                 filtered_result, args.terminal_id, args.session_id, settings.git_sha
             )
         # Write handoff for optional LLM review of remaining ambiguous items
+        # Low-confidence deferred candidates (confidence < 0.5) are included
+        # for the session reviewer subagent to classify as confirmed/rejected.
         if filtered_items:
             from .agents.session_reviewer import write_handoff
             write_handoff(
@@ -351,10 +353,19 @@ def run(argv: list[str] | None = None) -> int:
         all_findings = [f for f in all_findings if f.id not in normalized_ids]
         all_findings.extend(normalizer_result.findings)
 
+    # Read gap reviewer result — structured review + any new findings
+    from .agents.gap_reviewer import read_result as read_gap
+    gap_result = read_gap(paths.artifacts_dir / "gap_reviewer_result.json")
+    if gap_result.success and gap_result.findings:
+        gap_ids = {f.id for f in gap_result.findings}
+        all_findings = [f for f in all_findings if f.id not in gap_ids]
+        all_findings.extend(gap_result.findings)
+
     # Write findings_reviewer and action_normalizer handoffs for next agent pass
     if all_findings:
         from .agents.findings_reviewer import write_handoff as write_reviewer_handoff
         from .agents.action_normalizer import write_handoff as write_normalizer_handoff
+        from .agents.gap_reviewer import write_handoff as write_gap_handoff
         write_reviewer_handoff(
             paths.artifacts_dir / "findings_reviewer_handoff.json",
             all_findings,
@@ -362,6 +373,30 @@ def run(argv: list[str] | None = None) -> int:
         write_normalizer_handoff(
             paths.artifacts_dir / "action_normalizer_handoff.json",
             all_findings,
+        )
+        # Gap reviewer: context-enriched handoff with detector evidence + absence signals
+        detectors_ran = list({f.source_name for f in all_findings if f.source_name})
+        detectors_empty = [
+            "session_goal_detector", "context_boundary_detector",
+            "invocation_tracker", "stuckness_detector",
+        ]
+        outcome_dicts = [
+            {"category": getattr(i, "category", ""), "content": getattr(i, "content", "")}
+            for i in (outcome_result.items if outcome_result else [])
+        ]
+        write_gap_handoff(
+            paths.artifacts_dir / "gap_reviewer_handoff.json",
+            all_findings,
+            session_outcomes=outcome_dicts,
+            changed_files=changed_files_for_decay,
+            session_context={
+                "terminal_id": args.terminal_id,
+                "session_id": args.session_id,
+                "git_sha": settings.git_sha,
+                "root": str(root),
+            },
+            detectors_ran=detectors_ran,
+            detectors_empty=detectors_empty,
         )
 
     all_findings = route_findings(all_findings)

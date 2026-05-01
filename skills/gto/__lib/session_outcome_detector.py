@@ -132,11 +132,26 @@ class SessionOutcomeDetector:
         (r"(?:need to|should)\s+(?:check|verify|look at|investigate)\s+([^\.]{10,60})", 0.75),
     ]
 
-    # Deferred patterns
+    # Deferred patterns (high confidence — kept as deterministic findings)
     DEFERRED_PATTERNS = [
         (r"(?:for now|for the moment|temporarily)\s+([^\.]{10,60})", 0.6),
         (r"(?:come back to|defer|postpone)\s+([^\.]{10,60})", 0.65),
         (r"skip(?:ping|ped)?\s+(?:this|that|it)\s+([^\.]{10,50})", 0.5),
+    ]
+
+    # Candidate patterns (low confidence — flagged for LLM session reviewer)
+    # Intentionally over-sensitive; the subagent filters noise.
+    CANDIDATE_PATTERNS = [
+        (r"\bcan\s+(?:be\s+)?(?:deleted|removed|cleaned?\s*up?)\s+later\b", 0.4),
+        (r"\bnot\s+in\s+scope\b", 0.4),
+        (r"\b(?:shelve|park|table|put\s+on\s+hold)\b", 0.45),
+        (r"\b(?:can|could)\s+(?:wait|stay)\s+[^\.]{0,20}(?:later|after|until)\b", 0.4),
+        (r"\b(?:revisit|come\s+back)\s+[^\.]{0,30}?(?:after|later|next)\b", 0.45),
+        (r"\b(?:after|once)\s+[^\.]{5,30}\s+(?:is|are)\s+(?:done|complete|finished)\b", 0.4),
+        (r"\b(?:skip|leave)\s+(?:for\s+now|it\s+for\s+now)\b", 0.4),
+        (r"\bcan\s+(?:stay|remain)\s*[^\.]*\b(?:deleted|removed|cleaned)\s+later\b", 0.4),
+        (r"\bout\s+of\s+scope\b", 0.35),
+        (r"\b(?:will|we'll)\s+(?:deal\s+with|handle|address)\s+[^\.]{5,30}\s+later\b", 0.4),
     ]
 
     # Patterns that indicate the item was LIKELY completed (to filter out)
@@ -301,7 +316,30 @@ class SessionOutcomeDetector:
             if len(content.strip()) < 20:
                 continue
 
-            # Check if content has strong completion signals (skip if likely done)
+            # Detect candidate patterns FIRST — low-confidence, sent to LLM reviewer.
+            # These run before the completion-signal skip because candidates like
+            # "revisit X after Y is done" contain "done" but are genuine deferrals.
+            for pattern, confidence in self.CANDIDATE_PATTERNS:
+                match = re.search(pattern, content, re.IGNORECASE)
+                if match:
+                    candidate_content = match.group(0).strip()
+                    # Use surrounding sentence context when group(1) unavailable
+                    if len(candidate_content) < 10:
+                        start = max(0, match.start() - 40)
+                        end = min(len(content), match.end() + 40)
+                        candidate_content = content[start:end].strip()
+                    items.append(
+                        SessionOutcomeItem(
+                            category="deferred_item",
+                            content=candidate_content,
+                            turn_number=turn.turn_number,
+                            session_age=session_age,
+                            confidence=confidence,
+                            source="transcript",
+                        )
+                    )
+
+            # Skip remaining high-confidence scans if the turn signals completion
             if completion_re.search(content):
                 continue
 

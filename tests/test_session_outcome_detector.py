@@ -99,6 +99,61 @@ class TestDetectDeferred:
         assert any(item.category == "deferred_item" for item in result.items)
 
 
+class TestDetectCandidatePatterns:
+    """Low-confidence candidate patterns — flagged for LLM review."""
+
+    def test_detects_can_be_deleted_later(self, tmp_path):
+        t = _write_transcript(tmp_path / "t.jsonl", [
+            ("user", "those files can be deleted later once we confirm everything works."),
+        ])
+        result = SessionOutcomeDetector().detect(t)
+        assert any(item.category == "deferred_item" for item in result.items)
+
+    def test_detects_not_in_scope(self, tmp_path):
+        t = _write_transcript(tmp_path / "t.jsonl", [
+            ("user", "that's not in scope for this PR, we should handle it separately."),
+        ])
+        result = SessionOutcomeDetector().detect(t)
+        assert any(item.category == "deferred_item" for item in result.items)
+
+    def test_detects_shelve(self, tmp_path):
+        t = _write_transcript(tmp_path / "t.jsonl", [
+            ("user", "let's shelve that idea and come back to it after the release."),
+        ])
+        result = SessionOutcomeDetector().detect(t)
+        assert any(item.category == "deferred_item" for item in result.items)
+
+    def test_detects_revisit_after(self, tmp_path):
+        t = _write_transcript(tmp_path / "t.jsonl", [
+            ("user", "we should revisit the caching strategy after the migration is done."),
+        ])
+        result = SessionOutcomeDetector().detect(t)
+        assert any(item.category == "deferred_item" for item in result.items)
+
+    def test_candidate_low_confidence(self, tmp_path):
+        t = _write_transcript(tmp_path / "t.jsonl", [
+            ("user", "those files can be deleted later once we confirm everything works."),
+        ])
+        result = SessionOutcomeDetector().detect(t)
+        deferred = [i for i in result.items if i.category == "deferred_item"]
+        assert any(i.confidence < 0.5 for i in deferred)
+
+    def test_high_confidence_preserved(self, tmp_path):
+        t = _write_transcript(tmp_path / "t.jsonl", [
+            ("user", "for now we'll use the simple implementation without caching."),
+        ])
+        result = SessionOutcomeDetector().detect(t)
+        deferred = [i for i in result.items if i.category == "deferred_item"]
+        assert any(i.confidence >= 0.5 for i in deferred)
+
+    def test_incidental_later_not_matched(self, tmp_path):
+        t = _write_transcript(tmp_path / "t.jsonl", [
+            ("user", "later versions of Python added better asyncio support."),
+        ])
+        result = SessionOutcomeDetector().detect(t)
+        assert not any(item.category == "deferred_item" for item in result.items)
+
+
 class TestDeduplication:
     def test_dedupes_same_intent_different_turns(self, tmp_path):
         t = _write_transcript(tmp_path / "t.jsonl", [

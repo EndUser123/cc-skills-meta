@@ -14,9 +14,12 @@ workflow_steps:
   - stage_b_artifact_plan_builder
   - stage_c_mermaid_design
   - stage_d_mermaid_critic_review
-  - stage_e_html_emitter
+  - stage_e1_loader
+  - stage_e2_binder
+  - stage_e3_assembler
+  - stage_e4_writer
   - stage_f_static_validator
-  - stage_g_runtime_validator
+  - stage_g_artifact_proof
   - stage_h_external_critic
   - stage_i_emit_proof_metadata
 triggers:

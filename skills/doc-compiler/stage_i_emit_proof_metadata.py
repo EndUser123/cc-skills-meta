@@ -47,6 +47,15 @@ def main() -> None:
     if not external_passed:
         errors.append("Stage H (external critic) did not pass")
 
+    # Check runtime verification
+    runtime = proof.get("runtime_verification", {})
+    if runtime:
+        all_passed = runtime.get("all_passed", False)
+        if not all_passed:
+            passed = runtime.get("passed", 0)
+            total = runtime.get("total", 0)
+            errors.append(f"Stage G runtime verification incomplete: {passed}/{total} checks passed")
+
     # Check verification matrix completeness
     vmatrix = proof.get("verification_matrix", {})
     must_test_keys = [k for k, v in vmatrix.items() if isinstance(v, dict) and "passed" in v]

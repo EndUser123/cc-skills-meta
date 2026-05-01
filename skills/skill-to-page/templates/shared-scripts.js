@@ -16,9 +16,6 @@ function isLightMode() {
       ).join('\n    ');
     }
 
-initMermaid();
-    renderMermaid();
-
     // Re-render when OS theme changes
     window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
       document.dispatchEvent(new CustomEvent('theme-toggle', {bubbles: true}));

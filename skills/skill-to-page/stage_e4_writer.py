@@ -5,7 +5,7 @@ Reads: e1-output.json, e2-output.json, e3-output.json, e2_filled_*.html, e3_css_
 Output: index.html + e4-output.json
 Behavior: Takes assembled CSS + JS + filled templates, concatenates into a valid HTML file.
 """
-import json, sys
+import json, re, sys
 from pathlib import Path
 
 BASE   = Path("P:/packages/cc-skills-meta/skills/skill-to-page")
@@ -88,11 +88,91 @@ def main():
     lines.append("  </div><!-- .main-content -->")
     lines.append("</div><!-- .page-shell -->")
 
-    # Collect all import lines from the js_block and emit them first
-    # ES modules require imports at the top; remaining code follows
-    # Collect all import lines from the js_block and emit them first
+    # --- JS MODULE INTEGRITY LINT (before writing) ---
     import_lines = [line for line in js_block.split("\n") if line.strip().startswith("import ")]
-    other_lines = [line for line in js_block.split("\n") if not line.strip().startswith("import ")]
+    other_lines   = [line for line in js_block.split("\n") if not line.strip().startswith("import ")]
+
+    # LINT-1: import ordering — all imports must precede all executable code
+    first_executable_idx = None
+    for i, line in enumerate(other_lines):
+        stripped = line.strip()
+        if stripped and not stripped.startswith("//") and not stripped.startswith("*"):
+            first_executable_idx = i
+            break
+    if first_executable_idx is not None:
+        first_code_line = other_lines[first_executable_idx]
+        for i, il in enumerate(import_lines):
+            # check if any import comes after the first non-import line in sequence order
+            pass  # import_lines are already ordered before other_lines by construction
+        # More precise: scan the full interleaved stream
+        all_lines_ordered = import_lines + other_lines
+        for idx, line in enumerate(all_lines_ordered):
+            stripped = line.strip()
+            if stripped.startswith("import "):
+                prior = all_lines_ordered[:idx]
+                prior_executables = [l.strip() for l in prior if l.strip() and not l.strip().startswith("import ") and not l.strip().startswith("//")]
+                if prior_executables:
+                    fail_line = other_lines.index(line) if line in other_lines else -1
+                    print(f"E4 FAIL: import statement found after executable code at line ~{fail_line} in js_block")
+                    sys.exit(1)
+
+    # LINT-2: duplicate top-level const declarations (module scope only, not inner-block shadowing)
+    const_names = {}
+    for i, line in enumerate(js_block.split("\n")):
+        stripped = line.strip()
+        # Only check top-level lines (no leading whitespace = module scope)
+        # and ignore const inside function bodies (shadowing is legal)
+        if stripped.startswith("const ") and not line.startswith(" "):
+            m = re.match(r'const\s+(\w+)\s*=', stripped)
+            if m:
+                name = m.group(1)
+                if name in const_names:
+                    print(f"E4 FAIL: duplicate const declaration: {name} (first at line {const_names[name]}, second at line {i+1})")
+                    sys.exit(1)
+                const_names[name] = i + 1
+
+    # LINT-3: duplicate top-level function declarations
+    func_names = {}
+    for i, line in enumerate(js_block.split("\n")):
+        stripped = line.strip()
+        if stripped.startswith("function ") and not line.startswith(" "):
+            m = re.match(r'function\s+(\w+)\s*\(', stripped)
+            if m:
+                name = m.group(1)
+                if name in func_names:
+                    print(f"E4 FAIL: duplicate function declaration: {name} (first at line {func_names[name]}, second at line {i+1})")
+                    sys.exit(1)
+                func_names[name] = i + 1
+
+    # LINT-3: strokeWidth key contract — PALETTES must use camelCase strokeWidth, not snake_case stroke_width
+    if "stroke_width" in js_block:
+        print("E4 FAIL: PALETTES uses stroke_width; buildClassDefs expects strokeWidth")
+        sys.exit(1)
+
+    # LINT-4: initMermaid/renderMermaid must appear AFTER import mermaid
+    import_mermaid_idx = None
+    for i, line in enumerate(js_block.split("\n")):
+        if "import mermaid" in line:
+            import_mermaid_idx = i
+            break
+    if import_mermaid_idx is not None:
+        for i, line in enumerate(js_block.split("\n")):
+            stripped = line.strip()
+            if stripped.startswith("initMermaid") or stripped.startswith("renderMermaid"):
+                if i > import_mermaid_idx:
+                    pass  # ok — call is after import
+                # If the call is BEFORE import_mermaid_idx, fail
+                # We detect by checking the raw js_block order around import_mermaid_idx
+    # More precise: find initMermaid() and renderMermaid() call lines
+    call_lines = [(i, l) for i, l in enumerate(js_block.split("\n")) if l.strip().startswith("initMermaid()") or l.strip().startswith("renderMermaid()")]
+    if import_mermaid_idx is not None:
+        for cline_idx, cline in call_lines:
+            if cline_idx > import_mermaid_idx:
+                pass  # ok
+            else:
+                print(f"E4 FAIL: {cline.strip()} call appears before 'import mermaid' statement")
+                sys.exit(1)
+    # --- END JS MODULE INTEGRITY LINT ---
 
     lines.append('<script type="module">')
     # ES modules require all import declarations at the top

@@ -524,7 +524,19 @@ Assembly verification checks:
 - [ ] `pre#mermaidSource` contains Mermaid diagram source (not empty)
 - [ ] `.diagram-resize-handle` is present in the DOM
 
-If any check fails, fail with a descriptive error identifying the missing template slot or unexpected content. Do not proceed to Stage F with an incompletely assembled artifact.
+**JS module integrity lint (sub-step within Stage E — MUST run before writing index.html):**
+After assembling the JS block but before writing it into `<script type="module">`, run these checks. Fail the stage if any violation is found.
+
+1. **Import ordering:** Every line starting with `import ` must appear before any line of executable code (declarations, function calls, control flow). If any `import` appears after a line that is not another `import` or a blank line → FAIL with "import statement found after executable code at line N"
+2. **Duplicate `const` declarations:** Scan the JS text for `const <name> =` patterns. If any name appears more than once in module scope → FAIL with "duplicate const declaration: <name>"
+3. **Duplicate `function` declarations:** Same check for `function <name>(` — if any name appears more than once → FAIL
+4. **`strokeWidth` key contract:** Every key referenced by `buildClassDefs()` (which accesses `vals.strokeWidth`) must exist in all PALETTES objects with camelCase `strokeWidth`, not snake_case `stroke_width`. If snake_case `stroke_width` is found in PALETTES → FAIL with "PALETTES uses stroke_width; buildClassDefs expects strokeWidth"
+5. **`initMermaid` call ordering:** `initMermaid()` and `renderMermaid()` calls must appear AFTER the `import mermaid` statement. If these calls appear before the import → FAIL
+
+**HTTP serving requirement:**
+Generated pages that load Mermaid or other ES modules from CDN MUST be tested over HTTP, not `file://`. CDN-distributed ES modules (e.g., mermaid@11) use relative chunk imports (`./chunks/...`) that CORS-block `file://` origins. Testing over `file://` will silently fail to load Mermaid without any error. Always serve the output directory over HTTP for runtime verification.
+
+If any check fails, fail with a descriptive error identifying the violation. Do not proceed to Stage F with a broken module.
 
 ### Stage F: Static Validator → `static-validation.json`
 

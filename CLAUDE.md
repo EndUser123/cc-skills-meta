@@ -2,62 +2,34 @@
 
 Meta-cognitive and workflow skills for Claude Code — retrospectives, gap analysis, learning, self-improvement, and orchestration.
 
-## Skills (52)
+## Skills (3 Consolidated + 1 Runtime)
 
 | Skill | Purpose |
 |-------|---------|
-| behave | /behave — LLM Behavioral Analysis |
-| cco | CCO — Concurrent Agent Orchestrator |
-| cks | /cks - Constitutional Knowledge System |
-| cognitive-stack | Note: /cognitive-frameworks is deprecated - all cognitive frameworks are now |
-| concept-mapper | Concept Mapper |
-| constitutional-patterns | Constitutional Patterns Skill |
-| constraints | /constraints — Show Project Constraints |
-| csaf | /csaf - Cognitive Systems Architect Framework |
-| csda | CSDA - Code Structure-Documentation Architecture |
-| csf-nip-dev | Purpose |
-| csf-nip-integration | CSF NIP Integration Skill |
-| cwo | /cwo — CWO 16-Step Unified Orchestration |
-| decision-tree | Decision Tree - SDLC Engine |
-| dne | DUF-NSE - Past → Future Analysis |
-| doc-to-skill | Documentation to Skill Converter |
-| dream | Dream — Memory Consolidation |
-| evidence-applicability | Purpose |
-| evolve | /evolve - Modernization Mission Control |
-| execution-clarity | Purpose |
-| flow | Flow Orchestration Command |
-| friction | /friction — Interaction & Workflow Friction Detector |
-| garden | /garden – Knowledge Hygiene |
-| gto | GTO v3.1 - Strategic Next-Step Advisor |
-| learn | `/learn` - Intelligent Lesson Capture |
-| library-first | /library-first - Existing Solutions First |
-| lmc | /lmc - Lossless Maximal Compaction |
-| mlc | /mlc - Minimal Lossy Compaction |
-| ocpa | OCPA - Optimal Completion Path Analysis |
-| orchestrator | Master Skill Orchestrator |
-| pace | /pace – Cognitive Load & WIP Tracking |
-| pds | /pds - Smart Engineering Orchestrator (XoT Enhanced) |
-| prompt_refiner | Prompt Refiner v14.0 |
-| ralph | Ralph Loop |
-| recap | /recap — Terminal-Wide Session Catch-Up |
-| reflect | Reflect - Self-Improving Skills |
-| response-atomicity | Purpose |
-| retro | RETRO — SELF-CONTRAST Orchestrator |
-| rns | RNS — Recommended Next Steps from Arbitrary Output |
-| sequential-thinking | Sequential Thinking with Self-Reflection |
-| similarity | /similarity - Find Similar Skills |
-| skeptic | Note: Cognitive frameworks (Cynefin, Hanlon's Razor, Inversion, Chesterton's ... |
-| slc | /slc - Solo Dev Compliance |
-| solo-dev-authority | Solo Dev Authority |
-| standards | CSF NIP Standards |
-| subagent-driven-development | Subagent-Driven Development |
-| think | /think |
-| top-problems | Top Problems Analyzer (/top-problems) |
-| tot | Tree-of-Thoughts Reasoning |
-| trace | /trace - Manual Trace-Through Verification |
-| truth | /truth - Truth Constitution Command |
-| usm | Universal Skills Manager |
-| why | /why — Decision Archaeology |
+| genius | `/genius` — Thought partner: challenges premises, surfaces cross-domain insights, maps problem first |
+| reason | `/reason` — Unified reasoning engine (replaces `/think`, `/reason_ppx`, `/reason_grok`, `/reason_openai`, `/reason_openai_v3.0`). Routes by epistemic state: local_only → single_challenger → parallel_challengers |
+| s | `/s` — Strategy engine: multi-persona brainstorming (Innovator/Pragmatist/Critic/Expert) with SCAMPER, Six Thinking Hats, First Principles |
+| gto | `/gto` — Session-aware gap-to-opportunity analysis. Reads transcripts, detects uncompleted goals/deferred items, enriches via 5 LLM sub-agents, outputs structured RNS findings. Has its own hook lifecycle (PreToolUse, PostToolUse, Stop, SessionStart) and 282 tests. Not a prompt template — a runtime subsystem. Accessed via plugin (`cc-skills-meta:gto`) and project settings, not a junction. |
+
+## Consolidation Notes
+
+The original 52 skills were consolidated into 3:
+
+- **`/genius`** — stays as-is. Unique "person in the room" tone + premise challenge. Nothing else does this.
+- **`/reason`** — merges 5 skills into one. All were reasoning engines differing only in routing mechanism (confidence vs epistemic state vs Python backend). One command, auto-routing by epistemic state.
+- **`/s`** — stays as-is. Unique multi-persona brainstorming with SCAMPER, Six Thinking Hats. Different use case (option generation vs reasoning).
+
+### Old → New Mapping
+
+| Old Skill | New Home | Status |
+|-----------|----------|--------|
+| `/think` | `/reason` (Quick depth tier) | Merged |
+| `/reason_ppx` | `/reason` (Python backend) | Merged |
+| `/reason_grok` | `/reason` (unified hybrid engine) | Merged |
+| `/reason_openai` | `/reason` (6-stage pipeline) | Merged |
+| `/reason_openai_v3.0` | `/reason` (elite decision modes) | Merged |
+
+All old trigger names still work — they map to `/reason` via the `triggers` frontmatter.
 
 ## Artifacts Convention
 
@@ -108,3 +80,9 @@ python -m scripts.skill_creator.run_eval --eval-set <path> --skill-path <path>
 ## Installation
 
 Skills surfaced via junctions in .claude/skills/.
+
+| Junction | Target |
+|----------|--------|
+| `.claude/skills/genius` | `packages/cc-skills-meta/skills/genius/` |
+| `.claude/skills/reason` | `packages/cc-skills-meta/skills/reason/` |
+| `.claude/skills/s` | `packages/cc-skills-utils/skills/s/` |
