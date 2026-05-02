@@ -516,6 +516,10 @@ invoke routed sub-skills per planning results (av, /doc-to-skill, skill-creator,
 
 All findings from both validators and review agents route back to Phase 2 (PLANNING) for incorporation into the next planning cycle.
 
+**After executing skill changes**: Source edits to plugin skills don't take effect until the cache is refreshed. If changes don't appear in the running session:
+1. `/plugin-installer bump <name>` — bumps version for a clean cache rebuild
+2. If still stale: `/plugin-installer refresh <name>` — nukes cache and reinstalls
+
 Each agent outputs a JSON artifact. If findings exist, route them to the appropriate sub-skill for repair or integration. If no findings, note "no agent-specific gaps found" and continue.
 
 ## HTML Artifact Authoring
@@ -745,6 +749,7 @@ Or remove from `installed_plugins.json` and delete the cache directory.
 | `hooks/hooks.json` not loading | Empty file not committed | Ensure `hooks/hooks.json` exists and is committed (even if `{}`) |
 | `commands/` or `agents/` empty | Git doesn't track empty dirs | Add `.gitkeep` stub to each empty directory and commit |
 | Source changes not taking effect | Plugin loads from version-keyed cache, not source | Bump version (see below) — never delete cache dirs or copy source to cache manually |
+| Skills still stale after bump+reload | Cache directory not refreshed by `/plugin marketplace update` | Use `/plugin-installer refresh <name>` to nuke stale cache and reinstall |
 | `Hook load failed: expected record, received undefined` | `hooks/hooks.json` in cache has wrong format or is missing | Bump version + `/plugin marketplace update local` + `/reload-plugins` |
 
 ### Version Bump Propagation (CRITICAL)
@@ -767,6 +772,8 @@ python3 "P:/packages/plugin-installer/scripts/plugin-audit-and-fix.py" --bump <n
 1. `/plugin marketplace update local`
 2. `/reload-plugins`
 3. `/doctor` to verify 0 errors
+
+**If bump doesn't take effect**: The cache may be stale beyond repair. Use `/plugin-installer refresh <name>` to nuke the stale cache directory and reinstall from the marketplace copy. This is the official Claude Code recommendation for persistent cache issues.
 
 **Do NOT**:
 - Delete cache directories manually — `installed_plugins.json` maps to specific version-keyed paths and deleting them breaks the mapping

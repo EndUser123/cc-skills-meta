@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 
 from . import parse_agent_result
-from ..models import AgentResult, Finding
+from ..models import AgentResult, EvidenceRef, Finding
 
 
 def write_handoff(
@@ -112,8 +112,37 @@ def read_result(path: Path) -> AgentResult:
 
     raw_findings = data.get("findings", [])
     if isinstance(raw_findings, list):
-        result = parse_agent_result(path, "gap_reviewer")
-        result.raw_notes = raw_notes
-        return result
+        findings: list[Finding] = []
+        for item in raw_findings:
+            if not isinstance(item, dict):
+                continue
+            if item.get("status") == "rejected":
+                continue
+            evidence = [
+                EvidenceRef(kind=e.get("kind", ""), value=e.get("value", ""))
+                for e in item.get("evidence", [])
+                if isinstance(e, dict)
+            ]
+            findings.append(
+                Finding(
+                    id=item.get("id", "GAPR-???"),
+                    title=item.get("title", "Gap reviewer finding"),
+                    description=item.get("description", ""),
+                    source_type="agent",
+                    source_name="gap_reviewer",
+                    domain=item.get("domain", "other"),
+                    gap_type=item.get("gap_type", "unknown"),
+                    severity=item.get("severity", "medium"),
+                    evidence_level=item.get("evidence_level", "unverified"),
+                    action=item.get("action", "recover"),
+                    priority=item.get("priority", "medium"),
+                    file=item.get("file"),
+                    line=item.get("line"),
+                    effort=item.get("effort"),
+                    unverified=item.get("unverified", True),
+                    evidence=evidence,
+                )
+            )
+        return AgentResult(agent="gap_reviewer", findings=findings, success=True, raw_notes=raw_notes)
 
-    return AgentResult(agent="gap_reviewer", findings=[], success=True, raw_notes=raw_notes)
+    return AgentResult(agent="gap_reviewer", findings=[], success=False, raw_notes=raw_notes)

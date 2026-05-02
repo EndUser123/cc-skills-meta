@@ -58,10 +58,8 @@ The script extracts structured data via regex and presents it in a format compat
 ## Session History
 
 [Session 1] {session_id}
-- **Entries**: {n}
 - **User messages**: {n} / Assistant messages: {n}
 - **Duration**: {duration if available}
-- **Goal**: {goal}
 
 ### Modified Files
 - `{file_path}`
@@ -85,7 +83,7 @@ The script extracts structured data via regex and presents it in a format compat
 
 ### Active Work At Handoff
 - **Currently Working On**: {work description}
-  - Status: {status}
+  - **Current Status**: {status}
   - Files Modified: {file_list}
   - Next: {next_step}
 
@@ -117,6 +115,15 @@ The script extracts structured data via regex and presents it in a format compat
 - **Assumption**: {core assumption} — *Invalidates*: D# or Action#
 - **External Block**: {dependency} — *Blocks*: Action#
 
+### Recommended Next Steps
+```
+RNS|D|{n}|TERMINAL RECAP
+RNS|A|1|recap|E:~1min|none|no-terminal-recap-RNS-available|{file_path}|owner=/recap|done=0|caused_by=|blocks=|unverified=0
+RNS|Z|0|NONE
+```
+
+> **Note:** RNS format is emitted when the recap output includes actionable next steps derived from the session chain analysis. Each RNS|A| line represents one recommended next step with: id, domain tag, estimated time, risk profile, description, file reference, owning skill, done flag, causation, and blocking relationships. When no terminal-recap-specific RNS is available (brief mode, no session chain, or no actionables found), emit `RNS|Z|0|NONE` to indicate no RNS was produced.
+
 ### Raw Context
 {condensed text for full transcript access}
 ```
@@ -133,14 +140,21 @@ Call `mcp__aid__distill_directory` on the project root with `recursive=false`, `
 
 When responding to `/recap`, apply reasoning to the script output plus the raw transcript context. For each session, synthesize:
 
-**What happened**: Numbered list of issues. Each item starts with an origin tag in brackets, then describes the issue. Origin tags:
+**What happened**: Numbered list of issues. Each item starts with an origin tag and a confidence tag, then describes the issue.
+
+Origin tags:
 - `[user-reported]` — user explicitly raised this
 - `[discovered-during-fix]` — surfaced while working on something else
 - `[hook-failure]` — a hook caught or blocked something
 - `[skill-escalated]` — a skill routed here from another skill
 - `[regression]` — something that worked before broke
 
-Example: `[user-reported] Path refactoring broke imports in cc-skills-meta and claude-chain-miner`
+Confidence tags:
+- `[FACT]` — grounded in tool output, file content, or command results visible in the transcript
+- `[INFERENCE]` — plausible but not directly proven by transcript evidence; state what evidence would confirm or deny
+- `[UNKNOWN]` — important question that cannot be answered from visible evidence
+
+Example: `[user-reported] [FACT] Path refactoring broke imports — sync.py raised ModuleNotFoundError at line 42`
 
 **What was done**: What actually changed (file edits, hooks, skills, configs). Be specific about the actual action.
 
@@ -148,12 +162,9 @@ Example: `[user-reported] Path refactoring broke imports in cc-skills-meta and c
 
 **Still pending**: Concrete next steps that were identified but not completed. Each item must be actionable — a command to run, a file to check, or a decision to make. If nothing is pending, omit this section entirely.
 
-**Verification Queue**: For each unverified item, generate a `/tldr-deep` command with the specific function or file name. Prioritize:
-- **HIGH**: Blocking items that prevent forward progress
-- **MEDIUM**: Code-level verification gaps (untested paths, unverified integration)
-- **LOW**: Process-level gaps (documentation, cleanup)
+**Assumptions to verify**: For each assumption the synthesis relies on, suggest one concrete check — a command to run, a file to inspect, or a question to ask. Each item states the assumption and the check that would confirm or falsify it. If no assumptions are uncertain, omit this section entirely.
 
-Commands are suggestions only — `/recap` does not execute verification.
+Example: "Assumption: sync.py import fix works for all package repos. Check: run `python P:/.claude/skills/git/sync.py --health` and verify no ImportError."
 
 Present synthesis as a per-session narrative in the response, not replacing the script output but complementing it.
 

@@ -11,7 +11,8 @@ category: analysis
 enforcement: advisory
 workflow_steps:
   - "Run deterministic analysis + session transcript analysis (orchestrator)"
-  - "Optionally spawn enrichment agents for domain analysis, review, and normalization"
+  - "Spawn gap reviewer subagent for structured reasoning beyond detectors"
+  - "Re-run orchestrator to merge gap reviewer results"
   - "Display findings in RNS domain-grouped format with Do ALL footer"
 ---
 
@@ -44,57 +45,74 @@ This runs:
 
 Artifacts written to `.claude/.artifacts/{terminal_id}/gto/`.
 
-### Step 1.5: Agent Enrichment (Optional)
+### Step 1.5: Gap Reviewer (Mandatory)
 
-Check if handoff files were written. If findings exist, spawn agents to enrich them:
+After the orchestrator writes its artifact, spawn the **Gap Reviewer** subagent. This is NOT optional — it is the only agent that can reason beyond deterministic detectors (producing facts, inferences, unknowns, and recommendations from the accumulated evidence).
 
 ```bash
-test -f ".claude/.artifacts/{terminal_id}/gto/domain_analyzer_handoff.json" && echo "AGENTS_NEEDED" || echo "NO_AGENTS"
+ARTIFACTS_ROOT="${CLAUDE_ARTIFACTS_ROOT:-P:/.claude/.artifacts}"
+test -f "$ARTIFACTS_ROOT/$WT_SESSION/gto/gap_reviewer_handoff.json" && echo "GAP_REVIEW_NEEDED" || echo "NO_GAP_REVIEW"
 ```
 
-If `AGENTS_NEEDED`, spawn agents **sequentially** (each builds on the previous):
+If `GAP_REVIEW_NEEDED`, spawn a subagent:
 
-**Agent 1: Domain Analyzer** (subagent_type=general-purpose)
-- Read: `.claude/.artifacts/{terminal_id}/gto/domain_analyzer_handoff.json`
-- System prompt: from `skills/gto/agents/prompts.py` → `DOMAIN_ANALYZER_SYSTEM`
-- Instructions: Analyze the findings and project context. Add domain-specific insights. Write findings as JSON array to `.claude/.artifacts/{terminal_id}/gto/domain_analyzer_result.json`
+```python
+Agent(
+    subagent_type="general-purpose",
+    description="GTO gap reviewer",
+    prompt="""You are a gap-to-opportunity reviewer. You receive pre-populated detector evidence and produce a structured review.
 
-**Agent 2: Findings Reviewer** (subagent_type=general-purpose)
-- Read: `.claude/.artifacts/{terminal_id}/gto/findings_reviewer_handoff.json`
-- System prompt: from `skills/gto/agents/prompts.py` → `FINDINGS_REVIEWER_SYSTEM`
-- Instructions: Review findings for accuracy, reject false positives, adjust severity. Write results to `.claude/.artifacts/{terminal_id}/gto/findings_reviewer_result.json`
+Read the handoff file at: $ARTIFACTS_ROOT/$WT_SESSION/gto/gap_reviewer_handoff.json
 
-**Agent 3: Action Normalizer** (subagent_type=general-purpose)
-- Read: `.claude/.artifacts/{terminal_id}/gto/action_normalizer_handoff.json`
-- System prompt: from `skills/gto/agents/prompts.py` → `ACTION_NORMALIZER_SYSTEM`
-- Instructions: Normalize findings into canonical RNS action items. Write results to `.claude/.artifacts/{terminal_id}/gto/action_normalizer_result.json`
+The handoff JSON contains:
+- detected_facts: concrete observations from deterministic detectors
+- signals_absent: detectors that ran but found nothing (absence as evidence)
+- session_context: terminal_id, session_id, git_sha, files edited this session
+- findings: current findings from the deterministic pipeline
 
-**Agent 4: Session Reviewer** (conditional — only if ambiguous outcomes exist)
-- Read: `.claude/.artifacts/{terminal_id}/gto/session_reviewer_handoff.json`
-- Instructions: Classify each outcome as `completed` or `open`, write to `session_reviewer_result.json`
+Produce a JSON object with two fields and write it to: $ARTIFACTS_ROOT/$WT_SESSION/gto/gap_reviewer_result.json
 
-**Agent 5: Gap Reviewer** (context-enriched structured review)
-- Read: `.claude/.artifacts/{terminal_id}/gto/gap_reviewer_handoff.json`
-- System prompt: from `skills/gto/agents/prompts.py` → `GAP_REVIEW_SYSTEM`
-- Instructions: Produce a structured FACT/INFERENCE/UNKNOWN/RECOMMENDATION review plus any new gaps discovered. Write results to `.claude/.artifacts/{terminal_id}/gto/gap_reviewer_result.json`
+1. "review": an object with these sections:
+   - "facts": list of concrete observations grounded in the detector evidence. Each entry is {"claim": "...", "source": "detector_name or file:line"}
+   - "inferences": list of hypotheses about failure modes or friction points. Each entry is {"hypothesis": "...", "confidence": "low|medium|high", "evidence": "what supports this"}
+   - "unknowns": list of important questions that cannot be answered from the evidence. Each entry is {"question": "...", "why_it_matters": "..."}
+   - "recommendations": list of specific next actions, ranked by impact. Produce as many as the evidence supports. Each entry is {"action": "...", "goal": "...", "assumption": "...", "rationale": "..."}
 
-After agents complete, re-run the orchestrator to merge results:
+2. "findings": a JSON array of any NEW gaps you discovered that are NOT already in the input findings, following the standard finding schema:
+   {"id": "GAPR-{domain}-{number}", "title": "...", "description": "...", "domain": "...", "gap_type": "...", "severity": "...", "action": "realize", "priority": "...", "evidence": [...]}
+
+Rules:
+- Do not duplicate findings already present in the input
+- Prefer issues predictable from system structure (overlapping validators, mode flags, format constraints)
+- Do not propose large refactors without a concrete pain point from the evidence
+- Mark confidence honestly — do not inflate inferences to facts
+- If the session was exploratory with no clear trajectory, say so rather than forcing predictions
+- Frame recommendations as actions the user can take, not obligations""",
+)
+```
+
+After the subagent completes, re-run the orchestrator to merge the gap reviewer results:
 
 ```bash
 cd "P:/packages/cc-skills-meta" && python -m skills.gto.orchestrator --terminal-id "$WT_SESSION" --session-id "$CLAUDE_SESSION_ID" --root .
 ```
 
-The second run reads agent result files and merges them into the final artifact.
+The second run reads `gap_reviewer_result.json` and merges its findings into the final artifact.
 
-### Step 1.6: Optional LLM Session Review
+### Step 1.6: Additional Agent Enrichment (Optional)
 
-If the deterministic completion checker left ambiguous outcomes:
+The gap reviewer is the only mandatory agent. The remaining agents are optional enrichment — spawn them only if the user requests deeper analysis or if the gap reviewer identifies gaps that need further validation.
 
-```bash
-test -f ".claude/.artifacts/{terminal_id}/gto/session_reviewer_handoff.json" && echo "REVIEW_NEEDED" || echo "NO_REVIEW"
-```
+**Optional agents** (spawn sequentially if needed):
 
-If `REVIEW_NEEDED`, this is handled as Agent 4 above.
+| Agent | Handoff | Result | Purpose |
+|-------|---------|--------|---------|
+| Domain Analyzer | `domain_analyzer_handoff.json` | `domain_analyzer_result.json` | Domain-specific health assessments |
+| Findings Reviewer | `findings_reviewer_handoff.json` | `findings_reviewer_result.json` | Validate severity, reject false positives |
+| Action Normalizer | `action_normalizer_handoff.json` | `action_normalizer_result.json` | Normalize into canonical RNS actions |
+| Session Reviewer | `session_reviewer_handoff.json` | `session_reviewer_result.json` | Classify ambiguous session outcomes |
+
+If any optional agents run, re-run the orchestrator afterward to merge their results.
 
 ### Step 2: Display Results
 
@@ -118,13 +136,13 @@ The display must follow the `/rns` output format:
 - Footer: `0 — Do ALL Recommended Next Actions (N items)`
 - No markdown fences around the RNS output
 
-### Step 2.5: Forward-Looking Opportunity Analysis
+### Step 2.5: Forward-Looking Opportunity Analysis + Self-Reflection
 
-After rendering the deterministic findings, produce a structured gap-to-opportunity review. This is now partially automated via **Agent 5 (Gap Reviewer)** which receives pre-populated detector evidence and produces a FACT/INFERENCE/UNKNOWN/RECOMMENDATION review plus any new findings.
+After rendering the deterministic findings, produce a structured gap-to-opportunity review. This is now partially automated via the **Gap Reviewer** (Step 1.5) which receives pre-populated detector evidence and produces a FACT/INFERENCE/UNKNOWN/RECOMMENDATION review plus any new findings.
 
-**If Agent 5 ran successfully** (check `gap_reviewer_result.json`), incorporate its review into the display. The review appears as a structured section after the RNS findings.
+**If the Gap Reviewer ran successfully** (check `gap_reviewer_result.json`), incorporate its review into the display. The review appears as a structured section after the RNS findings.
 
-**If Agent 5 did not run** (first pass, no agent results yet), perform the analysis manually based on these signals:
+**If the Gap Reviewer did not run** (first pass, no agent results yet), perform the analysis manually based on these signals:
 
 | Signal | What to notice |
 |--------|----------------|
@@ -134,6 +152,13 @@ After rendering the deterministic findings, produce a structured gap-to-opportun
 | **Work trajectory** | The pattern of what was done implies what comes next (wired agents → test them; created module → document it) |
 | **Avoidance signals** | Something mentioned once then skirted around — usually the hard or uncertain parts that will surface again |
 | **Recurring themes** | Same concern raised across multiple turns or sessions — high-confidence prediction it will come up again |
+
+**Self-reflection prompts (open-ended)** — use when the session involved building, fixing, or documenting a feature, system, or workflow:
+
+1. **Goals / Functions / Outcomes audit**: For any documented capability, stated goal, or expected outcome: *Is it tested? How would we test for it? Is this reflected in unit, regression, and integration tests?* If testing is missing or partial: surface as a `realize` finding.
+2. **Boundary uncertainty**: *What is the smallest discriminating check that would resolve remaining uncertainty?* Name the falsification condition — the specific counterexample or signal that would prove the recommendation wrong.
+3. **Failure mode first**: *Before celebrating a fix, ask: what is the likely failure mode? What discriminating test would falsify it? Could this overfire?*
+4. **Implementation vs capability**: *Is the current implementation telling us the true capability, or just one way it was built?* Challenge assumed limits that are actually just current-impl constraints.
 
 For each predicted next action, render it as a `realize` action item in the RNS output with:
 - **Specific description**: not "add tests" but "write integration tests for agent handoff/result round-trip in domain_analyzer.py"
@@ -206,7 +231,9 @@ All artifacts are terminal-scoped:
 ├── action_normalizer_handoff.json
 ├── action_normalizer_result.json
 ├── session_reviewer_handoff.json
-└── session_reviewer_result.json
+├── session_reviewer_result.json
+├── gap_reviewer_handoff.json
+└── gap_reviewer_result.json
 ```
 
 ## Verification
@@ -224,5 +251,6 @@ The stop hook verifies completion by checking:
 - Terminal-scoped artifacts prevent cross-terminal conflicts
 - Session findings come from transcript analysis, not codebase scanning
 - Heavy codebase analysis should be routed to /code, /test, /diagnose — not done by GTO
-- Agents are optional enrichment — the orchestrator works without them
+- The gap reviewer agent is mandatory — it provides reasoning beyond deterministic detectors
+- Other agents (domain_analyzer, findings_reviewer, action_normalizer, session_reviewer) are optional enrichment
 - Agent results are merged on the next orchestrator run, not inline

@@ -1,5 +1,3 @@
-import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-
 const PALETTES = {
       'tailwind-modern': {
         dark: {
@@ -118,7 +116,8 @@ const PALETTES = {
     }
 
 function initMermaid() {
-      mermaid.initialize({
+      if (!window.__mermaid) { console.error('mermaid not loaded'); return; }
+      window.__mermaid.initialize({
         startOnLoad: false,
         theme: 'base',
         themeVariables: {},
@@ -165,7 +164,7 @@ function initMermaid() {
 
       try {
         const id = 'mermaid-' + Date.now();
-        const { svg } = await mermaid.render(id, updatedSource);
+        const { svg } = await window.__mermaid.render(id, updatedSource);
         const errDiv = document.getElementById('diagramError');
         if (!svg || svg.trim() === '') {
           if (errDiv) { errDiv.textContent = 'Mermaid returned empty output.'; errDiv.classList.add('visible'); }
@@ -380,7 +379,10 @@ const paletteSelect = document.getElementById('paletteSelect');
       });
     }
 
-initMermaid();
-renderMermaid();
-// Re-render on theme toggle (fired from shared-scripts)
-document.addEventListener('theme-toggle', () => { renderMermaid(true); });
+// Init once the import resolves
+window.__mermaidReady = import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs').then(function(m) { window.__mermaid = m.default; }).catch(function(e) { window.__mermaidError = e.message; });
+
+window.__mermaidReady.then(function() {
+  initMermaid();
+  renderMermaid();
+});

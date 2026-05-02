@@ -89,8 +89,36 @@ def main():
     lines.append("</div><!-- .page-shell -->")
 
     # --- JS MODULE INTEGRITY LINT (before writing) ---
-    import_lines = [line for line in js_block.split("\n") if line.strip().startswith("import ")]
-    other_lines   = [line for line in js_block.split("\n") if not line.strip().startswith("import ")]
+    # Multi-line statement joining: merge continuation lines (.then/.catch) onto their prior line
+    # so dynamic imports like `window.__mermaidReady = import(...).then(...)` stay intact
+    joined_lines = []
+    pending = None
+    for line in js_block.split("\n"):
+        stripped = line.strip()
+        if stripped.startswith(".then(") or stripped.startswith(".catch("):
+            # Continuation of previous statement — merge onto pending line
+            if pending is not None:
+                pending = pending.rstrip() + " " + stripped
+            else:
+                joined_lines.append(line)
+                pending = None
+        else:
+            if pending is not None:
+                joined_lines.append(pending)
+                pending = None
+            joined_lines.append(line)
+    if pending is not None:
+        joined_lines.append(pending)
+    js_block_joined = "\n".join(joined_lines)
+
+    # Static imports: line starts with "import " (with trailing space, not "import(")
+    # Dynamic imports: line contains "import(" (e.g. window.__mermaidReady = import('...'))
+    static_import_lines = [line for line in joined_lines if line.strip().startswith("import ")]
+    dynamic_import_lines = [line for line in joined_lines if 'import(' in line]
+    import_lines = static_import_lines + dynamic_import_lines
+    other_lines   = [line for line in joined_lines
+                    if not line.strip().startswith("import ")
+                    and 'import(' not in line]
 
     # LINT-1: import ordering — all imports must precede all executable code
     first_executable_idx = None
@@ -118,7 +146,7 @@ def main():
 
     # LINT-2: duplicate top-level const declarations (module scope only, not inner-block shadowing)
     const_names = {}
-    for i, line in enumerate(js_block.split("\n")):
+    for i, line in enumerate(joined_lines):
         stripped = line.strip()
         # Only check top-level lines (no leading whitespace = module scope)
         # and ignore const inside function bodies (shadowing is legal)
@@ -133,7 +161,7 @@ def main():
 
     # LINT-3: duplicate top-level function declarations
     func_names = {}
-    for i, line in enumerate(js_block.split("\n")):
+    for i, line in enumerate(joined_lines):
         stripped = line.strip()
         if stripped.startswith("function ") and not line.startswith(" "):
             m = re.match(r'function\s+(\w+)\s*\(', stripped)
@@ -151,26 +179,18 @@ def main():
 
     # LINT-4: initMermaid/renderMermaid must appear AFTER import mermaid
     import_mermaid_idx = None
-    for i, line in enumerate(js_block.split("\n")):
-        if "import mermaid" in line:
+    for i, line in enumerate(joined_lines):
+        if "import mermaid" in line or 'import(' in line:
             import_mermaid_idx = i
             break
-    if import_mermaid_idx is not None:
-        for i, line in enumerate(js_block.split("\n")):
-            stripped = line.strip()
-            if stripped.startswith("initMermaid") or stripped.startswith("renderMermaid"):
-                if i > import_mermaid_idx:
-                    pass  # ok — call is after import
-                # If the call is BEFORE import_mermaid_idx, fail
-                # We detect by checking the raw js_block order around import_mermaid_idx
     # More precise: find initMermaid() and renderMermaid() call lines
-    call_lines = [(i, l) for i, l in enumerate(js_block.split("\n")) if l.strip().startswith("initMermaid()") or l.strip().startswith("renderMermaid()")]
+    call_lines = [(i, l) for i, l in enumerate(joined_lines) if l.strip().startswith("initMermaid()") or l.strip().startswith("renderMermaid()")]
     if import_mermaid_idx is not None:
         for cline_idx, cline in call_lines:
             if cline_idx > import_mermaid_idx:
                 pass  # ok
             else:
-                print(f"E4 FAIL: {cline.strip()} call appears before 'import mermaid' statement")
+                print(f"E4 FAIL: {cline.strip()} call appears before import statement")
                 sys.exit(1)
     # --- END JS MODULE INTEGRITY LINT ---
 
@@ -181,13 +201,28 @@ def main():
     for jl in other_lines:
         lines.append("  " + jl)
     lines.append('</script>')
+    # Browser Use Chrome CDP: type="module" scripts fail to execute.
+    # Fallback: mirror all JS as regular script so it executes.
+    lines.append('<script>')
+    lines.append('  // FALLBACK: re-execute module JS for Browser Use Chrome')
+    # Include the dynamic import line (the one that matters for mermaid loading)
+    for il in import_lines:
+        if il.strip():
+            lines.append("  " + il)
+    # Include all other JS
+    for jl in other_lines:
+        if jl.strip():
+            lines.append("  " + jl)
+    lines.append('</script>')
 
     lines.append("</body>")
     lines.append("</html>")
 
     html = "\n".join(lines)
     out_path = BASE / "index.html"
-    out_path.write_text(html, encoding="utf-8")
+    # Force LF-only line endings (Windows Python adds CRLF by default on Windows)
+    with open(out_path, 'w', newline='\n', encoding='utf-8') as f:
+        f.write(html)
 
     # Verify key DOM elements are present
     checks = {

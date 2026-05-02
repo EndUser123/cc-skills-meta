@@ -44,6 +44,9 @@ from .__lib.context_boundaries import context_boundary_findings
 from .__lib.impact_radius import enrich_with_impact_radius
 from .__lib.branch_awareness import adjust_for_branch
 from .__lib.stuckness import detect_stuckness
+from .__lib.hook_health import detect_hook_errors
+from .__lib.workflow_hygiene import detect_workflow_hygiene
+from .__lib.verification_debt import detect_verification_debt
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -78,7 +81,7 @@ def _load_session_chain(terminal_id: str) -> list[str]:
         return []
     try:
         import sys as _sys
-        _sys.path.insert(0, "P:/packages/snapshot/scripts/hooks/__lib")
+        sys.path.insert(0, "P:/packages/snapshot/scripts/hooks/__lib")
         from session_registry import query_registry
     except ImportError:
         return []
@@ -280,6 +283,24 @@ def run(argv: list[str] | None = None) -> int:
     )
     findings.extend(invocation_findings)
 
+    # Phase 1.14: Hook health detection — hook execution errors from transcript
+    hook_error_findings = detect_hook_errors(
+        transcript_path, args.terminal_id, args.session_id, settings.git_sha,
+    )
+    findings.extend(hook_error_findings)
+
+    # Phase 1.15: Workflow hygiene — uncommitted changes in working tree
+    hygiene_findings = detect_workflow_hygiene(
+        root, args.terminal_id, args.session_id, settings.git_sha,
+    )
+    findings.extend(hygiene_findings)
+
+    # Phase 1.16: Verification debt — edits without test verification
+    verification_findings = detect_verification_debt(
+        transcript_path, args.terminal_id, args.session_id, settings.git_sha,
+    )
+    findings.extend(verification_findings)
+
     # Phase 1.11: Write agent handoffs for LLM enrichment
     if findings:
         project_context = {
@@ -379,6 +400,8 @@ def run(argv: list[str] | None = None) -> int:
         detectors_empty = [
             "session_goal_detector", "context_boundary_detector",
             "invocation_tracker", "stuckness_detector",
+            "hook_health_detector", "workflow_hygiene_detector",
+            "verification_debt_detector",
         ]
         outcome_dicts = [
             {"category": getattr(i, "category", ""), "content": getattr(i, "content", "")}

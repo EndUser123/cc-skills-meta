@@ -213,10 +213,8 @@ The script extracts structured data via regex and presents it in a format compat
 ## Session History
 
 [Session 1] {session_id}
-- **Entries**: {n}
 - **User messages**: {n} / Assistant messages: {n}
 - **Duration**: {duration if available}
-- **Goal**: {goal}
 
 ### Modified Files
 - `{file_path}`
@@ -240,7 +238,7 @@ The script extracts structured data via regex and presents it in a format compat
 
 ### Active Work At Handoff
 - **Currently Working On**: {work description}
-  - Status: {status}
+  - **Current Status**: {status}
   - Files Modified: {file_list}
   - Next: {next_step}
 
@@ -271,6 +269,13 @@ The script extracts structured data via regex and presents it in a format compat
 - **Failure Mode**: {description} — *Mitigation*: {what would prevent it}
 - **Assumption**: {core assumption} — *Invalidates*: D# or Action#
 - **External Block**: {dependency} — *Blocks*: Action#
+
+### Recommended Next Steps
+```
+RNS|D|{n}|TERMINAL RECAP
+RNS|A|1|recap|E:~1min|none|no-terminal-recap-RNS-available|{file_path}|owner=/recap|done=0|caused_by=|blocks=|unverified=0
+RNS|Z|0|NONE
+```
 
 ### Raw Context
 {condensed text for full transcript access}
@@ -442,10 +447,8 @@ The script extracts structured data via regex and presents it in a format compat
 ## Session History
 
 [Session 1] {session_id}
-- **Entries**: {n}
 - **User messages**: {n} / Assistant messages: {n}
 - **Duration**: {duration if available}
-- **Goal**: {goal}
 
 ### Modified Files
 - `{file_path}`
@@ -469,7 +472,7 @@ The script extracts structured data via regex and presents it in a format compat
 
 ### Active Work At Handoff
 - **Currently Working On**: {work description}
-  - Status: {status}
+  - **Current Status**: {status}
   - Files Modified: {file_list}
   - Next: {next_step}
 
@@ -500,6 +503,13 @@ The script extracts structured data via regex and presents it in a format compat
 - **Failure Mode**: {description} — *Mitigation*: {what would prevent it}
 - **Assumption**: {core assumption} — *Invalidates*: D# or Action#
 - **External Block**: {dependency} — *Blocks*: Action#
+
+### Recommended Next Steps
+```
+RNS|D|{n}|TERMINAL RECAP
+RNS|A|1|recap|E:~1min|none|no-terminal-recap-RNS-available|{file_path}|owner=/recap|done=0|caused_by=|blocks=|unverified=0
+RNS|Z|0|NONE
+```
 
 ### Raw Context
 {condensed text for full transcript access}
