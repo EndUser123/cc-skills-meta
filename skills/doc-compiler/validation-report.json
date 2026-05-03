@@ -1,0 +1,12 @@
+{
+  "stage": "K",
+  "passed": false,
+  "errors": [
+    "Could not parse critic JSON: Expecting value: line 1 column 1 (char 0)"
+  ],
+  "gate_passed": false,
+  "failed_checks": [
+    "critic-json-parse-error"
+  ],
+  "raw_output": ""
+}
