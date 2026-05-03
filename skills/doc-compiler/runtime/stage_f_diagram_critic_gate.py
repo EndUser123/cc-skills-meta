@@ -129,11 +129,11 @@ def gate_diagram(diagram: dict) -> dict:
     """Critique a single diagram, return pass/fail with issues."""
     diagram_id = diagram.get("diagram_id", "unknown")
     diagram_type = diagram.get("diagram_type", "flowchart")
-    mmmd = diagram.get("mmd_content", "")
+    mmd = diagram.get("mmd_content", "")
 
     issues = []
     critique_fn = CRITIQUES.get(diagram_type, critique_flowchart)
-    issues = critique_fn(mmmd, diagram_id)
+    issues = critique_fn(mmd, diagram_id)
 
     return {
         "diagram_id": diagram_id,
