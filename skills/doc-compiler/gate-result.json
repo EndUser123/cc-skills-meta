@@ -1,0 +1,22 @@
+{
+  "stage": "F",
+  "gate": "diagram-critic",
+  "diagrams_critiqued": 2,
+  "passed": 2,
+  "failed": 0,
+  "gate_passed": true,
+  "results": [
+    {
+      "diagram_id": "diagram-primary",
+      "diagram_type": "flowchart",
+      "passed": true,
+      "issues": []
+    },
+    {
+      "diagram_id": "diagram-state",
+      "diagram_type": "state",
+      "passed": true,
+      "issues": []
+    }
+  ]
+}

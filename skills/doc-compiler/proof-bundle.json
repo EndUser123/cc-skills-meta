@@ -1,0 +1,80 @@
+{
+  "kind": "proof-bundle",
+  "version": "1.0.0",
+  "generated_at": "2026-05-03T14:38:53.441084",
+  "pipeline_completed": false,
+  "gate_passed": false,
+  "skill_name": "skill-to-page",
+  "skill_version": "2.0.0",
+  "source_kind": "skill",
+  "source_path": "P:\\packages\\cc-skills-meta\\skills\\skill-to-page\\SKILL.md",
+  "artifacts": {
+    "stage_a_source": {
+      "exists": true,
+      "passed": true,
+      "size_bytes": 4375
+    },
+    "stage_b_doc_model": {
+      "exists": true,
+      "passed": true,
+      "size_bytes": 7039
+    },
+    "stage_c_diagram_plan": {
+      "exists": true,
+      "passed": true,
+      "size_bytes": 2262
+    },
+    "stage_d_guides": {
+      "exists": true,
+      "passed": true,
+      "size_bytes": 4087
+    },
+    "stage_e_diagrams": {
+      "exists": true,
+      "passed": true,
+      "size_bytes": 2609
+    },
+    "stage_f_gate": {
+      "exists": false,
+      "passed": false,
+      "size_bytes": 0
+    },
+    "stage_g_plan": {
+      "exists": true,
+      "passed": true,
+      "size_bytes": 7068
+    },
+    "stage_h_index": {
+      "exists": true,
+      "passed": true,
+      "size_bytes": 63548
+    },
+    "stage_i_static": {
+      "exists": false,
+      "passed": false,
+      "size_bytes": 0
+    },
+    "stage_j_runtime": {
+      "exists": false,
+      "passed": false,
+      "size_bytes": 0
+    },
+    "stage_k_report": {
+      "exists": false,
+      "passed": false,
+      "size_bytes": 0
+    },
+    "stage_l_proof_meta": {
+      "exists": true,
+      "passed": true,
+      "size_bytes": 1526
+    }
+  },
+  "validation_summary": {
+    "diagram_gate": false,
+    "static_validation": false,
+    "runtime_validation": false,
+    "external_critic": false
+  },
+  "diagram_count": 2
+}

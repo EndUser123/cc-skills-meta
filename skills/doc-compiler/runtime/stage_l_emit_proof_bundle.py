@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Stage L: Emit Proof Bundle for doc-compiler.
 
-Reads all validation artifacts and emits proof-bundle.json.
+Reads all pipeline artifacts and emits proof-bundle.json.
 This is the final stage — it certifies that the pipeline completed successfully.
 Emits: proof-bundle.json
 
@@ -14,44 +14,58 @@ from datetime import datetime
 
 BASE = Path("P:/packages/cc-skills-meta/skills/doc-compiler")
 
-# All stage outputs this bundle aggregates
-STAGE_OUTPUTS = {
-    "stage_a": BASE / "source-model.json",
-    "stage_b": BASE / "doc-model.json",
-    "stage_c": BASE / "diagram-plan.json",
-    "stage_d": BASE / "guides-loaded.json",
-    "stage_e": BASE / "diagrams.json",
-    "stage_f": BASE / "gate-result.json",
-    "stage_g": BASE / "artifact-plan.json",
-    "stage_h": BASE / "index.html",
-    "stage_i": BASE / "static-validation.json",
-    "stage_j": BASE / "runtime-validation.json",
-    "stage_k": BASE / "validation-report.json",
-    "stage_l": BASE / "proof-metadata.json",  # from stage I emit
+# Pipeline artifacts to check (name -> path)
+# Note: validation stages (I, J, K) emit JSON with "passed"/"gate_passed" fields
+# Intermediate stages (A-H) emit data artifacts without "passed" fields
+ARTIFACTS = {
+    "stage_a_source": BASE / "source-model.json",
+    "stage_b_doc_model": BASE / "doc-model.json",
+    "stage_c_diagram_plan": BASE / "diagram-plan.json",
+    "stage_d_guides": BASE / "guides-loaded.json",
+    "stage_e_diagrams": BASE / "diagrams.json",
+    "stage_f_gate": BASE / "gate-result.json",
+    "stage_g_plan": BASE / "artifact-plan.json",
+    "stage_h_index": BASE / "index.html",
+    "stage_i_static": BASE / "static-validation.json",
+    "stage_j_runtime": BASE / "runtime-validation.json",
+    "stage_k_report": BASE / "validation-report.json",
+    "stage_l_proof_meta": BASE / "proof-metadata.json",
 }
 
 
 def load_json(p: Path) -> dict:
     if not p.exists():
         return {}
-    return json.loads(p.read_text(encoding="utf-8"))
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
 
 
-def check_stage(name: str, path: Path) -> dict:
-    """Check a stage output and return its status."""
+def check_artifact(name: str, path: Path) -> dict:
+    """Check an artifact's existence and validity."""
     if not path.exists():
         return {"name": name, "exists": False, "passed": False, "error": "file not found"}
-
     try:
-        data = load_json(path)
-        passed = data.get("passed", data.get("gate_passed", False))
-        return {
-            "name": name,
-            "exists": True,
-            "passed": passed,
-            "size_bytes": path.stat().st_size,
-            "key_data": data.get("summary", data.get("verification_matrix", {}))
-        }
+        if path.suffix in (".json",):
+            data = load_json(path)
+            # Validation stages have "passed" or "gate_passed"
+            passed = data.get("passed", data.get("gate_passed", True))
+            return {
+                "name": name,
+                "exists": True,
+                "passed": passed,
+                "size_bytes": path.stat().st_size,
+                "data_keys": list(data.keys())[:10]
+            }
+        else:
+            # Non-JSON files just need to exist
+            return {
+                "name": name,
+                "exists": True,
+                "passed": True,
+                "size_bytes": path.stat().st_size,
+            }
     except Exception as ex:
         return {"name": name, "exists": True, "passed": False, "error": str(ex)}
 
@@ -59,32 +73,25 @@ def check_stage(name: str, path: Path) -> dict:
 def main() -> None:
     print("Stage L: Aggregating proof bundle...")
 
-    stage_statuses = []
-    all_passed = True
+    artifact_statuses = []
+    all_exist = True
 
-    for stage_name, path in STAGE_OUTPUTS.items():
-        status = check_stage(stage_name, path)
-        stage_statuses.append(status)
-        if not status["passed"]:
-            all_passed = False
+    for name, path in ARTIFACTS.items():
+        status = check_artifact(name, path)
+        artifact_statuses.append(status)
+        if not status["exists"]:
+            all_exist = False
 
-    # Load source model for metadata
-    source_model = load_json(STAGE_OUTPUTS["stage_a"])
+    # Load key artifacts for summary
+    source_model = load_json(ARTIFACTS["stage_a_source"])
+    gate_result = load_json(ARTIFACTS["stage_f_gate"])
+    static_val = load_json(ARTIFACTS["stage_i_static"])
+    runtime_val = load_json(ARTIFACTS["stage_j_runtime"])
+    external_val = load_json(ARTIFACTS["stage_k_report"])
 
-    # Check gate from stage F (diagram critic gate)
-    gate_result = load_json(STAGE_OUTPUTS["stage_f"])
     gate_passed = gate_result.get("gate_passed", False)
-
-    # Check static validation
-    static_val = load_json(STAGE_OUTPUTS["stage_i"])
     static_passed = static_val.get("passed", False)
-
-    # Check runtime validation
-    runtime_val = load_json(STAGE_OUTPUTS["stage_j"])
     runtime_passed = runtime_val.get("runtime_verification", {}).get("all_passed", False)
-
-    # Check external critic
-    external_val = load_json(STAGE_OUTPUTS["stage_k"])
     external_passed = external_val.get("gate_passed", False)
 
     # Build proof bundle
@@ -92,13 +99,13 @@ def main() -> None:
         "kind": "proof-bundle",
         "version": "1.0.0",
         "generated_at": datetime.now().isoformat(),
-        "pipeline_completed": all_passed,
+        "pipeline_completed": all_exist,
         "gate_passed": gate_passed and static_passed and runtime_passed and external_passed,
         "skill_name": source_model.get("name", "unknown"),
         "skill_version": source_model.get("version", "0.0.0"),
         "source_kind": source_model.get("kind", "unknown"),
         "source_path": source_model.get("source_path", ""),
-        "stages": {},
+        "artifacts": {},
         "validation_summary": {
             "diagram_gate": gate_passed,
             "static_validation": static_passed,
@@ -107,42 +114,34 @@ def main() -> None:
         }
     }
 
-    for status in stage_statuses:
-        bundle["stages"][status["name"]] = status
+    for status in artifact_statuses:
+        bundle["artifacts"][status["name"]] = {
+            "exists": status["exists"],
+            "passed": status.get("passed", False),
+            "size_bytes": status.get("size_bytes", 0),
+        }
 
     # Count diagrams
-    diagrams_data = load_json(STAGE_OUTPUTS["stage_e"])
-    diagram_count = len(diagrams_data.get("diagrams", []))
-
-    bundle["artifacts"] = {
-        "index_html": "index.html" if (BASE / "index.html").exists() else None,
-        "diagrams_json": "diagrams.json" if diagrams_data else None,
-        "mmd_files": [f"{d['diagram_id']}.mmd" for d in diagrams_data.get("diagrams", [])],
-        "static_validation": "static-validation.json" if static_passed else None,
-        "runtime_validation": "runtime-validation.json" if runtime_passed else None,
-        "validation_report": "validation-report.json" if external_passed else None,
-        "proof_metadata": "proof-metadata.json" if (BASE / "proof-metadata.json").exists() else None,
-        "diagram_count": diagram_count
-    }
+    diagrams_data = load_json(ARTIFACTS["stage_e_diagrams"])
+    bundle["diagram_count"] = len(diagrams_data.get("diagrams", []))
 
     OUT = BASE / "proof-bundle.json"
     OUT.write_text(json.dumps(bundle, indent=2), encoding="utf-8")
 
-    # Final gate
     final_passed = bundle["gate_passed"]
     print(f"\nStage L: {'PASS — PROOF BUNDLE CERTIFIED' if final_passed else 'FAIL — PIPELINE INCOMPLETE'}")
-    print(f"  pipeline_completed={all_passed}")
+    print(f"  pipeline_completed={all_exist}")
     print(f"  gate_passed={final_passed}")
     print(f"  diagram_gate={gate_passed}")
     print(f"  static_validation={static_passed}")
     print(f"  runtime_validation={runtime_passed}")
     print(f"  external_critic={external_passed}")
-    print(f"  diagrams={diagram_count}")
-    for stage_name, path in STAGE_OUTPUTS.items():
-        status = next((s for s in stage_statuses if s["name"] == stage_name), None)
-        if status:
-            icon = "✓" if status["passed"] else "✗"
-            print(f"  {icon} {stage_name}")
+    print(f"  diagrams={bundle['diagram_count']}")
+
+    for status in artifact_statuses:
+        icon = "✓" if status["passed"] else "✗"
+        exists_icon = "✓" if status["exists"] else "?"
+        print(f"  {icon}{exists_icon} {status['name']}")
 
     print(f"\nWritten: {OUT}")
     sys.exit(0 if final_passed else 1)

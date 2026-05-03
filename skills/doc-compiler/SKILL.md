@@ -48,13 +48,29 @@ Transforms source artifacts (skill SKILL.md, plugin manifest, project README, wo
 ## Input Contract
 
 ```bash
-/doc-compiler <target-path>
+/doc-compiler <target-path> [style]
 # Examples:
 /doc-compiler P:/.claude/skills/go/SKILL.md
 /doc-compiler ./plugin-manifest.json
 /doc-compiler ./my-project/README.md
 /doc-compiler ./workflows/data-pipeline.yaml
+/doc-compiler P:/.claude/skills/go/SKILL.md deepwiki
+/doc-compiler P:/.claude/skills/go/SKILL.md product
+/doc-compiler P:/.claude/skills/go/SKILL.md minimal
 ```
+
+**Style selection (optional):**
+- CLI arg 2 (`deepwiki`, `product`, `minimal`) takes highest precedence
+- `DOCC_STYLE` env var is checked second
+- `style` field in source frontmatter is checked third
+- Defaults to `deepwiki` when none is specified
+
+**Available styles:**
+| Style | Character | Density | Diagram Weight |
+|-------|-----------|---------|----------------|
+| `deepwiki` | Architecture-first, OSS evaluator | dense | prominent (1.1×) |
+| `product` | Polished hero, developer product page | comfortable | normal |
+| `minimal` | Compact, reference-oriented, API docs | compact | collapsed (0.85×) |
 
 **Reads:** Source file specified by `<target-path>`
 **Outputs:**
@@ -71,10 +87,10 @@ doc-compiler is a **compiler pipeline** where JSON is the source of truth betwee
 
 ```
 Stage A (Source Extractor)      → source-model.json
-Stage B (Artifact Plan Builder) → artifact-plan.json
+Stage B (Artifact Plan Builder) → artifact-plan.json (includes presentation.style)
 Stage C (Mermaid Design)         → diagram.mmd
 Stage D (Mermaid Critic)         → (gate)
-Stage E (HTML Emitter)           → index.html
+Stage E (HTML Emitter)           → index.html (style-aware template assembly)
 Stage F (Static Validator)       → static-validation.json
 Stage G (Runtime Validator)      → artifact-proof.json
 Stage H (External Critic)         → validation-report.json
@@ -92,6 +108,50 @@ Stage I (Proof Metadata)         → (final proof)
 2. CSS must not contain malformed selectors (bare identifiers where `#`, `.`, `:`, `@` is required)
 3. Generated HTML must not invent routes, gates, or terminals not present in `artifact-plan.json`
 4. Stage C must not emit spec commentary — only template-based HTML structure
+
+***
+
+## Style-Aware Presentation
+
+The pipeline supports three named presentation styles that control section ordering, density, and visual tone without changing the underlying content.
+
+**Style resolution order (first wins):**
+1. CLI argument 2 (`deepwiki | product | minimal`)
+2. `DOCC_STYLE` environment variable
+3. `style:` field in source YAML frontmatter
+4. Default: `deepwiki`
+
+**How style flows through the pipeline:**
+- Stage A extracts `style` from frontmatter into `source-model.json`
+- Stage B resolves style from CLI > env > frontmatter > default, and writes `presentation.style` into `artifact-plan.json`
+- Stage E1 loads style-specific template overrides (checked first) with fallback to `templates/`
+- Stage E3 assembles CSS with a style-specific overlay on top of the shared base layer
+- Content bindings (steps, artifacts, route-outs) remain identical across all styles
+
+**Template loading rules:**
+- Style-specific section templates live in `templates/styles/<style>/`
+- Missing style files fall back to `templates/<name>` (shared)
+- `base-shell.html`, `toc.html`, and all required DOM IDs must always resolve (style cannot strip required IDs)
+- Style CSS overlays are appended after the shared CSS base layer
+
+**Required DOM IDs (must never be removed by any style):**
+`tocToggle`, `toc`, `themeToggle`, `searchInput`, `clearSearch`, `mermaidSource`, `diagramViewport`, `diagramStage`, `zoomIn`, `zoomOut`, `zoomReset`, `zoomFit`, `zoomPct`, `paletteSelect`, `diagramResizeHandle`
+
+**Section ordering by style:**
+| Section | deepwiki | product | minimal |
+|---------|----------|---------|---------|
+| overview | ✓ | ✓ | ✓ |
+| what-it-does | ✓ | ✓ | — |
+| pipeline | ✓ | ✓ | — |
+| stages | ✓ | ✓ | ✓ |
+| validation | ✓ | ✓ | ✓ |
+| artifacts | ✓ | ✓ | ✓ |
+| filemap | ✓ | ✓ | — |
+| functions | ✓ | ✓ | ✓ |
+| workflow | ✓ | ✓ | — |
+| appendix | ✓ | ✓ | — |
+
+**Validator compatibility:** All existing Stage F (static) and Stage G (runtime) validators check the same required DOM IDs regardless of style. Style CSS is visual-only and does not affect DOM structure.
 
 ***
 

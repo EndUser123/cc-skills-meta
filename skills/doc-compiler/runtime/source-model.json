@@ -1,0 +1,89 @@
+{
+  "kind": "skill",
+  "name": "genius",
+  "version": "1.1.0",
+  "description": "",
+  "enforcement": "advisory",
+  "status": "stable",
+  "triggers": [
+    "/genius"
+  ],
+  "steps": [
+    {
+      "step_map": "Map the problem first \u2014 state what I think you're solving, the model I'm working with, key assumptions"
+    },
+    {
+      "step_challenge": "Challenge the most critical premise \u2014 state what might be wrong and why it matters"
+    },
+    {
+      "step_reframe": "Cross-domain synthesis \u2014 draw one analogy from physics/economics/biology/systems theory"
+    },
+    {
+      "step_recommend": "Give a strong recommendation with why it wins and what would change it"
+    },
+    {
+      "step_surface": "Surface 2 things you haven't considered"
+    }
+  ],
+  "decision_points": [
+    {
+      "id": "decision-1",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    }
+  ],
+  "route_outs": [
+    {
+      "id": "route-1",
+      "target": "/economics",
+      "trigger": "/economics",
+      "description": ""
+    },
+    {
+      "id": "route-2",
+      "target": "/biology",
+      "trigger": "/biology",
+      "description": ""
+    },
+    {
+      "id": "route-3",
+      "target": "/systems theory",
+      "trigger": "/systems theory",
+      "description": ""
+    },
+    {
+      "id": "route-4",
+      "target": "/genius\nsuggest",
+      "trigger": "/genius\nsuggest",
+      "description": ""
+    },
+    {
+      "id": "route-5",
+      "target": "/reason",
+      "trigger": "/reason",
+      "description": ""
+    },
+    {
+      "id": "route-6",
+      "target": "/genius",
+      "trigger": "/genius",
+      "description": ""
+    }
+  ],
+  "terminal_states": [],
+  "artifacts": [
+    {
+      "name": "- An overly familiar \"buddy\" whose warmth substitutes for in",
+      "path": ".claude/.artifacts/{terminal_id}/- An overly familiar \"buddy\" whose warmth substitutes for in"
+    },
+    {
+      "name": "### Standard response",
+      "path": ".claude/.artifacts/{terminal_id}/### Standard response"
+    }
+  ],
+  "gaps": [],
+  "ambiguities": [],
+  "source_path": "P:\\packages\\cc-skills-meta\\skills\\genius\\SKILL.md",
+  "generated_at": "2026-05-03T14:42:31.458763"
+}

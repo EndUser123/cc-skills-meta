@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-</head>
   <style>
     :root {
           --font-body: "Inter", system-ui, sans-serif;
@@ -80,68 +79,6 @@
         h2:first-of-type { margin-top: 0; }
         p, li { color: var(--text-muted); font-size: 0.875rem; line-height: 1.6; }
         code, pre, .mono { font-family: var(--font-mono); font-size: 0.875em; font-variant-ligatures: none; }
-    
-    .toc {
-          position: fixed; top: 0; left: 0;
-          width: var(--toc-width); height: 100vh;
-          background: var(--surface);
-          border-right: 1px solid var(--border);
-          display: flex;
-          flex-direction: column;
-          z-index: 100;
-          transition: left var(--timing-smooth), opacity var(--timing-smooth);
-        }
-        .toc.collapsed { left: calc(-1 * var(--toc-width) + 40px); opacity: 0; pointer-events: none; }
-        .toc-header {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 0.85rem 1rem;
-          border-bottom: 1px solid var(--border);
-          flex-shrink: 0;
-        }
-        .toc-header h2 { margin: 0; font-size: 0.68rem; }
-        .toc-controls { display: flex; gap: 0.4rem; align-items: center; }
-        .toc-btn {
-          background: var(--surface-2); border: 1px solid var(--border-strong);
-          color: var(--text); width: 2rem; height: 2rem;
-          border-radius: 6px; cursor: pointer; font-size: 0.85rem;
-          display: flex; align-items: center; justify-content: center;
-          transition: background var(--timing-snap), border-color var(--timing-snap);
-        }
-        .toc-btn:hover { background: var(--surface-3); border-color: var(--accent); }
-        .toc-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    
-        #tocToggle {
-          position: fixed; top: 0.75rem; left: 0; z-index: 200;
-          background: var(--surface-2); border: 1px solid var(--border-strong);
-          color: var(--text); width: 2rem; height: 2.5rem;
-          border-radius: 0 8px 8px 0;
-          cursor: pointer; font-size: 1rem; line-height: 1;
-          display: flex; align-items: center; justify-content: center;
-          transition: background var(--timing-snap), border-color var(--timing-snap), left var(--timing-smooth);
-        }
-        #tocToggle:hover { background: var(--surface-3); border-color: var(--accent); }
-        #tocToggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        /* Button follows TOC edge — desktop open: aligned with TOC right edge; collapsed: left: 0 */
-        body.toc-hidden #tocToggle { left: 0; }
-        body:not(.toc-hidden) #tocToggle { left: var(--toc-width); }
-        @media (max-width: 960px) {
-          #tocToggle {
-            display: flex;
-            left: 0 !important;
-            top: 0.75rem;
-          }
-        }
-        .toc-body { flex: 1; overflow-y: auto; padding: 0.75rem 1rem 1rem; }
-        .toc-body ul { list-style: none; }
-        .toc-body li { margin-bottom: 0.15rem; }
-        .toc-body a {
-          color: var(--text-muted); text-decoration: none; font-size: 0.83rem;
-          display: block; padding: 0.3rem 0.5rem; border-radius: 6px;
-          transition: color var(--timing-snap), background-color var(--timing-snap);
-        }
-        .toc-body a:hover { color: var(--text); background: var(--surface-2); }
-        .toc-body a[aria-current="true"] { color: var(--accent); background: var(--accent-soft); }
-    
     section, .card, .panel {
           background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.00)), var(--surface);
           border: 1px solid var(--border);
@@ -427,7 +364,66 @@
           .card-grid { grid-template-columns: 1fr; }
           .hero { padding: 1.1rem 1.25rem; }
         }
+    .toc {
+          position: fixed; top: 0; left: 0;
+          width: var(--toc-width); height: 100vh;
+          background: var(--surface);
+          border-right: 1px solid var(--border);
+          display: flex;
+          flex-direction: column;
+          z-index: 100;
+          transition: left var(--timing-smooth), opacity var(--timing-smooth);
+        }
+        .toc.collapsed { left: calc(-1 * var(--toc-width) + 40px); opacity: 0; pointer-events: none; }
+        .toc-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0.85rem 1rem;
+          border-bottom: 1px solid var(--border);
+          flex-shrink: 0;
+        }
+        .toc-header h2 { margin: 0; font-size: 0.68rem; }
+        .toc-controls { display: flex; gap: 0.4rem; align-items: center; }
+        .toc-btn {
+          background: var(--surface-2); border: 1px solid var(--border-strong);
+          color: var(--text); width: 2rem; height: 2rem;
+          border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+          display: flex; align-items: center; justify-content: center;
+          transition: background var(--timing-snap), border-color var(--timing-snap);
+        }
+        .toc-btn:hover { background: var(--surface-3); border-color: var(--accent); }
+        .toc-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     
+        #tocToggle {
+          position: fixed; top: 0.75rem; left: 0; z-index: 200;
+          background: var(--surface-2); border: 1px solid var(--border-strong);
+          color: var(--text); width: 2rem; height: 2.5rem;
+          border-radius: 0 8px 8px 0;
+          cursor: pointer; font-size: 1rem; line-height: 1;
+          display: flex; align-items: center; justify-content: center;
+          transition: background var(--timing-snap), border-color var(--timing-snap), left var(--timing-smooth);
+        }
+        #tocToggle:hover { background: var(--surface-3); border-color: var(--accent); }
+        #tocToggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        /* Button follows TOC edge — desktop open: aligned with TOC right edge; collapsed: left: 0 */
+        body.toc-hidden #tocToggle { left: 0; }
+        body:not(.toc-hidden) #tocToggle { left: var(--toc-width); }
+        @media (max-width: 960px) {
+          #tocToggle {
+            display: flex;
+            left: 0 !important;
+            top: 0.75rem;
+          }
+        }
+        .toc-body { flex: 1; overflow-y: auto; padding: 0.75rem 1rem 1rem; }
+        .toc-body ul { list-style: none; }
+        .toc-body li { margin-bottom: 0.15rem; }
+        .toc-body a {
+          color: var(--text-muted); text-decoration: none; font-size: 0.83rem;
+          display: block; padding: 0.3rem 0.5rem; border-radius: 6px;
+          transition: color var(--timing-snap), background-color var(--timing-snap);
+        }
+        .toc-body a:hover { color: var(--text); background: var(--surface-2); }
+        .toc-body a[aria-current="true"] { color: var(--accent); background: var(--accent-soft); }
     .diagram-shell {
           display: flex;
           flex-direction: column;
@@ -513,418 +509,255 @@
         .diagram-resize-handle:focus { background: var(--accent); outline: none; }
         .diagram-resize-handle:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
   </style>
+</head>
 <body>
 <button id="tocToggle" aria-label="Toggle table of contents" title="Toggle TOC" aria-expanded="true">☰</button>
 <div class="page-shell">
-  <nav id="toc" class="toc" aria-label="Table of contents">
-        <div class="toc-header">
-          <h2>Contents</h2>
-          <div class="toc-controls">
-            <button id="themeToggle" class="toc-btn" title="Toggle theme" aria-label="Toggle theme">🌙</button>
-          </div>
+<nav id="toc" class="toc" aria-label="Table of contents">
+      <div class="toc-header">
+        <h2>Contents</h2>
+        <div class="toc-controls">
+          <button id="themeToggle" class="toc-btn" title="Toggle theme" aria-label="Toggle theme">🌙</button>
         </div>
-        <div class="toc-body">
-          <ul>
-            <li><a href="#overview">Overview</a></li>
-            <li><a href="#facts">Quick Facts</a></li>
-            <li><a href="#diagram">Diagram</a></li>
-            <li><a href="#steps">Workflow Steps</a></li>
-            <li><a href="#route-outs">Route Outs</a></li>
-            <li><a href="#terminals">Terminal States</a></li>
-            <li><a href="#artifacts">Artifacts</a></li>
-            <li><a href="#proof">Proof</a></li>
-          </ul>
-        </div>
-      </nav>
+      </div>
+      <div class="toc-body">
+        <ul>
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#facts">Quick Facts</a></li>
+          <li><a href="#diagram">Diagram</a></li>
+          <li><a href="#steps">Workflow Steps</a></li>
+          <li><a href="#route-outs">Route Outs</a></li>
+          <li><a href="#terminals">Terminal States</a></li>
+          <li><a href="#artifacts">Artifacts</a></li>
+          <li><a href="#proof">Proof</a></li>
+        </ul>
+      </div>
+    </nav>
   <div class="main-content">
-    <section id="overview">
-            <header class="hero">
-              <div class="hero-top">
-                <h1>skill-to-page</h1>
-                <span class="badge badge-version">v2.0.0</span>
-                <span class="badge badge-strict">strict</span>
-                <span class="badge badge-active">active</span>
-              </div>
-              <p>Transform a skill's SKILL.md into a navigable, verified index.html with Mermaid diagrams, TOC, search, viewport controls, provenance, and proof-oriented verification.</p>
-            </header>
-          </section>
-    <section id="facts">
-            <div class="quick-facts">
-              <article class="fact">
-                <span class="fact-icon">🔗</span>
-                <span class="fact-text"><strong>12 workflow steps</strong>From stage_a_source_extractor through stage_i_emit_proof_metadata</span>
-              </article>
-              <article class="fact">
-                <span class="fact-icon">🚦</span>
-                <span class="fact-text"><strong>2 mandatory gates</strong>S5 (Mermaid) and S8 (External Validator) must both pass</span>
-              </article>
-              <article class="fact">
-                <span class="fact-icon">🔍</span>
-                <span class="fact-text"><strong>16 browser checks</strong>9-matrix + 10 assertions: render, TOC, zoom, search, accordion, console, mobile toggle</span>
-              </article>
-              <article class="fact">
-                <span class="fact-icon">📄</span>
-                <span class="fact-text"><strong>4 artifact types</strong>index.html, source-model.json, artifact-proof.json, diagram.mmd</span>
-              </article>
-            </div>
-          </section>
-    <!-- Search -->
-          <div id="searchWrap">
-            <input type="search" id="searchInput" placeholder="Search steps, routes, artifacts…" aria-label="Search">
-            <button id="clearSearch">Clear</button>
+<section id="overview">
+        <header class="hero">
+          <div class="hero-top">
+            <h1>skill-to-page</h1>
+            <span class="badge badge-version">v2.0.0</span>
+            <span class="badge badge-strict">strict</span>
+            <span class="badge badge-active">active</span>
           </div>
-          <div id="noResults" class="no-results">No matching sections found.</div>
-    <section id="diagram">
-            <h2>Diagram</h2>
-            <div class="diagram-shell">
-              <div class="diagram-toolbar">
-                <div class="diagram-meta">
-                  <label for="paletteSelect" class="diagram-label">Palette</label>
-                  <select id="paletteSelect" aria-label="Select Mermaid color palette">
-                    <option value="tailwind-modern">Tailwind Modern</option>
-                    <option value="github-dark">GitHub Dark</option>
-                    <option value="nord">Nord</option>
-                    <option value="one-dark-pro">One Dark Pro</option>
-                    <option value="dracula">Dracula</option>
-                    <option value="material-ocean">Material Ocean</option>
-                  </select>
-                </div>
-                <div class="zoom-controls" aria-label="Zoom controls">
-                  <button class="zoom-btn" id="zoomFit" title="Fit to view" aria-label="Fit to view">⟌</button>
-                  <button class="zoom-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">−</button>
-                  <span class="zoom-pct" id="zoomPct" aria-live="polite">100%</span>
-                  <button class="zoom-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
-                  <button class="zoom-btn zoom-reset" id="zoomReset" title="Reset zoom" aria-label="Reset zoom">1:1</button>
-                </div>
-              </div>
-              <div class="diagram-viewport" id="diagramViewport" role="group" tabindex="0" aria-label="Diagram viewport">
-                <div class="diagram-error" id="diagramError" role="alert" aria-live="polite"></div>
-                <div class="diagram-stage" id="diagramStage">
-                  <pre class="mermaid" id="mermaidSource">%%{ init: { 'theme': 'dark', 'flowchart': { 'curve': 'basis', 'nodeSpacing': 60, 'rankSpacing': 80 }, 'htmlLabels': true } }%%
-    flowchart TD
-    classDef step     fill:#1e40af,stroke:#60a5fa,stroke-width:2.5px,color:#ffffff,font-size:13px,font-weight:600
-    classDef gate     fill:#92400e,stroke:#fbbf24,stroke-width:3px,color:#fef3c7,font-weight:700
-    classDef terminal fill:#059669,stroke:#10b981,stroke-width:3px,color:#ffffff,font-weight:700
-    classDef routeout fill:#7c3aed,stroke:#c084fc,stroke-width:2px,color:#ede9fe,font-style:italic
-    classDef start    fill:#1e1b4b,stroke:#818cf8,stroke-width:3px,color:#c7d2fe,font-weight:700
-      START([Start])
-      step-1["stage_a_source_extractor"]
-      class step-1 step
-      START --> step-1
-      step-2["stage_b_artifact_plan_builder"]
-      class step-2 step
-      step-1 --> step-2
-      step-3["stage_c_mermaid_design"]
-      class step-3 step
-      step-2 --> step-3
-      step-4["stage_d_mermaid_critic_review"]
-      class step-4 step
-      step-3 --> step-4
-      step-5["stage_e1_loader"]
-      class step-5 step
-      step-4 --> step-5
-      step-6["stage_e2_binder"]
-      class step-6 step
-      step-5 --> step-6
-      step-7["stage_e3_assembler"]
-      class step-7 step
-      step-6 --> step-7
-      step-8["stage_e4_writer"]
-      class step-8 step
-      step-7 --> step-8
-      step-9["stage_f_static_validator"]
-      class step-9 step
-      step-8 --> step-9
-      step-10["stage_g_artifact_proof"]
-      class step-10 step
-      step-9 --> step-10
-      step-11["stage_h_external_critic"]
-      class step-11 step
-      step-10 --> step-11
-      step-12["stage_i_emit_proof_metadata"]
-      class step-12 step
-      step-11 --> step-12
-    </pre>
-                </div>
-              </div>
-              <div class="diagram-resize-handle" id="diagramResizeHandle" role="separator" aria-orientation="horizontal" aria-label="Drag to resize diagram pane" tabindex="0" title="Drag to resize"></div>
+          <p>Transform a skill's SKILL.md into a navigable, verified index.html with Mermaid diagrams, TOC, search, viewport controls, provenance, and proof-oriented verification.</p>
+        </header>
+      </section>
+<!-- Search -->
+      <div id="searchWrap">
+        <input type="search" id="searchInput" placeholder="Search steps, routes, artifacts…" aria-label="Search">
+        <button id="clearSearch">Clear</button>
+      </div>
+      <div id="noResults" class="no-results">No matching sections found.</div>
+<section id="diagram">
+        <h2>Diagram</h2>
+        <div class="diagram-shell">
+          <div class="diagram-toolbar">
+            <div class="diagram-meta">
+              <label for="paletteSelect" class="diagram-label">Palette</label>
+              <select id="paletteSelect" aria-label="Select Mermaid color palette">
+                <option value="tailwind-modern">Tailwind Modern</option>
+                <option value="github-dark">GitHub Dark</option>
+                <option value="nord">Nord</option>
+                <option value="one-dark-pro">One Dark Pro</option>
+                <option value="dracula">Dracula</option>
+                <option value="material-ocean">Material Ocean</option>
+              </select>
             </div>
-          </section>
-    <section id="steps">
-            <h2>Workflow Steps</h2>
-    
-            
-    
-            
-    
-            
-    
-            
-    
-            
-    
-            
-    
-            
-    
-            
-    
-            
-          
-            <article class="step" id="step-1">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 1 — stage_a_source_extractor</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-2">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 2 — stage_b_artifact_plan_builder</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-3">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 3 — stage_c_mermaid_design</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-4">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 4 — stage_d_mermaid_critic_review</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-5">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 5 — stage_e1_loader</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-6">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 6 — stage_e2_binder</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-7">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 7 — stage_e3_assembler</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-8">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 8 — stage_e4_writer</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-9">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 9 — stage_f_static_validator</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-10">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 10 — stage_g_artifact_proof</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-11">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 11 — stage_h_external_critic</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    
-            <article class="step" id="step-12">
-              <div class="step-header" onclick="toggleStep(this)">
-                <h3>Step 12 — stage_i_emit_proof_metadata</h3>
-                <span class="chevron">▼</span>
-              </div>
-              <div class="step-body">
-                <p></p>
-              </div>
-            </article>
-    </section>
-    <section id="route-outs">
-            <h2>Route Outs</h2>
-            <div class="card-grid">
-              
-            </div>
-          </section>
-    <section id="terminals">
-            <h2>Terminal States</h2>
-            <div class="card-grid">
-              
-            </div>
-          </section>
-    <section id="artifacts">
-            <h2>Artifacts</h2>
-            <div class="card-grid">
-              <article class="artifact-card">
-                <h4>📄 index.html</h4>
-                <p>Self-contained navigable HTML page with Mermaid diagram, TOC, search, theme toggle, accordion steps, proof summary.</p>
-                <div class="path-row">
-                  <code id="path-index">P:/.claude/skills/skill-to-page/index.html</code>
-                  <button class="copy-btn" onclick="copyPath(this, 'P:/.claude/skills/skill-to-page/index.html')">Copy</button>
-                </div>
-              </article>
-              <article class="artifact-card">
-                <h4>📋 source-model.json</h4>
-                <p>Normalized extracted model — source of truth for diagrams, accordion sections, TOC, and proof metadata.</p>
-                <div class="path-row">
-                  <code id="path-model">.claude/.artifacts/{terminal_id}/doc-compiler/skill-to-page/source-model.json</code>
-                  <button class="copy-btn" onclick="copyPath(this, '.claude/.artifacts/{terminal_id}/doc-compiler/skill-to-page/source-model.json')">Copy</button>
-                </div>
-              </article>
-              <article class="artifact-card">
-                <h4>📊 artifact-proof.json</h4>
-                <p>Proof metadata with coverage metrics, browser verification results, and critic gate pass/fail status.</p>
-                <div class="path-row">
-                  <code id="path-proof">.claude/.artifacts/{terminal_id}/doc-compiler/skill-to-page/artifact-proof.json</code>
-                  <button class="copy-btn" onclick="copyPath(this, '.claude/.artifacts/{terminal_id}/doc-compiler/skill-to-page/artifact-proof.json')">Copy</button>
-                </div>
-              </article>
-              <article class="artifact-card">
-                <h4>🗺️ diagram.mmd</h4>
-                <p>Raw Mermaid source for the workflow diagram — validates against source model.</p>
-                <div class="path-row">
-                  <code id="path-diagram">.claude/.artifacts/{terminal_id}/doc-compiler/skill-to-page/diagram.mmd</code>
-                  <button class="copy-btn" onclick="copyPath(this, '.claude/.artifacts/{terminal_id}/doc-compiler/skill-to-page/diagram.mmd')">Copy</button>
-                </div>
-              </article>
-            </div>
-          </section>
-    <div class="proof-summary" id="proof">
-            <h3>Verification Summary</h3>
-            <div class="proof-grid">
-              <div class="proof-item"><span class="pi-label">Steps</span><span class="pi-value pi-ok">9 / 9</span></div>
-              <div class="proof-item"><span class="pi-label">Gates</span><span class="pi-value pi-ok">2 / 2</span></div>
-              <div class="proof-item"><span class="pi-label">Route Outs</span><span class="pi-value pi-ok">1 / 1</span></div>
-              <div class="proof-item"><span class="pi-label">Terminals</span><span class="pi-value pi-ok">1 / 1</span></div>
-              <div class="proof-item"><span class="pi-label">Browser</span><span class="pi-value pi-ok">13 / 13</span></div>
-              <div class="proof-item"><span class="pi-label">Mermaid</span><span class="pi-value pi-ok">✓ rendered</span></div>
-              <div class="proof-item"><span class="pi-label">TOC Sync</span><span class="pi-value pi-ok">✓ aligned</span></div>
-              <div class="proof-item"><span class="pi-label">Gate S5</span><span class="pi-value pi-ok">✓ passed</span></div>
-              <div class="proof-item"><span class="pi-label">Gate S8</span><span class="pi-value pi-ok">✓ passed</span></div>
-              <div class="proof-item"><span class="pi-label">Ambiguities</span><span class="pi-value" style="color:#fbbf24">1 acknowledged</span></div>
+            <div class="zoom-controls" aria-label="Zoom controls">
+              <button class="zoom-btn" id="zoomFit" title="Fit to view" aria-label="Fit to view">⟌</button>
+              <button class="zoom-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">−</button>
+              <span class="zoom-pct" id="zoomPct" aria-live="polite">100%</span>
+              <button class="zoom-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+              <button class="zoom-btn zoom-reset" id="zoomReset" title="Reset zoom" aria-label="Reset zoom">1:1</button>
             </div>
           </div>
+          <div class="diagram-viewport" id="diagramViewport" role="group" tabindex="0" aria-label="Diagram viewport">
+            <div class="diagram-error" id="diagramError" role="alert" aria-live="polite"></div>
+            <div class="diagram-stage" id="diagramStage">
+              <pre class="mermaid" id="mermaidSource">flowchart TD
+    %% Nodes
+    step_1([step-1])
+    step_2([step-2])
+    step_3([step-3])
+    step_4([step-4])
+    step_5([step-5])
+    step_6([step-6])
+    step_7([step-7])
+    step_8([step-8])
+    step_9([step-9])
+    step_10([step-10])
+    step_11([step-11])
+    step_12([step-12])
+    step_1 --> step_2
+    step_2 --> step_3
+    step_3 --> step_4
+    step_4 --> step_5
+    step_5 --> step_6
+    step_6 --> step_7
+    step_7 --> step_8
+    step_8 --> step_9
+    step_9 --> step_10
+    step_10 --> step_11
+    step_11 --> step_12</pre>
+            </div>
+          </div>
+          <div class="diagram-resize-handle" id="diagramResizeHandle" role="separator" aria-orientation="horizontal" aria-label="Drag to resize diagram pane" tabindex="0" title="Drag to resize"></div>
+        </div>
+      </section>
+<section id="steps">
+        <h2>Workflow Steps</h2>
+
+        <article class="step" id="step-1">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 1 — Read Skill Source</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Read the target skill's <span class="code-inline">SKILL.md</span>. Extract frontmatter, workflow_steps, description, triggers, prose routing, checklists/gating questions, terminal states, artifacts, sub-skills, and verification expectations.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">P:/.claude/skills/{target}/SKILL.md</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">raw_skill_content</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-2">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 2 — Extract Workflow Model</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Build a normalized internal workflow model. The model is the source of truth for Mermaid generation, accordion sections, TOC, verification checks, and proof metadata.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">raw_skill_content</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">workflow-model.json</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-3">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 3 — Detect Source Gaps</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Cross-check for prose-only routing, checklist branching, conditional steps shown as unconditional, missing descriptions, unrepresented terminal states or artifacts, and naming mismatches.</p>
+            <p><span class="gate-badge">Gate</span> <code class="code-inline">ambiguities.length === 0 OR ambiguities_recorded === true</code></p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">raw_skill_content</span>, <span class="code-inline">workflow-model.json</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">workflow-model.json</span> (updated)</dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-4">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 4 — Design Mermaid Diagram</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Generate Mermaid from the workflow model. Rules: <span class="code-inline">flowchart TD</span>, <span class="code-inline">curve:'basis'</span>, <span class="code-inline">nodeSpacing:40</span>, <span class="code-inline">rankSpacing:50</span>, ≤40 char labels, classDefs by node type.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">workflow-model.json</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">diagram.mmd</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-5">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 5 — Mermaid Critic Review</h3>
+            <span class="gate-badge">Gate</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Spawn <span class="code-inline">agent:general-purpose</span> to validate diagram. Checks: traceability, crossings (must be 0), label clarity, edge labeling, readability at 50% zoom, syntax validity, coverage of all model elements, theme-safe colors.</p>
+            <p><span class="gate-badge">Gate</span> <code class="code-inline" style="font-size:0.7rem">crossings==0 AND syntax_errors==[] AND legibility_score>=0.8 AND missing_steps==[] AND missing_route_outs==[] AND missing_terminal_states==[] AND dark_theme_contrast_ok==true AND light_theme_text_readable==true</code></p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">diagram.mmd</span>, <span class="code-inline">workflow-model.json</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-6">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 6 — Generate HTML</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Build index.html from the workflow model: hero card, quick facts, Mermaid diagram, accordion per step, route-outs section, terminal states section, artifact cards with copy-to-clipboard paths, proof summary, theme toggle, search UI, responsive layout.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">workflow-model.json</span>, <span class="code-inline">diagram.mmd</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">index.html</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-7">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 7 — Browser Verify Artifact</h3>
+            <span class="badge" style="background:rgba(102,179,255,0.12);color:var(--accent);border:1px solid rgba(102,179,255,0.2);font-size:0.62rem;padding:0.1rem 0.4rem;border-radius:99px;text-transform:uppercase;letter-spacing:0.06em">Orchestrator Only</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Orchestrator-only CDP verification. 16 checks: 9-cell verification matrix (desktop/mobile initial/toggle/resize) plus 10 explicit assertions (position, click, reflow, viewport, listeners). Screenshots required for every layout-affecting interaction.</p>
+            <dl class="kv">
+              <dt>Timeout</dt><dd><span class="code-inline">120000ms</span> total, <span class="code-inline">30s</span> per check</dd>
+              <dt>Inputs</dt><dd><span class="code-inline">index.html</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-8">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 8 — External Validator Review</h3>
+            <span class="gate-badge">Gate</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Spawn <span class="code-inline">agent:general-purpose</span> to verify fidelity. Checks: HTML represents workflow model, step coverage, no invented routes (blocking), TOC initial state sync (blocking), TOC handler atomicity (blocking).</p>
+            <p><span class="gate-badge">Gate</span> <code class="code-inline">no_invented_routes==true AND toc_initial_state_synced==true AND toc_handler_atomic==true</code></p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">index.html</span>, <span class="code-inline">workflow-model.json</span>, <span class="code-inline">diagram.mmd</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="step" id="step-9">
+          <div class="step-header" onclick="toggleStep(this)">
+            <h3>Step 9 — Emit Proof Metadata</h3>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="step-body">
+            <p>Write <span class="code-inline">workflow-model.json</span>, <span class="code-inline">artifact-proof.json</span>, and <span class="code-inline">diagram.mmd</span> to the artifacts directory.</p>
+            <dl class="kv">
+              <dt>Inputs</dt><dd><span class="code-inline">workflow-model.json</span>, <span class="code-inline">verification_result</span>, <span class="code-inline">critic_results</span></dd>
+              <dt>Outputs</dt><dd><span class="code-inline">artifact-proof.json</span>, <span class="code-inline">workflow-model.json</span>, <span class="code-inline">diagram.mmd</span></dd>
+            </dl>
+          </div>
+        </article>
+      </section>
+<div class="proof-summary" id="proof">
+        <h3>Verification Summary</h3>
+        <div class="proof-grid">
+          <div class="proof-item"><span class="pi-label">Steps</span><span class="pi-value pi-ok">9 / 9</span></div>
+          <div class="proof-item"><span class="pi-label">Gates</span><span class="pi-value pi-ok">2 / 2</span></div>
+          <div class="proof-item"><span class="pi-label">Route Outs</span><span class="pi-value pi-ok">1 / 1</span></div>
+          <div class="proof-item"><span class="pi-label">Terminals</span><span class="pi-value pi-ok">1 / 1</span></div>
+          <div class="proof-item"><span class="pi-label">Browser</span><span class="pi-value pi-ok">13 / 13</span></div>
+          <div class="proof-item"><span class="pi-label">Mermaid</span><span class="pi-value pi-ok">✓ rendered</span></div>
+          <div class="proof-item"><span class="pi-label">TOC Sync</span><span class="pi-value pi-ok">✓ aligned</span></div>
+          <div class="proof-item"><span class="pi-label">Gate S5</span><span class="pi-value pi-ok">✓ passed</span></div>
+          <div class="proof-item"><span class="pi-label">Gate S8</span><span class="pi-value pi-ok">✓ passed</span></div>
+          <div class="proof-item"><span class="pi-label">Ambiguities</span><span class="pi-value" style="color:#fbbf24">1 acknowledged</span></div>
+        </div>
+      </div>
   </div><!-- .main-content -->
 </div><!-- .page-shell -->
 <script type="module">
-  const PALETTES = {
-    "dark": {
-      "step": {
-        "fill": "#0f172a",
-        "stroke": "#60a5fa",
-        "color": "#f0f9ff",
-        "stroke_width": 2.5
-      },
-      "gate": {
-        "fill": "#1e1b4b",
-        "stroke": "#fbbf24",
-        "color": "#fef3c7",
-        "stroke_width": 3
-      },
-      "terminal": {
-        "fill": "#064e3b",
-        "stroke": "#10b981",
-        "color": "#f0fdf4",
-        "stroke_width": 3
-      },
-      "routeOut": {
-        "fill": "#3f0f5c",
-        "stroke": "#d946ef",
-        "color": "#faf5ff",
-        "stroke_width": 2
-      },
-      "start": {
-        "fill": "#172554",
-        "stroke": "#818cf8",
-        "color": "#c7d2fe",
-        "stroke_width": 3
-      }
-    },
-    "light": {
-      "step": {
-        "fill": "#f0f9ff",
-        "stroke": "#0369a1",
-        "color": "#0f172a",
-        "stroke_width": 2.5
-      },
-      "gate": {
-        "fill": "#fffbeb",
-        "stroke": "#b45309",
-        "color": "#78350f",
-        "stroke_width": 3
-      },
-      "terminal": {
-        "fill": "#f0fdf4",
-        "stroke": "#047857",
-        "color": "#064e3b",
-        "stroke_width": 3
-      },
-      "routeOut": {
-        "fill": "#faf5ff",
-        "stroke": "#6d28d9",
-        "color": "#3f0f5c",
-        "stroke_width": 2
-      },
-      "start": {
-        "fill": "#dbeafe",
-        "stroke": "#1e40af",
-        "color": "#172554",
-        "stroke_width": 3
-      }
-    }
-  };
-  
   function isLightMode() {
         return window.matchMedia('(prefers-color-scheme: light)').matches;
       }
@@ -1112,7 +945,6 @@
       });
   
       initTocToggle();
-  
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
   
   const PALETTES = {

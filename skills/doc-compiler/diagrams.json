@@ -1,0 +1,56 @@
+{
+  "kind": "diagrams",
+  "version": "1.0.0",
+  "diagrams_count": 2,
+  "diagrams": [
+    {
+      "diagram_id": "diagram-primary",
+      "diagram_type": "flowchart",
+      "mmd_file": "diagram-primary.mmd",
+      "mmd_content": "flowchart TD\n    %% Nodes\n    step_1([step-1])\n    step_2([step-2])\n    step_3([step-3])\n    step_4([step-4])\n    step_5([step-5])\n    step_6([step-6])\n    step_7([step-7])\n    step_8([step-8])\n    step_9([step-9])\n    step_10([step-10])\n    step_11([step-11])\n    step_12([step-12])\n    step_1 --> step_2\n    step_2 --> step_3\n    step_3 --> step_4\n    step_4 --> step_5\n    step_5 --> step_6\n    step_6 --> step_7\n    step_7 --> step_8\n    step_8 --> step_9\n    step_9 --> step_10\n    step_10 --> step_11\n    step_11 --> step_12",
+      "palette_hint": "tailwind-modern",
+      "caption": "skill-to-page \u2014 step flow",
+      "role": "primary-flowchart",
+      "guide_file": "flowchart-guide.md",
+      "elements": [
+        "step-1",
+        "step-2",
+        "step-3",
+        "step-4",
+        "step-5",
+        "step-6",
+        "step-7",
+        "step-8",
+        "step-9",
+        "step-10",
+        "step-11",
+        "step-12"
+      ]
+    },
+    {
+      "diagram_id": "diagram-state",
+      "diagram_type": "state",
+      "mmd_file": "diagram-state.mmd",
+      "mmd_content": "stateDiagram-v2\n    [*] --> Start\n    state \"step-1\" as step_1\n    state \"step-2\" as step_2\n    state \"step-3\" as step_3\n    state \"step-4\" as step_4\n    state \"step-5\" as step_5\n    state \"step-6\" as step_6\n    state \"step-7\" as step_7\n    state \"step-8\" as step_8\n    state \"step-9\" as step_9\n    state \"step-10\" as step_10\n    state \"step-11\" as step_11\n    state \"step-12\" as step_12\n    step_1 --> step_2\n    step_2 --> step_3\n    step_3 --> step_4\n    step_4 --> step_5\n    step_5 --> step_6\n    step_6 --> step_7\n    step_7 --> step_8\n    step_8 --> step_9\n    step_9 --> step_10\n    step_10 --> step_11\n    step_11 --> step_12\n    step_12 --> [*]",
+      "palette_hint": "one-dark-pro",
+      "caption": "Workflow state transitions",
+      "role": "state-machine",
+      "guide_file": "state-guide.md",
+      "elements": [
+        "step-1",
+        "step-2",
+        "step-3",
+        "step-4",
+        "step-5",
+        "step-6",
+        "step-7",
+        "step-8",
+        "step-9",
+        "step-10",
+        "step-11",
+        "step-12"
+      ]
+    }
+  ],
+  "source_model_ref": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\source-model.json"
+}

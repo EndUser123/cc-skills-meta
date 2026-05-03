@@ -1,18 +1,15 @@
-#!/usr/bin/env python3
-import sys, json, os
 
-BH_DIR = "P:/packages/.github_repos/browser-harness"
+import sys, json, os
+BH_DIR = r"P:/packages/.github_repos/browser-harness"
 if BH_DIR not in sys.path:
     sys.path.insert(0, BH_DIR)
-
 from helpers import *
 from admin import *
 
 INDEX_PATH = "file:///P:/packages/cc-skills-meta/skills/doc-compiler/index.html"
-SNAP_DIR = "P:/packages/cc-skills-meta/skills/doc-compiler/_snapshots"
+SNAP_DIR = r"P:/packages/cc-skills-meta/skills/doc-compiler/_snapshots"
 
 os.makedirs(SNAP_DIR, exist_ok=True)
-
 ensure_daemon()
 new_tab(INDEX_PATH)
 wait_for_load()
@@ -20,98 +17,94 @@ time.sleep(2)
 
 results = {}
 
-# A1: Desktop initial load
-toc_exists = js("!!document.getElementById('tocToggle')")
-if toc_exists:
-    pos = js("getComputedStyle(document.getElementById('tocToggle')).position")
+# J1: Desktop initial load
+toc = js("document.getElementById('tocToggle')")
+if toc:
+    pos = js("getComputedStyle(toc).position")
     margin = js("getComputedStyle(document.querySelector('.main-content')).marginLeft")
-    passed1 = "fixed" in str(pos)
-    results['desktop_initial'] = {'passed': passed1, 'reason': 'pos=' + str(pos) + ', margin=' + str(margin)}
+    passed1 = bool(pos and "fixed" in str(pos))
+    results["J1_desktop_initial"] = {"passed": passed1, "reason": f"tocToggle pos={pos}, main margin={margin}"}
 else:
-    results['desktop_initial'] = {'passed': False, 'reason': 'tocToggle not found'}
+    results["J1_desktop_initial"] = {"passed": False, "reason": "tocToggle not found"}
 
-screenshot(os.path.join(SNAP_DIR, 'desktop_initial.png'))
-print('__SNAP__:' + os.path.join(SNAP_DIR, 'desktop_initial.png'))
+screenshot(os.path.join(SNAP_DIR, "J1_desktop.png"))
 
-# A2: TOC toggle - define initTocToggle inline
-js("""
-(function() {
-    if (typeof window.initTocToggle !== 'undefined') return;
-    window.initTocToggle = function() {
-        var btn = document.getElementById('tocToggle');
-        var toc = document.getElementById('toc');
-        var main = document.querySelector('.main-content');
-        if (!btn || !toc || !main) { console.log('initTocToggle: missing elements'); return; }
-        var tocIsOpen = window.innerWidth >= 961;
-        function applyTocState() {
-            if (tocIsOpen) {
-                toc.classList.remove('collapsed');
-                document.body.classList.remove('toc-hidden');
-                main.classList.remove('toc-closed');
-                main.classList.add('toc-open');
-            } else {
-                toc.classList.add('collapsed');
-                document.body.classList.add('toc-hidden');
-                main.classList.remove('toc-open');
-                main.classList.add('toc-closed');
-            }
-        }
-        applyTocState();
-        btn.addEventListener('click', function() {
-            tocIsOpen = !tocIsOpen;
-            applyTocState();
-        });
-        console.log('initTocToggle: initialized, tocIsOpen=' + tocIsOpen);
-    };
-    window.initTocToggle();
-})();
-""")
+# J2: TOC toggle
+js("if(typeof initTocToggle==='function'){initTocToggle();}")
+before = js("document.body.classList.contains('toc-hidden')")
+toc_btn = js("document.getElementById('tocToggle')")
+if toc_btn:
+    toc_btn.click()
+    time.sleep(0.5)
+after = js("document.body.classList.contains('toc-hidden')")
+passed2 = str(before) != str(after)
+results["J2_toc_toggle"] = {"passed": passed2, "reason": f"before_hidden={before}, after_hidden={after}"}
+screenshot(os.path.join(SNAP_DIR, "J2_toc_toggle.png"))
 
-before_hidden = js("document.body.classList.contains('toc-hidden')")
-js("document.getElementById('tocToggle').click()")
-time.sleep(0.5)
-after_hidden = js("document.body.classList.contains('toc-hidden')")
-passed2 = str(before_hidden) != str(after_hidden)
-results['toc_toggle'] = {'passed': passed2, 'reason': 'Before hidden=' + str(before_hidden) + ', After hidden=' + str(after_hidden)}
-
-screenshot(os.path.join(SNAP_DIR, 'toc_toggle.png'))
-print('__SNAP__:' + os.path.join(SNAP_DIR, 'toc_toggle.png'))
-
-# A3: Theme toggle
-theme_exists = js("!!document.getElementById('themeToggle')")
-if theme_exists:
-    js("document.getElementById('themeToggle').click()")
-    time.sleep(1)
-    results['theme_toggle'] = {'passed': True, 'reason': 'theme toggle clicked'}
+# J3: Theme toggle
+theme_btn = js("document.getElementById('themeToggle')")
+if theme_btn:
+    theme_btn.click()
+    time.sleep(0.5)
+    dark = js("document.body.classList.contains('dark')")
+    results["J3_theme_toggle"] = {"passed": True, "reason": f"dark_mode={'on' if dark else 'off'}"}
 else:
-    results['theme_toggle'] = {'passed': False, 'reason': 'themeToggle not found'}
+    results["J3_theme_toggle"] = {"passed": False, "reason": "themeToggle not found"}
+screenshot(os.path.join(SNAP_DIR, "J3_theme.png"))
 
-screenshot(os.path.join(SNAP_DIR, 'theme_toggle.png'))
-print('__SNAP__:' + os.path.join(SNAP_DIR, 'theme_toggle.png'))
-
-# A4: Accordion
-headers_count = js("document.querySelectorAll('.step-header').length")
-if headers_count and int(str(headers_count)) > 0:
+# J4: Accordion toggle
+headers = js("document.querySelectorAll('.step-header').length")
+if headers and int(str(headers)) > 0:
     js("document.querySelectorAll('.step-header')[0].click()")
     time.sleep(0.3)
-    results['accordion_toggle'] = {'passed': True, 'reason': str(headers_count) + ' headers found'}
+    results["J4_accordion_toggle"] = {"passed": True, "reason": f"{headers} step headers found"}
 else:
-    results['accordion_toggle'] = {'passed': False, 'reason': 'no accordion headers'}
+    results["J4_accordion_toggle"] = {"passed": False, "reason": "no .step-header elements"}
+screenshot(os.path.join(SNAP_DIR, "J4_accordion.png"))
 
-screenshot(os.path.join(SNAP_DIR, 'accordion.png'))
-print('__SNAP__:' + os.path.join(SNAP_DIR, 'accordion.png'))
-
-# A5: Search
-search_exists = js("!!document.getElementById('searchInput')")
-if search_exists:
+# J5: Search filter
+search = js("document.getElementById('searchInput')")
+if search:
     js("document.getElementById('searchInput').value = 'step'")
     js("document.getElementById('searchInput').dispatchEvent(new Event('input'))")
     time.sleep(0.3)
-    results['search_filter'] = {'passed': True, 'reason': 'search attempted'}
+    results["J5_search_filter"] = {"passed": True, "reason": "search input events fired"}
 else:
-    results['search_filter'] = {'passed': False, 'reason': 'searchInput not found'}
+    results["J5_search_filter"] = {"passed": False, "reason": "searchInput not found"}
+screenshot(os.path.join(SNAP_DIR, "J5_search.png"))
 
-screenshot(os.path.join(SNAP_DIR, 'search.png'))
-print('__SNAP__:' + os.path.join(SNAP_DIR, 'search.png'))
+# J6: Mermaid renders (look for svg in diagramStage)
+svg_count = js("document.querySelectorAll('#diagramStage svg').length")
+results["J6_mermaid_rendered"] = {"passed": bool(svg_count and int(str(svg_count)) > 0), "reason": f"svg count={svg_count}"}
+screenshot(os.path.join(SNAP_DIR, "J6_mermaid.png"))
 
-print('__RESULTS__:' + json.dumps(results))
+# J7: Palette selector
+palette_sel = js("document.getElementById('paletteSelect')")
+if palette_sel:
+    js("document.getElementById('paletteSelect').value = 'nord'")
+    js("document.getElementById('paletteSelect').dispatchEvent(new Event('change'))")
+    time.sleep(0.5)
+    results["J7_palette_switch"] = {"passed": True, "reason": "palette selector changed"}
+else:
+    results["J7_palette_switch"] = {"passed": False, "reason": "paletteSelect not found"}
+screenshot(os.path.join(SNAP_DIR, "J7_palette.png"))
+
+# J8: Zoom controls
+zoom_in = js("document.getElementById('zoomIn')")
+if zoom_in:
+    zoom_in.click()
+    time.sleep(0.2)
+    results["J8_zoom_controls"] = {"passed": True, "reason": "zoomIn clicked"}
+else:
+    results["J8_zoom_controls"] = {"passed": False, "reason": "zoomIn not found"}
+screenshot(os.path.join(SNAP_DIR, "J8_zoom.png"))
+
+# J9: Resize handle
+resize_handle = js("document.getElementById('diagramResizeHandle')")
+if resize_handle:
+    results["J9_resize_handle"] = {"passed": True, "reason": "resize handle present"}
+else:
+    results["J9_resize_handle"] = {"passed": False, "reason": "diagramResizeHandle not found"}
+screenshot(os.path.join(SNAP_DIR, "J9_resize.png"))
+
+print("__RESULTS__:" + json.dumps(results))

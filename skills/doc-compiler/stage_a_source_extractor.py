@@ -132,10 +132,14 @@ def extract_from_skill(path: Path) -> dict[str, Any]:
     fm = extract_frontmatter(text)
     steps = extract_steps_from_skill(text, fm)
 
+    # style hint from frontmatter; CLI/env can override at plan stage
+    style = fm.get("style", "") or ""
+
     return {
         "kind": "skill",
         "name": fm.get("name", path.parent.name),
         "version": fm.get("version", "0.0.0"),
+        "style": style,
         "description": fm.get("description", ""),
         "steps": steps,
         "decision_points": [],

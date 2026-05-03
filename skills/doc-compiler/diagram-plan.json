@@ -1,0 +1,113 @@
+{
+  "kind": "diagram-plan",
+  "version": "1.0.0",
+  "workflow_shape": "branching",
+  "diagrams": [
+    {
+      "diagram_id": "diagram-primary",
+      "diagram_type": "flowchart",
+      "guide_file": "flowchart-guide.md",
+      "role": "primary-flowchart",
+      "elements": [
+        "step-1",
+        "step-2",
+        "step-3",
+        "step-4",
+        "step-5",
+        "step-6",
+        "step-7",
+        "step-8",
+        "step-9",
+        "step-10",
+        "step-11",
+        "step-12"
+      ],
+      "caption": "skill-to-page \u2014 step flow",
+      "palette_hint": "tailwind-modern"
+    },
+    {
+      "diagram_id": "diagram-state",
+      "diagram_type": "state",
+      "guide_file": "state-guide.md",
+      "role": "state-machine",
+      "elements": [
+        "step-1",
+        "step-2",
+        "step-3",
+        "step-4",
+        "step-5",
+        "step-6",
+        "step-7",
+        "step-8",
+        "step-9",
+        "step-10",
+        "step-11",
+        "step-12"
+      ],
+      "caption": "Workflow state transitions",
+      "palette_hint": "one-dark-pro"
+    }
+  ],
+  "step_transitions": [
+    {
+      "from": "step-1",
+      "to": "step-2",
+      "label": ""
+    },
+    {
+      "from": "step-2",
+      "to": "step-3",
+      "label": ""
+    },
+    {
+      "from": "step-3",
+      "to": "step-4",
+      "label": ""
+    },
+    {
+      "from": "step-4",
+      "to": "step-5",
+      "label": ""
+    },
+    {
+      "from": "step-5",
+      "to": "step-6",
+      "label": ""
+    },
+    {
+      "from": "step-6",
+      "to": "step-7",
+      "label": ""
+    },
+    {
+      "from": "step-7",
+      "to": "step-8",
+      "label": ""
+    },
+    {
+      "from": "step-8",
+      "to": "step-9",
+      "label": ""
+    },
+    {
+      "from": "step-9",
+      "to": "step-10",
+      "label": ""
+    },
+    {
+      "from": "step-10",
+      "to": "step-11",
+      "label": ""
+    },
+    {
+      "from": "step-11",
+      "to": "step-12",
+      "label": ""
+    }
+  ],
+  "decision_points": [],
+  "route_outs": [],
+  "terminal_states": [],
+  "artifacts": [],
+  "source_model_ref": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\source-model.json"
+}

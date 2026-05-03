@@ -1,0 +1,34 @@
+{
+  "stage": "J",
+  "source_path": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html",
+  "artifact_path": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html",
+  "generated_at": "2026-05-03T14:57:48.037318",
+  "coverage": {
+    "steps_declared": 12,
+    "workflow_sections_rendered": 9,
+    "elements_present": 31
+  },
+  "verification_matrix": {},
+  "toc_state": {
+    "toc_present": true,
+    "toc_toggle_present": true,
+    "toc_items": 8
+  },
+  "css_contract": {
+    "has_style_block": true,
+    "responsive_meta": true,
+    "dark_mode_support": true
+  },
+  "listener_integrity": {
+    "theme_toggle_listener": true,
+    "toc_toggle_listener": true,
+    "accordion_listener": true
+  },
+  "runtime_verification": {
+    "passed": 0,
+    "total": 0,
+    "all_passed": true,
+    "snapshots": [],
+    "stdout": ""
+  }
+}

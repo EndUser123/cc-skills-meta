@@ -4,52 +4,40 @@
   "page_structure": {
     "sections": [
       {
-        "id": "overview",
-        "type": "hero",
-        "title": "Overview"
+        "section_id": "overview",
+        "template": "section-hero",
+        "data_keys": [
+          "name",
+          "version",
+          "description"
+        ],
+        "required": true,
+        "render": true
       },
       {
-        "id": "facts",
-        "type": "quick-facts",
-        "items": []
+        "section_id": "diagram",
+        "template": "section-mermaid",
+        "data_keys": [
+          "diagram_plan_id"
+        ],
+        "required": true,
+        "render": true
       },
       {
-        "id": "diagram",
-        "type": "mermaid"
+        "section_id": "steps",
+        "template": "section-accordion",
+        "data_keys": [
+          "steps"
+        ],
+        "required": true,
+        "render": true
       },
       {
-        "id": "steps",
-        "type": "accordion",
-        "items": [
-          "step-1",
-          "step-2",
-          "step-3",
-          "step-4",
-          "step-5",
-          "step-6",
-          "step-7",
-          "step-8",
-          "step-9",
-          "step-10",
-          "step-11",
-          "step-12"
-        ]
-      },
-      {
-        "id": "route-outs",
-        "type": "route-out-list"
-      },
-      {
-        "id": "terminals",
-        "type": "terminal-list"
-      },
-      {
-        "id": "artifacts",
-        "type": "artifact-cards"
-      },
-      {
-        "id": "proof",
-        "type": "proof-metadata"
+        "section_id": "proof",
+        "template": "section-proof",
+        "data_keys": [],
+        "required": true,
+        "render": true
       }
     ]
   },
@@ -61,11 +49,17 @@
     "diagram_height_min": 200,
     "diagram_height_max": 800
   },
-  "mermaid_source": "%%{ init: { 'theme': 'dark', 'flowchart': { 'curve': 'basis', 'nodeSpacing': 60, 'rankSpacing': 80 }, 'htmlLabels': true } }%%\nflowchart TD\nclassDef step     fill:#1e40af,stroke:#60a5fa,stroke-width:2.5px,color:#ffffff,font-size:13px,font-weight:600\nclassDef gate     fill:#92400e,stroke:#fbbf24,stroke-width:3px,color:#fef3c7,font-weight:700\nclassDef terminal fill:#059669,stroke:#10b981,stroke-width:3px,color:#ffffff,font-weight:700\nclassDef routeout fill:#7c3aed,stroke:#c084fc,stroke-width:2px,color:#ede9fe,font-style:italic\nclassDef start    fill:#1e1b4b,stroke:#818cf8,stroke-width:3px,color:#c7d2fe,font-weight:700\n  START([Start])\n  step-1[\"stage_a_source_extractor\"]\n  class step-1 step\n  START --> step-1\n  step-2[\"stage_b_artifact_plan_builder\"]\n  class step-2 step\n  step-1 --> step-2\n  step-3[\"stage_c_mermaid_design\"]\n  class step-3 step\n  step-2 --> step-3\n  step-4[\"stage_d_mermaid_critic_review\"]\n  class step-4 step\n  step-3 --> step-4\n  step-5[\"stage_e1_loader\"]\n  class step-5 step\n  step-4 --> step-5\n  step-6[\"stage_e2_binder\"]\n  class step-6 step\n  step-5 --> step-6\n  step-7[\"stage_e3_assembler\"]\n  class step-7 step\n  step-6 --> step-7\n  step-8[\"stage_e4_writer\"]\n  class step-8 step\n  step-7 --> step-8\n  step-9[\"stage_f_static_validator\"]\n  class step-9 step\n  step-8 --> step-9\n  step-10[\"stage_g_artifact_proof\"]\n  class step-10 step\n  step-9 --> step-10\n  step-11[\"stage_h_external_critic\"]\n  class step-11 step\n  step-10 --> step-11\n  step-12[\"stage_i_emit_proof_metadata\"]\n  class step-12 step\n  step-11 --> step-12\n",
+  "mermaid_source": "",
   "mermaid_config": {
     "curve": "basis",
     "nodeSpacing": 40,
-    "rankSpacing": 50
+    "rankSpacing": 50,
+    "mmd_files": [
+      "diagram-primary.mmd",
+      "diagram-state.mmd"
+    ],
+    "primary_diagram": "diagram-primary.mmd",
+    "diagram_count": 2
   },
   "toc_config": {
     "width": "18rem",
@@ -83,6 +77,10 @@
     "name": "skill-to-page",
     "version": "2.0.0",
     "description": "Transform a skill's SKILL.md into a navigable, verified index.html with Mermaid diagrams, TOC, search, viewport controls, provenance, and proof-oriented verification.",
+    "kind": "skill",
+    "enforcement": "strict",
+    "status": "active",
+    "triggers": [],
     "steps": [
       {
         "id": "step-1",
@@ -241,8 +239,41 @@
         "artifacts_emitted": []
       }
     ],
+    "decision_points": [],
     "route_outs": [],
     "terminal_states": [],
-    "artifacts": []
-  }
+    "artifacts": [],
+    "gaps": [],
+    "ambiguities": []
+  },
+  "workflow_shape": "branching",
+  "diagram_roles": [
+    {
+      "diagram_id": "diagram-primary",
+      "role": "primary-flowchart",
+      "elements": [
+        "step-1",
+        "step-2",
+        "step-3",
+        "step-4",
+        "step-5",
+        "step-6",
+        "step-7",
+        "step-8",
+        "step-9",
+        "step-10",
+        "step-11",
+        "step-12"
+      ],
+      "caption": "Workflow steps and transitions"
+    },
+    {
+      "diagram_id": "diagram-error-path",
+      "role": "error-path",
+      "elements": [],
+      "caption": "Route-out and failure paths"
+    }
+  ],
+  "gaps": [],
+  "ambiguities": []
 }

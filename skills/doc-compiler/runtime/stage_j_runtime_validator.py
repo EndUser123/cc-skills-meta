@@ -18,6 +18,7 @@ Browser checks performed:
 """
 import json, re, sys, subprocess, time
 from pathlib import Path
+from datetime import datetime
 
 BASE = Path("P:/packages/cc-skills-meta/skills/doc-compiler")
 INDEX = BASE / "index.html"

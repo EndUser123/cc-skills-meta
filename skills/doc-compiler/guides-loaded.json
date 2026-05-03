@@ -1,0 +1,73 @@
+{
+  "kind": "guides-loaded",
+  "version": "1.0.0",
+  "guides_count": 2,
+  "guides": [
+    {
+      "diagram_id": "diagram-primary",
+      "diagram_type": "flowchart",
+      "guide_file": "flowchart-guide.md",
+      "guide_content": "# Flowchart Guide\n\n## Use for\n- overall workflow\n- decisions and route-outs\n- terminal states\n- happy path and major alternates\n\n## Rules\n- Keep labels short and scannable.\n- Label non-forward edges.\n- Show terminals clearly.\n- Keep the happy path visually obvious.\n- Inline error branches when the graph stays readable; otherwise split.\n\n## Mermaid shape mapping\n- start/end: rounded nodes\n- step: rectangle\n- decision: diamond\n- route-out: distinct class\n- terminal: emphasized terminal node\n\n## Required checks\n- each workflow step appears\n- each decision point appears\n- each route-out appears\n- each terminal appears\n- required failure branches appear\n",
+      "guide_sections": [
+        {
+          "heading": "Use for",
+          "body": "- overall workflow\n- decisions and route-outs\n- terminal states\n- happy path and major alternates"
+        },
+        {
+          "heading": "Rules",
+          "body": "- Keep labels short and scannable.\n- Label non-forward edges.\n- Show terminals clearly.\n- Keep the happy path visually obvious.\n- Inline error branches when the graph stays readable; otherwise split."
+        },
+        {
+          "heading": "Mermaid shape mapping",
+          "body": "- start/end: rounded nodes\n- step: rectangle\n- decision: diamond\n- route-out: distinct class\n- terminal: emphasized terminal node"
+        },
+        {
+          "heading": "Required checks",
+          "body": "- each workflow step appears\n- each decision point appears\n- each route-out appears\n- each terminal appears\n- required failure branches appear"
+        }
+      ],
+      "mermaid_hints": {
+        "diagram_type": "flowchart",
+        "syntax_patterns": [],
+        "common_pitfalls": [],
+        "palette_recommendation": ""
+      },
+      "palette_hint": "tailwind-modern",
+      "loaded": true,
+      "load_errors": []
+    },
+    {
+      "diagram_id": "diagram-state",
+      "diagram_type": "state",
+      "guide_file": "state-guide.md",
+      "guide_content": "# State Diagram Guide\n\n## Use for\n- lifecycle modeling\n- status/phase transitions\n- retry/blocked/ready/completed\n- approval and gate transitions\n\n## Rules\n- States named clearly.\n- Transitions labeled when condition matters.\n- Avoid mixing process steps with states.\n- Include failure and recovery transitions where present.\n\n## Good candidates\n- document artifact lifecycle\n- validator pass/fail/rework loops\n- plugin connection/auth/error/recovered lifecycle\n- task progression through gates\n\n## Required checks\n- states grounded in source model\n- transitions faithful\n- recovery/retry states visible\n",
+      "guide_sections": [
+        {
+          "heading": "Use for",
+          "body": "- lifecycle modeling\n- status/phase transitions\n- retry/blocked/ready/completed\n- approval and gate transitions"
+        },
+        {
+          "heading": "Rules",
+          "body": "- States named clearly.\n- Transitions labeled when condition matters.\n- Avoid mixing process steps with states.\n- Include failure and recovery transitions where present."
+        },
+        {
+          "heading": "Good candidates",
+          "body": "- document artifact lifecycle\n- validator pass/fail/rework loops\n- plugin connection/auth/error/recovered lifecycle\n- task progression through gates"
+        },
+        {
+          "heading": "Required checks",
+          "body": "- states grounded in source model\n- transitions faithful\n- recovery/retry states visible"
+        }
+      ],
+      "mermaid_hints": {
+        "diagram_type": "state",
+        "syntax_patterns": [],
+        "common_pitfalls": [],
+        "palette_recommendation": ""
+      },
+      "palette_hint": "one-dark-pro",
+      "loaded": true,
+      "load_errors": []
+    }
+  ]
+}

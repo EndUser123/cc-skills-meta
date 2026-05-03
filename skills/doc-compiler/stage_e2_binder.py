@@ -4,6 +4,7 @@
 Reads: e1-output.json + artifact-plan.json
 Output: e2-output.json (filled templates as strings)
 """
+import html
 import json, re, sys
 from pathlib import Path
 
@@ -100,12 +101,13 @@ def fill_route_outs(template: str, plan: dict) -> str:
     route_outs = plan["content_bindings"].get("route_outs", [])
     items = ""
     for ro in route_outs:
-        target = ro.get("target", "")
-        trigger = ro.get("trigger", "")
+        target = html.escape(ro.get("target", ""))
+        trigger = html.escape(ro.get("trigger", ""))
+        desc = html.escape(ro.get("description", ""))
         items += f'''
         <div class="card">
           <h4>{target}</h4>
-          <p>{ro.get("description", "")}</p>
+          <p>{desc}</p>
           <div class="kv" style="margin-top:0.5rem">
             <dt>Target</dt><dd><span class="code-inline">{target}</span></dd>
             <dt>Trigger</dt><dd>{trigger}</dd>
@@ -129,8 +131,6 @@ def fill_terminals(template: str, plan: dict) -> str:
 '''
     return template.replace("{{terminals_content}}", items)
 
-def fill_proof_summary(template: str, plan: dict) -> str:
-    return template
 def fill_artifacts(template: str, plan: dict) -> str:
     name = plan["content_bindings"].get("name", "doc")
     kind = plan.get("kind", "skill")

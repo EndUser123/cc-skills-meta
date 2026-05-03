@@ -11,3 +11,41 @@
 <body>
 <button id="tocToggle" aria-label="Toggle table of contents" title="Toggle TOC" aria-expanded="true">☰</button>
 <div class="page-shell">
+  <nav id="toc" class="toc" aria-label="Table of contents"></nav>
+  <header class="toc-header">
+    <span class="toc-title">Contents</span>
+    <div class="toc-controls">
+      <button id="themeToggle" aria-label="Toggle theme" title="Toggle theme">🌙</button>
+    </div>
+  </header>
+  <div class="toc-body"></div>
+</div>
+<div class="search-wrapper">
+  <input id="searchInput" type="search" placeholder="Search..." aria-label="Search documentation" />
+  <button id="clearSearch" aria-label="Clear search" title="Clear">✕</button>
+</div>
+<main class="content">
+  <div id="diagramShell" class="diagram-shell">
+    <div id="diagramViewport" class="diagram-viewport" role="group" tabindex="0" aria-label="Diagram viewport">
+      <div id="diagramStage" class="diagram-stage"></div>
+    </div>
+    <div id="diagramResizeHandle" class="diagram-resize-handle" role="separator" aria-orientation="horizontal" aria-label="Drag to resize diagram pane" tabindex="0" title="Drag to resize"></div>
+  </div>
+  <div id="zoomIn" class="zoom-btn" role="button" aria-label="Zoom in" tabindex="0">+</div>
+  <div id="zoomOut" class="zoom-btn" role="button" aria-label="Zoom out" tabindex="0">−</div>
+  <div id="zoomReset" class="zoom-btn" role="button" aria-label="Reset zoom" tabindex="0">1:1</div>
+  <div id="zoomFit" class="zoom-btn" role="button" aria-label="Fit to view" tabindex="0">⟌</div>
+  <span id="zoomPct" class="zoom-pct" aria-live="polite">100%</span>
+  <select id="paletteSelect" aria-label="Select color palette">
+    <option value="tailwind-modern">Tailwind Modern</option>
+    <option value="github-dark">GitHub Dark</option>
+    <option value="nord">Nord</option>
+    <option value="one-dark-pro">One Dark Pro</option>
+    <option value="dracula">Dracula</option>
+    <option value="material-ocean">Material Ocean</option>
+  </select>
+  <pre id="mermaidSource" class="mermaid">{{mermaid_source}}</pre>
+  <div class="step-body"></div>
+</main>
+</body>
+</html>

@@ -32,7 +32,57 @@ CHECKS = [
     ("S17", "html closed",               lambda h: "</html>" in h),
     ("S18", "no unclosed tags (basic)",   lambda h: h.count("<script") == h.count("</script>")),
     ("S19", "steps have content",         lambda h: 'class="step-body"' in h),
+    ("S20", "style CSS guards reserved IDs",
+     lambda h: _check_style_css_no_reserved_id_overrides(h)),
 ]
+
+# Properties a style CSS must not override on required-DOM-element selectors
+_RESERVED_IDS = {
+    "tocToggle", "toc", "themeToggle", "searchInput", "clearSearch",
+    "mermaidSource", "diagramViewport", "diagramStage", "zoomIn", "zoomOut",
+    "zoomReset", "zoomFit", "zoomPct", "paletteSelect", "diagramResizeHandle",
+}
+# Structural property categories that affect layout behavior, not just visuals
+_STRUCTURAL_PROPS = {
+    "display", "position", "top", "left", "right", "bottom",
+    "width", "height", "z-index", "pointer-events",
+}
+
+
+def _check_style_css_no_reserved_id_overrides(html: str) -> bool:
+    """Reject style CSS that overrides structural props on required DOM IDs.
+
+    Style overlays live in <style> blocks and must not touch layout-affecting
+    properties on the reserved IDs — those are controlled by the shared CSS
+    contract which the runtime validator (Stage G) asserts against.
+    """
+    # Extract the <style> block(s)
+    style_blocks = re.findall(r'<style[^>]*>(.*?)</style>', html, re.DOTALL)
+    if not style_blocks:
+        return True  # no style block = nothing to check
+
+    violations: list[str] = []
+    for block in style_blocks:
+        # Parse rules: selector { property: value; ... }
+        rules = re.findall(r'([^{}]+)\{([^{}]+)\}', block)
+        for selector, decls in rules:
+            sel = selector.strip()
+            # Check if this rule targets a reserved ID (directly or via descendant)
+            target_ids = set(re.findall(r'#(\w+)', sel))
+            if not target_ids.intersection(_RESERVED_IDS):
+                continue
+            # Extract full property names (including hyphens) — (\S+) captures
+            # "pointer-events", "z-index", etc. without splitting on hyphens
+            props_in_rule = re.findall(r'(\S+)\s*:', decls)
+            structural = {p for p in props_in_rule if p in _STRUCTURAL_PROPS}
+            if structural:
+                violations.append(
+                    f"CSS rule '{sel}' sets {structural} on reserved ID"
+                )
+    if violations:
+        print("S20 FAIL:", violations, file=sys.stderr)
+        return False
+    return True
 
 def main() -> None:
     if not INDEX.exists():

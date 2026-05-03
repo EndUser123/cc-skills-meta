@@ -23,7 +23,7 @@ def load_json(p: Path) -> dict:
 def critique_flowchart(mmd: str, diagram_id: str) -> list[str]:
     """Critique a flowchart diagram for guideline violations."""
     issues = []
-    lines = mmmd.splitlines()
+    lines = mmd.splitlines()
 
     # Anti-pattern: very long node labels
     for line in lines:
@@ -38,9 +38,8 @@ def critique_flowchart(mmd: str, diagram_id: str) -> list[str]:
         issues.append(f"High node count ({node_count}) may benefit from subgraph grouping")
 
     # Check for proper edge labels on decision paths
-    diamond_count = mmmd.count("{{{")
+    diamond_count = mmd.count("{{{")
     if diamond_count > 0:
-        # Ensure diamonds have outgoing edges with labels
         pass  # basic structural check done via syntax
 
     return issues
@@ -50,16 +49,16 @@ def critique_sequence(mmd: str, diagram_id: str) -> list[str]:
     """Critique a sequence diagram."""
     issues = []
 
-    if "sequenceDiagram" not in mmmd:
+    if "sequenceDiagram" not in mmd:
         issues.append("Missing sequenceDiagram declaration")
 
     # Check for actor declarations
-    actor_count = mmmd.count("participant")
+    actor_count = mmd.count("participant")
     if actor_count < 2:
         issues.append(f"Sequence diagram has only {actor_count} actor(s) — needs at least 2")
 
     # Anti-pattern: messages only going one direction (no response)
-    lines = mmmd.splitlines()
+    lines = mmd.splitlines()
     forwards = sum(1 for l in lines if "->>" in l)
     backwards = sum(1 for l in lines if "<<-" in l)
     if forwards > 0 and backwards == 0:
@@ -72,11 +71,11 @@ def critique_state(mmd: str, diagram_id: str) -> list[str]:
     """Critique a state diagram."""
     issues = []
 
-    if "stateDiagram" not in mmmd:
+    if "stateDiagram" not in mmd:
         issues.append("Missing stateDiagram declaration")
 
     # Check for [*] start and end
-    if "[*]" not in mmmd:
+    if "[*]" not in mmd:
         issues.append("No [*] terminal state found")
 
     return issues
@@ -86,16 +85,16 @@ def critique_class(mmd: str, diagram_id: str) -> list[str]:
     """Critique a class diagram."""
     issues = []
 
-    if "classDiagram" not in mmmd:
+    if "classDiagram" not in mmd:
         issues.append("Missing classDiagram declaration")
 
     # Check for class definitions
-    class_count = mmmd.count("class ")
+    class_count = mmd.count("class ")
     if class_count < 2:
         issues.append(f"Only {class_count} class(es) defined — class diagrams need multiple classes")
 
     # Anti-pattern: no relationships between classes
-    if "-->" not in mmmd and ".." not in mmmd and class_count > 1:
+    if "-->" not in mmd and ".." not in mmd and class_count > 1:
         issues.append("Multiple classes but no relationships defined")
 
     return issues
@@ -106,11 +105,11 @@ def critique_error_path(mmd: str, diagram_id: str) -> list[str]:
     issues = []
 
     # Check for error/warning indicators
-    if "⚠" not in mmmd and "error" not in mmmd.lower() and "✗" not in mmmd:
+    if "⚠" not in mmd and "error" not in mmd.lower() and "✗" not in mmd:
         issues.append("Error-path diagram missing error/warning indicators")
 
     # Error paths should have terminal failure states
-    if "[*]" not in mmmd and ("✗" not in mmmd and "failed" not in mmmd.lower()):
+    if "[*]" not in mmd and ("✗" not in mmd and "failed" not in mmd.lower()):
         issues.append("Error-path missing terminal failure states")
 
     return issues
