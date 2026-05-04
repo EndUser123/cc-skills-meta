@@ -1622,8 +1622,8 @@
   "ambiguities": [],
   "source_path": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\SKILL.md",
   "presentation": {
-    "style": "minimal",
+    "style": "deepwiki",
     "source": "cli"
   },
-  "generated_at": "2026-05-04T07:35:10.018605"
+  "generated_at": "2026-05-04T08:05:13.485414"
 }

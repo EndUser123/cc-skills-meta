@@ -277,7 +277,7 @@
   "gaps": [],
   "ambiguities": [],
   "presentation": {
-    "style": "minimal",
+    "style": "deepwiki",
     "source": "cli"
   }
 }

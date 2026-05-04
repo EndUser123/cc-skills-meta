@@ -188,8 +188,21 @@ let _mermaid = null;
 
 async function _ensureMermaid() {
   if (!_mermaid) {
-    const ns = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
-    _mermaid = ns.default || ns;
+    // First check if mermaid is already available as a global
+    if (typeof mermaid !== 'undefined') {
+      _mermaid = mermaid;
+    } else {
+      // Fallback: dynamic import from CDN (works over HTTP, may fail on file://)
+      try {
+        const ns = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+        _mermaid = ns.default || ns;
+      } catch (e) {
+        // Last resort: retry once after brief delay
+        await new Promise(r => setTimeout(r, 500));
+        const ns = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+        _mermaid = ns.default || ns;
+      }
+    }
   }
   return _mermaid;
 }
