@@ -397,12 +397,19 @@ def run(argv: list[str] | None = None) -> int:
         )
         # Gap reviewer: context-enriched handoff with detector evidence + absence signals
         detectors_ran = list({f.source_name for f in all_findings if f.source_name})
-        detectors_empty = [
+        # Only list a detector as "empty" if it produced NO findings this run.
+        # invocation_tracker always emits at least INVOCATION-UNACTIONED-001, so never
+        # list it in detectors_empty (avoids schema contradiction: GAPR-pipeline-1).
+        invocation_ran = any(f.source_name == "invocation_tracker" for f in all_findings)
+        _detectors_empty = [
             "session_goal_detector", "context_boundary_detector",
-            "invocation_tracker", "stuckness_detector",
+            "stuckness_detector",
             "hook_health_detector", "workflow_hygiene_detector",
             "verification_debt_detector",
         ]
+        if not invocation_ran:
+            _detectors_empty.append("invocation_tracker")
+        detectors_empty = _detectors_empty
         outcome_dicts = [
             {"category": getattr(i, "category", ""), "content": getattr(i, "content", "")}
             for i in (outcome_result.items if outcome_result else [])

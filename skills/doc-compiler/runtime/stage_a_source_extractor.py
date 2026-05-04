@@ -15,13 +15,17 @@ BASE = Path(__file__).parent
 OUT  = BASE / "source-model.json"
 
 # Input: CLI arg (primary) or DOCC_TARGET env var (fallback)
-if len(sys.argv) > 1:
-    TARGET = sys.argv[1]
-else:
-    TARGET = os.environ.get("DOCC_TARGET", "")
-    if not TARGET:
-        print("ERROR: Provide target path as CLI arg or set DOCC_TARGET", file=sys.stderr)
-        sys.exit(1)
+TARGET = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("DOCC_TARGET", "")
+STYLE_CLI = None
+for i, arg in enumerate(sys.argv):
+    if arg == "--style" and i + 1 < len(sys.argv):
+        STYLE_CLI = sys.argv[i + 1]
+    if arg.startswith("--style="):
+        STYLE_CLI = arg.split("=", 1)[1]
+
+if not TARGET:
+    print("ERROR: Provide target path as CLI arg or set DOCC_TARGET", file=sys.stderr)
+    sys.exit(1)
 
 
 def extract_frontmatter(text: str) -> dict[str, Any]:
@@ -36,6 +40,22 @@ def extract_frontmatter(text: str) -> dict[str, Any]:
         return yaml.safe_load(parts[1]) or {}
     except Exception:
         return {}
+
+
+def extract_presentation(fm: dict) -> dict[str, Any]:
+    """Extract presentation/style config from frontmatter."""
+    # CLI override wins
+    if STYLE_CLI:
+        return {"style": STYLE_CLI, "source": "cli"}
+    # Try top-level style key
+    if fm.get("style"):
+        return {"style": fm["style"], "source": "frontmatter"}
+    # Try nested presentation block
+    pres = fm.get("presentation", {})
+    if isinstance(pres, dict):
+        style = pres.get("style", "default")
+        return {"style": style, "source": "frontmatter", **pres}
+    return {"style": "default", "source": "default"}
 
 
 def normalize_steps(raw_steps: list) -> list[dict[str, Any]]:
@@ -215,6 +235,7 @@ def extract_from_skill(path: Path) -> dict[str, Any]:
     routes = extract_route_outs(text)
     terminals = extract_terminal_states(text)
     artifacts = extract_artifacts(text, fm)
+    presentation = extract_presentation(fm)
 
     return {
         "kind": "skill",
@@ -232,6 +253,7 @@ def extract_from_skill(path: Path) -> dict[str, Any]:
         "gaps": [],
         "ambiguities": [],
         "source_path": str(path.resolve()),
+        "presentation": presentation,
     }
 
 
@@ -300,6 +322,7 @@ def extract_from_plugin(path: Path) -> dict[str, Any]:
         "gaps": [],
         "ambiguities": [],
         "source_path": str(path.resolve()),
+        "presentation": {"style": "default", "source": "default"},
     }
 
 
@@ -340,6 +363,7 @@ def extract_from_readme(path: Path) -> dict[str, Any]:
         "gaps": [],
         "ambiguities": [],
         "source_path": str(path.resolve()),
+        "presentation": {"style": "default", "source": "default"},
     }
 
 
@@ -393,6 +417,7 @@ def extract_from_yaml(path: Path) -> dict[str, Any]:
         "gaps": [],
         "ambiguities": [],
         "source_path": str(path.resolve()),
+        "presentation": {"style": "default", "source": "default"},
     }
 
 

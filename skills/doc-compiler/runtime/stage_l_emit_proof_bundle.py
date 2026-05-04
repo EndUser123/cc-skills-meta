@@ -99,7 +99,7 @@ def main() -> None:
         "kind": "proof-bundle",
         "version": "1.0.0",
         "generated_at": datetime.now().isoformat(),
-        "pipeline_completed": all_exist,
+        "pipeline_completed": all_exist and gate_passed and static_passed and runtime_passed and external_passed,
         "gate_passed": gate_passed and static_passed and runtime_passed and external_passed,
         "skill_name": source_model.get("name", "unknown"),
         "skill_version": source_model.get("version", "0.0.0"),

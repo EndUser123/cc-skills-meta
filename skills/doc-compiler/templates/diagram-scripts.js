@@ -1,4 +1,25 @@
-import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+let _mermaid = null;
+
+async function _ensureMermaid() {
+  if (!_mermaid) {
+    // First check if mermaid is already available as a global
+    if (typeof mermaid !== 'undefined') {
+      _mermaid = mermaid;
+    } else {
+      // Fallback: dynamic import from CDN (works over HTTP, may fail on file://)
+      try {
+        const ns = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+        _mermaid = ns.default || ns;
+      } catch (e) {
+        // Last resort: retry once after brief delay
+        await new Promise(r => setTimeout(r, 500));
+        const ns = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+        _mermaid = ns.default || ns;
+      }
+    }
+  }
+  return _mermaid;
+}
 
 const PALETTES = {
       'tailwind-modern': {
@@ -117,7 +138,8 @@ const PALETTES = {
       ).join('\n    ');
     }
 
-function initMermaid() {
+async function initMermaid() {
+      const mermaid = await _ensureMermaid();
       mermaid.initialize({
         startOnLoad: false,
         theme: 'base',
@@ -128,6 +150,7 @@ function initMermaid() {
     }
 
     async function renderMermaid(force) {
+      const mermaid = await _ensureMermaid();
       const pre = document.getElementById('mermaidSource');
       if (!pre) return;
       const stage = document.getElementById('diagramStage');
@@ -384,3 +407,8 @@ initMermaid();
 renderMermaid();
 // Re-render on theme toggle (fired from shared-scripts)
 document.addEventListener('theme-toggle', () => { renderMermaid(true); });
+
+// Initialize all after modules and DOM are ready
+initMermaid();
+renderMermaid();
+window.initTocToggle();

@@ -1,7 +1,7 @@
 {
   "kind": "proof-bundle",
   "version": "1.0.0",
-  "generated_at": "2026-05-03T14:38:53.441084",
+  "generated_at": "2026-05-03T23:14:19.755111",
   "pipeline_completed": false,
   "gate_passed": false,
   "skill_name": "skill-to-page",
@@ -35,34 +35,34 @@
       "size_bytes": 2609
     },
     "stage_f_gate": {
-      "exists": false,
-      "passed": false,
-      "size_bytes": 0
+      "exists": true,
+      "passed": 2,
+      "size_bytes": 416
     },
     "stage_g_plan": {
       "exists": true,
       "passed": true,
-      "size_bytes": 7068
+      "size_bytes": 7142
     },
     "stage_h_index": {
       "exists": true,
       "passed": true,
-      "size_bytes": 63548
+      "size_bytes": 60574
     },
     "stage_i_static": {
-      "exists": false,
-      "passed": false,
-      "size_bytes": 0
+      "exists": true,
+      "passed": true,
+      "size_bytes": 2724
     },
     "stage_j_runtime": {
-      "exists": false,
-      "passed": false,
-      "size_bytes": 0
+      "exists": true,
+      "passed": true,
+      "size_bytes": 2463
     },
     "stage_k_report": {
-      "exists": false,
+      "exists": true,
       "passed": false,
-      "size_bytes": 0
+      "size_bytes": 2530
     },
     "stage_l_proof_meta": {
       "exists": true,
@@ -71,9 +71,9 @@
     }
   },
   "validation_summary": {
-    "diagram_gate": false,
-    "static_validation": false,
-    "runtime_validation": false,
+    "diagram_gate": true,
+    "static_validation": true,
+    "runtime_validation": true,
     "external_critic": false
   },
   "diagram_count": 2

@@ -52,14 +52,38 @@ def main() -> None:
     s("S2  nav#toc class=toc",
       re.search(r'<nav id="toc" class="toc"', html) is not None)
 
-    # S3: TOC CSS block with position:fixed or absolute
-    toc_css = re.search(r'\.toc\s*\{[^}]+\}', html, re.DOTALL)
-    s("S3  TOC CSS block exists", toc_css is not None)
-    if toc_css:
-        css_text = toc_css.group(0)
-        s("S4  position:fixed or absolute", "position" in css_text and ("fixed" in css_text or "absolute" in css_text))
-        s("S5  left transition", "left" in css_text and "transition" in css_text)
-        s("S6  no transform on desktop", "transform" not in css_text or "none" in css_text)
+    # S3: TOC CSS block — iterate all CSS in the file with brace-depth tracking.
+    # When .toc { is found at depth==1, accumulate until depth returns to 0.
+    # This correctly handles both top-level and @media-nested .toc blocks.
+    css_idx = 0
+    depth = 0
+    toc_css_parts = []
+    in_toc = False
+    toc_start = -1
+    while css_idx < len(html):
+        ch = html[css_idx]
+        if ch == '{':
+            depth += 1
+            if depth == 1 and css_idx >= 5 and html[css_idx-5:css_idx+1] == '.toc {':
+                in_toc = True
+                toc_start = css_idx + 1
+            css_idx += 1
+        elif ch == '}':
+            depth -= 1
+            if in_toc and depth == 0:
+                toc_css_parts.append(html[toc_start:css_idx])
+                in_toc = False
+                toc_start = -1
+            css_idx += 1
+        else:
+            css_idx += 1
+
+    toc_css_text = " ".join(toc_css_parts)
+    s("S3  TOC CSS block exists", bool(toc_css_text))
+    if toc_css_text:
+        s("S4  position:fixed or absolute", "position" in toc_css_text and ("fixed" in toc_css_text or "absolute" in toc_css_text))
+        s("S5  left transition", "left" in toc_css_text and "transition" in toc_css_text)
+        s("S6  no transform on desktop", "transform" not in toc_css_text or "none" in toc_css_text)
 
     # S7: pre#mermaidSource present with content
     s("S7  pre#mermaidSource present",

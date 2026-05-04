@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>skill-to-page | 2.0.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* minimal shared CSS: compact, reference-oriented, reduced ornamentation */
+    :root {
+      --doc-font-scale: 0.85;
+      --doc-card-padding: 0.5rem;
+      --doc-section-gap: 1rem;
+      --doc-hero-sub-max: 45ch;
+      --doc-proof-display: none;
+      --doc-diagram-weight: 0.85;
+      --doc-whitespace: 0;
+    }
+    
+    body {
+      background: #0f1115;
+      line-height: 1.45;
+    }
+    
+    .section-card {
+      padding: var(--doc-card-padding);
+      border-radius: 6px;
+      border-color: var(--border);
+    }
+    .section { margin-bottom: var(--doc-section-gap); }
+    .hero { margin-bottom: 1.5rem; padding-bottom: 1.25rem; }
+    .hero h1 { font-size: calc(1.75rem * var(--doc-font-scale)); }
+    .hero-sub { font-size: calc(0.875rem * var(--doc-font-scale)); max-width: var(--doc-hero-sub-max); }
+    .hero-badges { gap: 0.35rem; }
+    .badge { padding: 0.15rem 0.5rem; font-size: 0.65rem; }
+    .stages-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.5rem;
+    }
+    .what-it-does-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.5rem;
+    }
+    .val-card, .stage-card { padding: 0.625rem; }
+    .accordion-header { padding: 0.5rem 0.75rem; font-size: calc(0.775rem * var(--doc-font-scale)); }
+    .accordion-body { padding: 0.625rem; }
+    .diagram-shell { min-height: 240px; border-radius: 6px; }
+    .diagram-controls { padding: 0.4rem 0.5rem; }
+    .func-table { font-size: calc(0.7rem * var(--doc-font-scale)); }
+    .func-table th { padding: 0.4rem 0.5rem; }
+    .func-table td { padding: 0.4rem 0.5rem; }
+    .workflow-step-content { padding: 0.625rem; }
+    .workflow-step-num { width: 1.5rem; height: 1.5rem; font-size: 0.65rem; }
+    .artifact-card { padding: 0.5rem; }
+    .artifact-icon { width: 1.5rem; height: 1.5rem; font-size: 0.7rem; }
+    .filemap-group { margin-bottom: 0.75rem; }
+    .filemap-group h4 { font-size: 0.65rem; }
+    .toc-body li a { padding: 0.25rem 1rem; font-size: 0.7rem; }
+    .toc-header h2 { font-size: 0.65rem; }
+    
+    .hero {
+      background: #151922;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.875rem;
+    }
+    .hero::before { display: none; }
+    .toc {
+          position: fixed; top: 0; left: 0;
+          width: var(--toc-width); height: 100vh;
+          background: var(--surface);
+          border-right: 1px solid var(--border);
+          display: flex;
+          flex-direction: column;
+          z-index: 100;
+          transition: left var(--timing-smooth), opacity var(--timing-smooth);
+        }
+        .toc.collapsed { left: calc(-1 * var(--toc-width) + 40px); opacity: 0; pointer-events: none; }
+        .toc-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0.85rem 1rem;
+          border-bottom: 1px solid var(--border);
+          flex-shrink: 0;
+        }
+        .toc-header h2 { margin: 0; font-size: 0.68rem; }
+        .toc-controls { display: flex; gap: 0.4rem; align-items: center; }
+        .toc-btn {
+          background: var(--surface-2); border: 1px solid var(--border-strong);
+          color: var(--text); width: 2rem; height: 2rem;
+          border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+          display: flex; align-items: center; justify-content: center;
+          transition: background var(--timing-snap), border-color var(--timing-snap);
+        }
+        .toc-btn:hover { background: var(--surface-3); border-color: var(--accent); }
+        .toc-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    
+        #tocToggle {
+          position: fixed; top: 0.75rem; left: 0; z-index: 200;
+          background: var(--surface-2); border: 1px solid var(--border-strong);
+          color: var(--text); width: 2rem; height: 2.5rem;
+          border-radius: 0 8px 8px 0;
+          cursor: pointer; font-size: 1rem; line-height: 1;
+          display: flex; align-items: center; justify-content: center;
+          transition: background var(--timing-snap), border-color var(--timing-snap), left var(--timing-smooth);
+        }
+        #tocToggle:hover { background: var(--surface-3); border-color: var(--accent); }
+        #tocToggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        /* Button follows TOC edge — desktop open: aligned with TOC right edge; collapsed: left: 0 */
+        body.toc-hidden #tocToggle { left: 0; }
+        body:not(.toc-hidden) #tocToggle { left: var(--toc-width); }
+        @media (max-width: 960px) {
+          #tocToggle {
+            display: flex;
+            left: 0 !important;
+            top: 0.75rem;
+          }
+        }
+        .toc-body { flex: 1; overflow-y: auto; padding: 0.75rem 1rem 1rem; }
+        .toc-body ul { list-style: none; }
+        .toc-body li { margin-bottom: 0.15rem; }
+        .toc-body a {
+          color: var(--text-muted); text-decoration: none; font-size: 0.83rem;
+          display: block; padding: 0.3rem 0.5rem; border-radius: 6px;
+          transition: color var(--timing-snap), background-color var(--timing-snap);
+        }
+        .toc-body a:hover { color: var(--text); background: var(--surface-2); }
+        .toc-body a[aria-current="true"] { color: var(--accent); background: var(--accent-soft); }
+    section, .card, .panel {
+          background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.00)), var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow);
+          padding: 1rem 1.1rem;
+          margin-bottom: 1rem;
+        }
+        section + section { margin-top: 0.85rem; }
+    
+    .hero {
+          background: linear-gradient(135deg, #151922 0%, #0f1115 100%);
+          border: 1px solid var(--border-strong);
+          border-radius: var(--radius-lg);
+          padding: 1.5rem 1.75rem;
+          margin-bottom: 1rem;
+          position: relative;
+          overflow: hidden;
+        }
+        .hero::before {
+          content: '';
+          position: absolute;
+          top: 0; right: 0;
+          width: 280px; height: 100%;
+          background: radial-gradient(circle at top right, rgba(102,179,255,0.08), transparent 60%);
+          pointer-events: none;
+        }
+        .hero-top { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; flex-wrap: wrap; position: relative; }
+        .hero h1 { margin-right: 0.25rem; }
+        .badge {
+          display: inline-block; font-size: 0.68rem; font-weight: 600;
+          padding: 0.18rem 0.5rem; border-radius: 99px;
+          text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .badge-version { background: rgba(102,179,255,0.14); color: var(--accent); border: 1px solid rgba(102,179,255,0.25); }
+        .badge-status { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+        .badge-strict { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+        .hero p { font-size: 0.9rem; color: var(--text-muted); position: relative; }
+    
+    .quick-facts {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+          gap: 0.6rem;
+        }
+        .fact {
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          padding: 0.7rem 0.85rem;
+          display: flex; align-items: flex-start; gap: 0.55rem;
+          transition: border-color var(--timing-snap);
+        }
+        .fact:hover { border-color: var(--border-strong); transition: border-color var(--timing-snap); }
+        .fact-icon { font-size: 1.05rem; flex-shrink: 0; margin-top: 0.05rem; }
+        .fact-text { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+        .fact-text strong { color: var(--text); font-weight: 600; display: block; margin-bottom: 0.1rem; font-size: 0.83rem; }
+    
+    pre {
+          position: relative;
+          overflow: auto;
+          padding: 0.85rem 1rem;
+          border-radius: var(--radius-md);
+          background: #0d1017;
+          border: 1px solid var(--border-strong);
+          color: #d9e2f2;
+          font-size: 0.82rem;
+          line-height: 1.6;
+          margin-bottom: 0.75rem;
+        }
+        .code-inline {
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          padding: 0.1rem 0.35rem;
+          color: var(--accent);
+          font-size: 0.8em;
+        }
+    
+    .copy-btn {
+          position: absolute;
+          top: 0.5rem; right: 0.5rem;
+          opacity: 0;
+          transform: translateY(-1px);
+          transition: opacity var(--timing-snap), transform var(--timing-snap), background var(--timing-snap);
+          padding: 0.3rem 0.5rem;
+          border-radius: 6px;
+          border: 1px solid var(--border);
+          background: rgba(255,255,255,0.04);
+          color: var(--text-muted);
+          font-family: var(--font-body);
+          font-size: 0.72rem;
+          cursor: pointer;
+        }
+        pre:hover .copy-btn,
+        .copy-btn:focus-visible { opacity: 1; transform: translateY(0); }
+        .copy-btn:hover { background: var(--accent-soft); color: var(--text); border-color: var(--accent); }
+        .copy-btn.copied { opacity: 1; color: #4ade80; border-color: rgba(74,222,128,0.3); }
+    
+    .proof-summary {
+          background: linear-gradient(180deg, rgba(102,179,255,0.04), rgba(255,255,255,0.01)), #10141d;
+          border: 1px solid rgba(102,179,255,0.14);
+          border-radius: var(--radius-lg);
+          padding: 0.9rem 1.1rem;
+          margin-bottom: 1rem;
+        }
+        .proof-summary h3 { color: var(--accent); font-size: 0.68rem; font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.65rem; }
+        .proof-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .proof-item {
+          display: inline-flex; align-items: center; gap: 0.4rem;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          padding: 0.3rem 0.6rem;
+          font-size: 0.78rem;
+        }
+        .proof-item .pi-label { color: var(--text-faint); font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .proof-item .pi-value { font-weight: 600; color: var(--text); }
+        .proof-item .pi-ok { color: #4ade80; }
+        .proof-item .pi-fail { color: #f87171; }
+    
+    .step {
+          background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00)), var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow);
+          margin-bottom: 0.55rem;
+          overflow: hidden;
+          transition: border-color var(--timing-snap);
+        }
+        .step:hover { border-color: var(--border-strong); transition: border-color var(--timing-snap); }
+        .step-header {
+          padding: 0.75rem 1rem;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: space-between;
+          user-select: none;
+          transition: background var(--timing-snap);
+        }
+        .step-header:hover { background: var(--surface-2); }
+        .step-header h3 { font-size: 0.875rem; font-weight: 600; }
+        .step-header .chevron {
+          transition: transform var(--timing-slow);
+          font-size: 0.7rem; color: var(--text-faint);
+        }
+        .step.open .step-header .chevron { transform: rotate(180deg); }
+        .step-body {
+          display: none;
+          padding: 0.75rem 1rem 0.9rem;
+          border-top: 1px solid var(--border);
+        }
+        .step.open .step-body { display: block; }
+        .step-body > p { margin-bottom: 0.45rem; font-size: 0.85rem; }
+        .step-body > p:last-child { margin-bottom: 0; }
+    
+    .gate-badge {
+          display: inline-block;
+          font-weight: 700;
+          color: #ffd7a8;
+          border: 1px solid rgba(255,190,120,0.25);
+          background: rgba(146,64,14,0.20);
+          font-size: 0.65rem;
+          padding: 0.12rem 0.45rem;
+          border-radius: 999px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          vertical-align: middle;
+        }
+        .route-badge {
+          display: inline-block;
+          color: #d7c5ff;
+          background: rgba(124,58,237,0.16);
+          border: 1px solid rgba(124,58,237,0.25);
+          font-size: 0.65rem;
+          padding: 0.12rem 0.45rem;
+          border-radius: 999px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          vertical-align: middle;
+        }
+        .terminal-badge {
+          display: inline-block;
+          color: #b9f3c5;
+          background: rgba(22,101,52,0.18);
+          border: 1px solid rgba(74,222,128,0.2);
+          font-size: 0.65rem;
+          padding: 0.12rem 0.45rem;
+          border-radius: 999px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          vertical-align: middle;
+        }
+    
+    .label-row {
+          display: flex; gap: 0.4rem; flex-wrap: wrap;
+          margin-bottom: 0.5rem;
+        }
+        .kv {
+          display: grid;
+          grid-template-columns: 90px 1fr;
+          gap: 0.3rem 0.75rem;
+          align-items: start;
+          margin-top: 0.4rem;
+        }
+        .kv dt { color: var(--text-faint); font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; padding-top: 0.1rem; }
+        .kv dd { color: var(--text); font-size: 0.83rem; }
+    
+    .artifact-card {
+          background: linear-gradient(180deg, rgba(102,179,255,0.04), rgba(255,255,255,0.01)), #10141d;
+          border: 1px solid rgba(102,179,255,0.14);
+          border-radius: var(--radius-lg);
+          padding: 0.9rem 1rem;
+        }
+        .artifact-card h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+        .artifact-card p { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+        .path-row {
+          display: flex; align-items: center; gap: 0.5rem;
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          padding: 0.4rem 0.6rem;
+        }
+        .path-row code {
+          flex: 1;
+          font-size: 0.75rem;
+          color: var(--accent);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+    
+    .card-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          gap: 0.6rem;
+          margin-bottom: 0.5rem;
+        }
+        .card {
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          padding: 0.85rem 1rem;
+        }
+        .card h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .card p { font-size: 0.78rem; color: var(--text-muted); }
+    
+    #searchWrap { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
+        #searchWrap input {
+          flex: 1; max-width: 320px;
+          background: var(--surface-2); border: 1px solid var(--border);
+          color: var(--text);
+          padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem;
+          font-family: var(--font-body);
+          transition: border-color var(--timing-snap);
+        }
+        #searchWrap input::placeholder { color: var(--text-faint); }
+        #searchWrap input:focus { outline: none; border-color: var(--accent); }
+        #clearSearch {
+          background: var(--surface-2); border: 1px solid var(--border);
+          color: var(--text-muted); padding: 0.5rem 0.75rem;
+          border-radius: 8px; cursor: pointer; font-size: 0.83rem;
+          font-family: var(--font-body);
+          transition: color var(--timing-snap), border-color var(--timing-snap);
+        }
+        #clearSearch:hover { color: var(--text); border-color: var(--border-strong); }
+        .no-results { display: none; color: var(--text-faint); font-size: 0.83rem; margin-bottom: 0.75rem; padding: 0.5rem; }
+        .no-results.show { display: block; }
+    
+    :target {
+          scroll-margin-top: 1rem;
+          animation: targetFlash 1.2s ease;
+        }
+        @keyframes targetFlash {
+          0%   { box-shadow: 0 0 0 0 rgba(102,179,255,0.35); }
+          100% { box-shadow: 0 0 0 10px rgba(102,179,255,0); }
+        }
+    
+    @media (max-width: 960px) {
+          .toc { left: 0 !important; transform: none !important; }
+          .toc.collapsed { left: -100% !important; opacity: 1; }
+          .main-content.toc-open,
+          .main-content.toc-closed { margin-left: 0 !important; max-width: 100% !important; }
+          .quick-facts { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        }
+        @media (max-width: 600px) {
+          .main-content { padding: 1rem 1rem 4rem; }
+          .card-grid { grid-template-columns: 1fr; }
+          .hero { padding: 1.1rem 1.25rem; }
+        }
+    .diagram-shell {
+          display: flex;
+          flex-direction: column;
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          overflow: hidden;
+        }
+        .diagram-toolbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          padding: 0.6rem 0.85rem;
+          border-bottom: 1px solid var(--border);
+          flex-wrap: wrap;
+        }
+        .diagram-meta { display: flex; align-items: center; gap: 0.5rem; }
+        .diagram-label {
+          font-size: 0.78rem; color: var(--text-faint); font-family: var(--font-mono);
+          text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        #paletteSelect {
+          background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+          padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem;
+          font-family: var(--font-body); cursor: pointer;
+          transition: border-color var(--timing-snap);
+        }
+        #paletteSelect:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+        #paletteSelect:hover { border-color: var(--border-strong); }
+        .zoom-controls { display: flex; align-items: center; gap: 0.25rem; }
+        .zoom-btn {
+          background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--text);
+          width: 2rem; height: 2rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+          display: flex; align-items: center; justify-content: center;
+          transition: background var(--timing-snap), border-color var(--timing-snap);
+        }
+        .zoom-btn:hover { background: var(--surface-3); border-color: var(--accent); }
+        .zoom-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .zoom-btn.zoom-reset { font-size: 0.72rem; font-weight: 600; font-family: var(--font-mono); }
+        .zoom-pct {
+          font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-faint);
+          min-width: 3rem; text-align: center; user-select: none;
+        }
+        .diagram-viewport {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          touch-action: none;
+          cursor: grab;
+          position: relative;
+          min-height: 200px;
+          background: var(--surface);
+          flex: 1;
+        }
+        .diagram-viewport:active { cursor: grabbing; }
+        .diagram-stage {
+          transform-origin: center center;
+          position: relative;
+        }
+        #mermaidSource { display: none; }
+        .diagram-error {
+          display: none;
+          padding: 1rem;
+          color: #f87171;
+          font-family: var(--font-mono);
+          font-size: 0.82rem;
+          background: rgba(248,113,113,0.08);
+          border: 1px solid rgba(248,113,113,0.25);
+          border-radius: var(--radius-md);
+          margin: 0.75rem;
+        }
+        .diagram-error.visible { display: block; }
+        .diagram-resize-handle {
+          height: 6px;
+          background: var(--border);
+          cursor: ns-resize;
+          transition: background var(--timing-snap);
+          flex-shrink: 0;
+        }
+        .diagram-resize-handle:hover,
+        .diagram-resize-handle:focus { background: var(--accent); outline: none; }
+        .diagram-resize-handle:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+  </style>
+</head>
+<body>
+<button id="tocToggle" aria-label="Toggle table of contents" title="Toggle TOC" aria-expanded="true">☰</button>
+<div class="page-shell">
+<nav id="toc" class="toc" aria-label="Table of contents">
+      <div class="toc-header">
+        <h2>Contents</h2>
+        <div class="toc-controls">
+          <button id="themeToggle" class="toc-btn" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+        </div>
+      </div>
+      <div class="toc-body">
+        <ul>
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#facts">Quick Facts</a></li>
+          <li><a href="#diagram">Diagram</a></li>
+          <li><a href="#steps">Workflow Steps</a></li>
+          <li><a href="#route-outs">Route Outs</a></li>
+          <li><a href="#terminals">Terminal States</a></li>
+          <li><a href="#artifacts">Artifacts</a></li>
+          <li><a href="#proof">Proof</a></li>
+        </ul>
+      </div>
+    </nav>
+  <div class="main-content">
+<section id="overview">
+        <header class="hero">
+          <div class="hero-top">
+            <h1>skill-to-page</h1>
+            <span class="badge badge-version">v2.0.0</span>
+            <span class="badge badge-strict">strict</span>
+            <span class="badge badge-active">active</span>
+          </div>
+          <p class="hero-sub">Transform a skill's SKILL.md into a navigable, verified index.html with Mermaid diagrams, TOC, search, viewport controls, provenance, and proof-oriented verification.</p>
+        </header>
+      </section>
+<div id="searchWrap">
+        <input id="searchInput" type="search" placeholder="Search..." aria-label="Search documentation" />
+        <button id="clearSearch" aria-label="Clear search" title="Clear">✕</button>
+      </div>
+      <div id="noResults" class="no-results">No results found.</div>
+<section id="diagram">
+        <h2>Diagram</h2>
+        <div class="diagram-shell">
+          <div class="diagram-toolbar">
+            <div class="diagram-meta">
+              <label for="paletteSelect" class="diagram-label">Palette</label>
+              <select id="paletteSelect" aria-label="Select Mermaid color palette">
+                <option value="tailwind-modern">Tailwind Modern</option>
+                <option value="github-dark">GitHub Dark</option>
+                <option value="nord">Nord</option>
+                <option value="one-dark-pro">One Dark Pro</option>
+                <option value="dracula">Dracula</option>
+                <option value="material-ocean">Material Ocean</option>
+              </select>
+            </div>
+            <div class="zoom-controls" aria-label="Zoom controls">
+              <button class="zoom-btn" id="zoomFit" title="Fit to view" aria-label="Fit to view">⟌</button>
+              <button class="zoom-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">−</button>
+              <span class="zoom-pct" id="zoomPct" aria-live="polite">100%</span>
+              <button class="zoom-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+              <button class="zoom-btn zoom-reset" id="zoomReset" title="Reset zoom" aria-label="Reset zoom">1:1</button>
+            </div>
+          </div>
+          <div class="diagram-viewport" id="diagramViewport" role="group" tabindex="0" aria-label="Diagram viewport">
+            <div class="diagram-error" id="diagramError" role="alert" aria-live="polite"></div>
+            <div class="diagram-stage" id="diagramStage">
+              <pre class="mermaid" id="mermaidSource">flowchart TD
+    %% Nodes
+    step_1([step-1])
+    step_2([step-2])
+    step_3([step-3])
+    step_4([step-4])
+    step_5([step-5])
+    step_6([step-6])
+    step_7([step-7])
+    step_8([step-8])
+    step_9([step-9])
+    step_10([step-10])
+    step_11([step-11])
+    step_12([step-12])
+    step_1 --> step_2
+    step_2 --> step_3
+    step_3 --> step_4
+    step_4 --> step_5
+    step_5 --> step_6
+    step_6 --> step_7
+    step_7 --> step_8
+    step_8 --> step_9
+    step_9 --> step_10
+    step_10 --> step_11
+    step_11 --> step_12</pre>
+            </div>
+          </div>
+          <div class="diagram-resize-handle" id="diagramResizeHandle" role="separator" aria-orientation="horizontal" aria-label="Drag to resize diagram pane" tabindex="0" title="Drag to resize"></div>
+        </div>
+      </section>
+<section id="steps">
+        <h2>Workflow Steps</h2>
+        
+        <article class="step" id="step-1">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">1.</span>
+            <span class="step-name">stage_a_source_extractor</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-1-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-2">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">2.</span>
+            <span class="step-name">stage_b_artifact_plan_builder</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-2-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-3">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">3.</span>
+            <span class="step-name">stage_c_mermaid_design</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-3-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-4">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">4.</span>
+            <span class="step-name">stage_d_mermaid_critic_review</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-4-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-5">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">5.</span>
+            <span class="step-name">stage_e1_loader</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-5-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-6">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">6.</span>
+            <span class="step-name">stage_e2_binder</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-6-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-7">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">7.</span>
+            <span class="step-name">stage_e3_assembler</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-7-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-8">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">8.</span>
+            <span class="step-name">stage_e4_writer</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-8-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-9">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">9.</span>
+            <span class="step-name">stage_f_static_validator</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-9-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-10">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">10.</span>
+            <span class="step-name">stage_g_artifact_proof</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-10-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-11">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">11.</span>
+            <span class="step-name">stage_h_external_critic</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-11-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+        <article class="step" id="step-12">
+          <button class="step-header" onclick="toggleStep(this)" aria-expanded="false">
+            <span class="step-index">12.</span>
+            <span class="step-name">stage_i_emit_proof_metadata</span>
+            <span class="step-chevron">▾</span>
+          </button>
+          <div class="step-body" id="step-12-body">
+            <p class="step-description"></p>
+          </div>
+        </article>
+      </section>
+<div class="proof-summary" id="proof">
+        <h3>Verification Summary</h3>
+        <div class="proof-grid">
+          <div class="proof-item"><span class="pi-label">Steps</span><span class="pi-value pi-ok">12 / 12</span></div>
+          <div class="proof-item"><span class="pi-label">Gates</span><span class="pi-value pi-ok">2 / 2</span></div>
+          <div class="proof-item"><span class="pi-label">Route Outs</span><span class="pi-value pi-ok">0 / 0</span></div>
+          <div class="proof-item"><span class="pi-label">Terminals</span><span class="pi-value pi-ok">0 / 0</span></div>
+          <div class="proof-item"><span class="pi-label">Browser</span><span class="pi-value pi-ok">10 / 10</span></div>
+          <div class="proof-item"><span class="pi-label">Mermaid</span><span class="pi-value pi-ok">✓ rendered</span></div>
+          <div class="proof-item"><span class="pi-label">TOC Sync</span><span class="pi-value pi-ok">✓ aligned</span></div>
+          <div class="proof-item"><span class="pi-label">Gate S5</span><span class="pi-value pi-ok">✓ passed</span></div>
+          <div class="proof-item"><span class="pi-label">Gate S8</span><span class="pi-value pi-ok">✓ passed</span></div>
+          <div class="proof-item"><span class="pi-label">Ambiguities</span><span class="pi-value" style="color:#fbbf24">0 acknowledged</span></div>
+        </div>
+      </div>
+  </div><!-- .main-content -->
+</div><!-- .page-shell -->
+<script defer>
+  window.__DOC_COMPILER_BOOT__ = { ran: true, ts: Date.now() };
+  function isLightMode() {
+        return window.matchMedia('(prefers-color-scheme: light)').matches;
+      }
+  
+      function getActivePalette(paletteName) {
+        const saved = localStorage.getItem('mermaid-palette') || 'tailwind-modern';
+        const name = paletteName || saved;
+        const palette = PALETTES[name] ? name : 'tailwind-modern';
+        const mode = isLightMode() ? 'light' : 'dark';
+        return PALETTES[palette][mode];
+      }
+  
+      function buildClassDefs(palette) {
+        return Object.entries(palette).map(([cls, vals]) =>
+          `classDef ${cls} fill:${vals.fill},stroke:${vals.stroke},color:${vals.color},stroke-width:${vals.strokeWidth}`
+        ).join('\n    ');
+      }
+  
+  // initMermaid/renderMermaid called in diagram-scripts.js after mermaid import resolves
+  
+      // Re-render when OS theme changes
+      window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+        document.dispatchEvent(new CustomEvent('theme-toggle', {bubbles: true}));
+      });
+  
+      // Copy buttons on <pre> blocks — create all in memory first, then batch-append
+      const copyPairs = [];
+      document.querySelectorAll('pre').forEach(pre => {
+        if (pre.querySelector('.copy-btn')) return;
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.type = 'button';
+        btn.textContent = 'Copy';
+        btn.setAttribute('aria-label', 'Copy code block');
+        const capturePre = pre;
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(capturePre.innerText);
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            const t = setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1200);
+            window.addEventListener('beforeunload', () => clearTimeout(t), { once: true });
+          } catch (err) {
+            console.error('Clipboard write failed:', err);
+            btn.textContent = 'Copy failed';
+          }
+        });
+        copyPairs.push({ pre, btn });
+      });
+      copyPairs.forEach(({ pre, btn }) => pre.parentNode.insertBefore(btn, pre.nextSibling));
+  
+      // Hash tracking for :target
+      if (window.location.hash) {
+        const el = document.querySelector(window.location.hash);
+        if (el) {
+          const t = setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 100);
+          window.addEventListener('beforeunload', () => clearTimeout(t), { once: true });
+        }
+      }
+  
+      // TOC toggle — single state variable, idempotent
+      window.initTocToggle = function() {
+        const btn = document.getElementById('tocToggle');
+        const toc = document.getElementById('toc');
+        const main = document.querySelector('.main-content');
+        if (!btn || !toc || !main) return;
+  
+        let tocIsOpen = window.matchMedia('(min-width: 961px)').matches; // open on desktop, closed on mobile
+  
+        function applyTocState() {
+          if (tocIsOpen) {
+            toc.classList.remove('collapsed');
+            document.body.classList.remove('toc-hidden');
+            main.classList.remove('toc-closed');
+            main.classList.add('toc-open');
+            btn.setAttribute('aria-expanded', 'true');
+          } else {
+            toc.classList.add('collapsed');
+            document.body.classList.add('toc-hidden');
+            main.classList.remove('toc-open');
+            main.classList.add('toc-closed');
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        }
+  
+        applyTocState();
+  
+        btn.addEventListener('click', () => {
+          tocIsOpen = !tocIsOpen; // flip state first
+          applyTocState();         // then apply once
+        });
+      };
+  
+      // Accordion — keyboard accessible
+      window.toggleStep = function(header) {
+        const step = header.closest('.step');
+        step.classList.toggle('open');
+      };
+  
+      // Add keyboard support to accordion triggers
+      document.querySelectorAll('.step-header').forEach(header => {
+        header.setAttribute('role', 'button');
+        header.setAttribute('tabindex', '0');
+        header.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            window.toggleStep(header);
+          }
+        });
+      });
+  
+      // Copy path
+      window.copyPath = async function(btn, text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          const t = setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+          window.addEventListener('beforeunload', () => clearTimeout(t), { once: true });
+        } catch (err) {
+          console.error('Clipboard write failed:', err);
+          btn.textContent = 'Copy failed';
+        }
+      };
+  
+      // Search
+      const searchInput = document.getElementById('searchInput');
+      const clearBtn = document.getElementById('clearSearch');
+      const noResults = document.getElementById('noResults');
+      const allSteps = document.querySelectorAll('.step');
+      searchInput.addEventListener('input', () => {
+        const q = searchInput.value.toLowerCase();
+        let visible = 0;
+        allSteps.forEach(s => {
+          const text = s.textContent.toLowerCase();
+          const show = text.includes(q);
+          s.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        noResults.classList.toggle('show', visible === 0 && q.length > 0);
+      });
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        allSteps.forEach(s => s.style.display = '');
+        noResults.classList.remove('show');
+      });
+  
+      // Theme toggle
+      let userToggledLight = null;
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        const root = document.documentElement;
+        const isDark = root.style.getPropertyValue('--bg') === '#0f1115' || root.style.getPropertyValue('--bg') === '';
+        if (isDark) {
+          userToggledLight = true;
+          root.style.setProperty('--bg', '#f8fafc');
+          root.style.setProperty('--surface', '#ffffff');
+          root.style.setProperty('--surface-2', '#f1f5f9');
+          root.style.setProperty('--surface-3', '#e2e8f0');
+          root.style.setProperty('--text', '#0f172a');
+          root.style.setProperty('--text-muted', '#475569');
+          root.style.setProperty('--text-faint', '#94a3b8');
+          root.style.setProperty('--border', 'rgba(0,0,0,0.10)');
+          root.style.setProperty('--border-strong', 'rgba(0,0,0,0.16)');
+          root.style.setProperty('--accent', '#0369a1');
+          root.style.setProperty('--accent-soft', 'rgba(3,105,161,0.12)');
+          root.style.setProperty('--shadow', '0 8px 24px rgba(0,0,0,0.10)');
+          document.dispatchEvent(new CustomEvent('theme-toggle', {bubbles: true}));
+        } else {
+          userToggledLight = false;
+          root.style.setProperty('--bg', '#0f1115');
+          root.style.setProperty('--surface', '#151922');
+          root.style.setProperty('--surface-2', '#1b2130');
+          root.style.setProperty('--surface-3', '#222a3a');
+          root.style.setProperty('--text', '#e8edf5');
+          root.style.setProperty('--text-muted', '#a8b3c7');
+          root.style.setProperty('--text-faint', '#7e889b');
+          root.style.setProperty('--border', 'rgba(255,255,255,0.10)');
+          root.style.setProperty('--border-strong', 'rgba(255,255,255,0.16)');
+          root.style.setProperty('--accent', '#66b3ff');
+          root.style.setProperty('--accent-soft', 'rgba(102,179,255,0.14)');
+          root.style.setProperty('--shadow', '0 10px 30px rgba(0,0,0,0.22)');
+          document.dispatchEvent(new CustomEvent('theme-toggle', {bubbles: true}));
+        }
+      });
+  
+      // initTocToggle called in diagram-scripts.js after TOC structure is ready
+  let _mermaid = null;
+  
+  async function _ensureMermaid() {
+    if (!_mermaid) {
+      const ns = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+      _mermaid = ns.default || ns;
+    }
+    return _mermaid;
+  }
+  
+  const PALETTES = {
+        'tailwind-modern': {
+          dark: {
+            step:      { fill: '#0f172a', stroke: '#60a5fa', color: '#f0f9ff', strokeWidth: 2.5 },
+            gate:      { fill: '#1e1b4b', stroke: '#fbbf24', color: '#fef3c7', strokeWidth: 3 },
+            terminal:  { fill: '#064e3b', stroke: '#10b981', color: '#f0fdf4', strokeWidth: 3 },
+            routeOut:  { fill: '#3f0f5c', stroke: '#d946ef', color: '#faf5ff', strokeWidth: 2 },
+            start:     { fill: '#172554', stroke: '#818cf8', color: '#c7d2fe', strokeWidth: 3 },
+          },
+          light: {
+            step:      { fill: '#f0f9ff', stroke: '#0369a1', color: '#0f172a', strokeWidth: 2.5 },
+            gate:      { fill: '#fffbeb', stroke: '#b45309', color: '#78350f', strokeWidth: 3 },
+            terminal:  { fill: '#f0fdf4', stroke: '#047857', color: '#064e3b', strokeWidth: 3 },
+            routeOut:  { fill: '#faf5ff', stroke: '#6d28d9', color: '#3f0f5c', strokeWidth: 2 },
+            start:     { fill: '#dbeafe', stroke: '#1e40af', color: '#172554', strokeWidth: 3 },
+          },
+        },
+        'github-dark': {
+          dark: {
+            step:      { fill: '#0d1117', stroke: '#58a6ff', color: '#c9d1d9', strokeWidth: 2.5 },
+            gate:      { fill: '#161b22', stroke: '#d29922', color: '#f0883e', strokeWidth: 3 },
+            terminal:  { fill: '#0f5323', stroke: '#1f6feb', color: '#c6f6d5', strokeWidth: 3 },
+            routeOut:  { fill: '#28244d', stroke: '#bc8ef9', color: '#e0c3fc', strokeWidth: 2 },
+            start:     { fill: '#0d1117', stroke: '#79c0ff', color: '#79c0ff', strokeWidth: 3 },
+          },
+          light: {
+            step:      { fill: '#f6f8fa', stroke: '#0969da', color: '#0d1117', strokeWidth: 2.5 },
+            gate:      { fill: '#fff8c5', stroke: '#bf8700', color: '#161b22', strokeWidth: 3 },
+            terminal:  { fill: '#dafbe1', stroke: '#1f6feb', color: '#0f5323', strokeWidth: 3 },
+            routeOut:  { fill: '#f5e6ff', stroke: '#8957e5', color: '#28244d', strokeWidth: 2 },
+            start:     { fill: '#cffaff', stroke: '#0969da', color: '#0d1117', strokeWidth: 3 },
+          },
+        },
+        'nord': {
+          dark: {
+            step:      { fill: '#2e3440', stroke: '#81a1c1', color: '#eceff4', strokeWidth: 2.5 },
+            gate:      { fill: '#3b4252', stroke: '#ebc77a', color: '#eceff4', strokeWidth: 3 },
+            terminal:  { fill: '#3b4252', stroke: '#a3be8c', color: '#eceff4', strokeWidth: 3 },
+            routeOut:  { fill: '#3b4252', stroke: '#b48ead', color: '#eceff4', strokeWidth: 2 },
+            start:     { fill: '#3b4252', stroke: '#88c0f0', color: '#eceff4', strokeWidth: 3 },
+          },
+          light: {
+            step:      { fill: '#eceff4', stroke: '#2e3440', color: '#2e3440', strokeWidth: 2.5 },
+            gate:      { fill: '#eceff4', stroke: '#b45309', color: '#78350f', strokeWidth: 3 },
+            terminal:  { fill: '#eceff4', stroke: '#047857', color: '#064e3b', strokeWidth: 3 },
+            routeOut:  { fill: '#eceff4', stroke: '#6d28d9', color: '#3f0f5c', strokeWidth: 2 },
+            start:     { fill: '#dbeafe', stroke: '#1e40af', color: '#172554', strokeWidth: 3 },
+          },
+        },
+        'one-dark-pro': {
+          dark: {
+            step:      { fill: '#21222c', stroke: '#61afef', color: '#abb2bf', strokeWidth: 2.5 },
+            gate:      { fill: '#2c2126', stroke: '#e5c07b', color: '#d19a66', strokeWidth: 3 },
+            terminal:  { fill: '#1b1f17', stroke: '#98c379', color: '#98c379', strokeWidth: 3 },
+            routeOut:  { fill: '#2c2137', stroke: '#c678dd', color: '#c678dd', strokeWidth: 2 },
+            start:     { fill: '#21222c', stroke: '#56b6c2', color: '#56b6c2', strokeWidth: 3 },
+          },
+          light: {
+            step:      { fill: '#fafafa', stroke: '#61afef', color: '#2c313a', strokeWidth: 2.5 },
+            gate:      { fill: '#fff8c5', stroke: '#e5c07b', color: '#d19a66', strokeWidth: 3 },
+            terminal:  { fill: '#f0fdf4', stroke: '#98c379', color: '#2c313a', strokeWidth: 3 },
+            routeOut:  { fill: '#f5e6ff', stroke: '#c678dd', color: '#2c2137', strokeWidth: 2 },
+            start:     { fill: '#dbeafe', stroke: '#61afef', color: '#2c313a', strokeWidth: 3 },
+          },
+        },
+        'dracula': {
+          dark: {
+            step:      { fill: '#282a36', stroke: '#bd93f9', color: '#f8f8f2', strokeWidth: 2.5 },
+            gate:      { fill: '#44475a', stroke: '#ffb86c', color: '#f8f8f2', strokeWidth: 3 },
+            terminal:  { fill: '#282a36', stroke: '#50fa7b', color: '#f8f8f2', strokeWidth: 3 },
+            routeOut:  { fill: '#44475a', stroke: '#ff79c6', color: '#f8f8f2', strokeWidth: 2 },
+            start:     { fill: '#282a36', stroke: '#8be9fd', color: '#f8f8f2', strokeWidth: 3 },
+          },
+          light: {
+            step:      { fill: '#fafafa', stroke: '#bd93f9', color: '#282a36', strokeWidth: 2.5 },
+            gate:      { fill: '#fff8c5', stroke: '#ffb86c', color: '#78350f', strokeWidth: 3 },
+            terminal:  { fill: '#f0fdf4', stroke: '#50fa7b', color: '#064e3b', strokeWidth: 3 },
+            routeOut:  { fill: '#f5e6ff', stroke: '#ff79c6', color: '#3f0f5c', strokeWidth: 2 },
+            start:     { fill: '#dbeafe', stroke: '#8be9fd', color: '#172554', strokeWidth: 3 },
+          },
+        },
+        'material-ocean': {
+          dark: {
+            step:      { fill: '#1e1e2e', stroke: '#89b4fa', color: '#a6adc8', strokeWidth: 2.5 },
+            gate:      { fill: '#1e1e2e', stroke: '#f9bc2c', color: '#cdd6f4', strokeWidth: 3 },
+            terminal:  { fill: '#1e1e2e', stroke: '#94e2d5', color: '#a6adc8', strokeWidth: 3 },
+            routeOut:  { fill: '#1e1e2e', stroke: '#cba6f7', color: '#a6adc8', strokeWidth: 2 },
+            start:     { fill: '#1e1e2e', stroke: '#74c7ec', color: '#a6adc8', strokeWidth: 3 },
+          },
+          light: {
+            step:      { fill: '#f5f5f5', stroke: '#1565c0', color: '#212121', strokeWidth: 2.5 },
+            gate:      { fill: '#fff8e1', stroke: '#f9a825', color: '#4e342e', strokeWidth: 3 },
+            terminal:  { fill: '#e8f5e9', stroke: '#2e7d32', color: '#1b5e20', strokeWidth: 3 },
+            routeOut:  { fill: '#f3e5f5', stroke: '#7b1fa2', color: '#4a148c', strokeWidth: 2 },
+            start:     { fill: '#e3f2fd', stroke: '#1565c0', color: '#0d47a1', strokeWidth: 3 },
+          },
+        },
+      };
+  
+      function isLightMode() {
+        return window.matchMedia('(prefers-color-scheme: light)').matches;
+      }
+  
+      function getActivePalette(paletteName) {
+        const saved = localStorage.getItem('mermaid-palette') || 'tailwind-modern';
+        const name = paletteName || saved;
+        const palette = PALETTES[name] ? name : 'tailwind-modern';
+        const mode = isLightMode() ? 'light' : 'dark';
+        return PALETTES[palette][mode];
+      }
+  
+      function buildClassDefs(palette) {
+        return Object.entries(palette).map(([cls, vals]) =>
+          `classDef ${cls} fill:${vals.fill},stroke:${vals.stroke},color:${vals.color},stroke-width:${vals.strokeWidth}`
+        ).join('\n    ');
+      }
+  
+  async function initMermaid() {
+        const mermaid = await _ensureMermaid();
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'base',
+          themeVariables: {},
+          flowchart: { curve: 'basis', nodeSpacing: 60, rankSpacing: 80, htmlLabels: true },
+          securityLevel: 'loose',
+        });
+      }
+  
+      async function renderMermaid(force) {
+        const mermaid = await _ensureMermaid();
+        const pre = document.getElementById('mermaidSource');
+        if (!pre) return;
+        const stage = document.getElementById('diagramStage');
+        if (!stage) return;
+  
+        // Update classDefs with current palette before rendering
+        const pal = getActivePalette();
+        const classDefLines = buildClassDefs(pal).split('\n');
+        const lines = pre.textContent.split('\n');
+        const newLines = [];
+        let inClassDefs = false;
+        let classDefCount = 0;
+        for (const line of lines) {
+          const trimmed = line.trim();
+          // classDef lines: enter skip mode
+          if (trimmed.startsWith('classDef')) { inClassDefs = true; classDefCount++; continue; }
+          // Exit skip mode on blank lines or lines that are NOT class assignments
+          if (inClassDefs && (trimmed === '' || !trimmed.startsWith('class '))) {
+            inClassDefs = false;
+            newLines.push(...classDefLines);
+          }
+          // Always output non-classDef lines
+          newLines.push(line);
+        }
+        // If no classDef block found, insert before "Start("
+        if (classDefCount === 0) {
+          const idx = newLines.findIndex(l => l.includes('Start('));
+          if (idx > 0) newLines.splice(idx, 0, ...classDefLines);
+        }
+        const updatedSource = newLines.join('\n');
+  
+        // Remove old SVG
+        const oldSvg = stage.querySelector('svg');
+        if (oldSvg) oldSvg.remove();
+  
+        try {
+          const id = 'mermaid-' + Date.now();
+          const { svg } = await mermaid.render(id, updatedSource);
+          const errDiv = document.getElementById('diagramError');
+          if (!svg || svg.trim() === '') {
+            if (errDiv) { errDiv.textContent = 'Mermaid returned empty output.'; errDiv.classList.add('visible'); }
+            return;
+          }
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = svg;
+          const newSvg = wrapper.querySelector('svg');
+          if (!newSvg) {
+            if (errDiv) { errDiv.textContent = 'No SVG in mermaid output: ' + svg.slice(0, 120); errDiv.classList.add('visible'); }
+            return;
+          }
+          // Keep pre in DOM (hidden) so subsequent renders can still find it by ID
+          pre.style.display = 'none';
+          newSvg.style.display = 'block';
+          newSvg.style.transformOrigin = 'top left';
+          if (errDiv) { errDiv.classList.remove('visible'); errDiv.textContent = ''; }
+          stage.appendChild(newSvg);
+          applyCurrentTransform();
+        } catch (err) {
+          console.error('Mermaid render error:', err);
+          const errDiv = document.getElementById('diagramError');
+          if (errDiv) { errDiv.textContent = 'Render error: ' + err.message; errDiv.classList.add('visible'); }
+        }
+      }
+  
+  let zoomLevel = 1.0;
+      let panX = 0;
+      let panY = 0;
+      const MIN_ZOOM = 0.2;
+      const MAX_ZOOM = 4.0;
+      const ZOOM_STEP = 0.15;
+      const MIN_PAN_BOUND = 0.1; // fraction of viewport that must remain visible
+  
+      const stage = document.getElementById('diagramStage');
+      const viewport = document.getElementById('diagramViewport');
+      const zoomPct = document.getElementById('zoomPct');
+  
+      function applyCurrentTransform() {
+        const s = document.getElementById('diagramStage');
+        const zp = document.getElementById('zoomPct');
+        if (!s) return;
+        s.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+        if (zp) zp.textContent = Math.round(zoomLevel * 100) + '%';
+      }
+  
+      function clampPan() {
+        const v = document.getElementById('diagramViewport');
+        if (!v) return;
+        const vw = v.clientWidth;
+        const vh = v.clientHeight;
+        // Prevent pan from dragging more than one viewport's worth in any direction
+        panX = Math.max(-vw, Math.min(vw, panX));
+        panY = Math.max(-vh, Math.min(vh, panY));
+      }
+  
+      function zoomBy(factor, centerX, centerY) {
+        const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, +(zoomLevel * factor).toFixed(3)));
+        if (newZoom === zoomLevel) return;
+        if (centerX !== undefined) {
+          const v = document.getElementById('diagramViewport');
+          if (v) {
+            const rect = v.getBoundingClientRect();
+            const cx = centerX - rect.left;
+            const cy = centerY - rect.top;
+            panX = cx - (cx - panX) * (newZoom / zoomLevel);
+            panY = cy - (cy - panY) * (newZoom / zoomLevel);
+          }
+        }
+        zoomLevel = newZoom;
+        clampPan();
+        applyCurrentTransform();
+      }
+  
+      window.fitSvgToView = function() {
+        requestAnimationFrame(() => {
+          const s = document.getElementById('diagramStage');
+          const v = document.getElementById('diagramViewport');
+          if (!s || !v) return;
+          const svg = s.querySelector('svg');
+          if (!svg) return;
+          const vw = v.clientWidth;
+          const vh = v.clientHeight;
+          if (!vw || !vh) return;
+          const svgW = parseFloat(svg.getAttribute('width')) || 800;
+          const svgH = parseFloat(svg.getAttribute('height')) || 400;
+          const scaleX = (vw * 0.92) / svgW;
+          const scaleY = (vh * 0.92) / svgH;
+          zoomLevel = Math.min(1.0, Math.min(scaleX, scaleY));
+          panX = 0;
+          panY = 0;
+          applyCurrentTransform();
+        });
+      };
+  
+      function resetZoom() {
+        zoomLevel = 1.0;
+        panX = 0;
+        panY = 0;
+        applyCurrentTransform();
+        fitSvgToView();
+      }
+  
+      // Button handlers
+      document.getElementById('zoomIn')?.addEventListener('click', () => zoomBy(1 + ZOOM_STEP));
+      document.getElementById('zoomOut')?.addEventListener('click', () => zoomBy(1 / (1 + ZOOM_STEP)));
+      document.getElementById('zoomReset')?.addEventListener('click', resetZoom);
+      document.getElementById('zoomFit')?.addEventListener('click', () => { if (typeof fitSvgToView === 'function') fitSvgToView(); });
+  
+      // Wheel zoom
+      viewport?.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? (1 + ZOOM_STEP) : (1 / (1 + ZOOM_STEP));
+        zoomBy(factor, e.clientX, e.clientY);
+      }, { passive: false });
+  
+      // Keyboard shortcuts
+      viewport?.addEventListener('keydown', (e) => {
+        const step = 40;
+        if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomBy(1 + ZOOM_STEP); }
+        if (e.key === '-') { e.preventDefault(); zoomBy(1 / (1 + ZOOM_STEP)); }
+        if (e.key === '0') { e.preventDefault(); resetZoom(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); panX += step; clampPan(); applyCurrentTransform(); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); panX -= step; clampPan(); applyCurrentTransform(); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); panY += step; clampPan(); applyCurrentTransform(); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); panY -= step; clampPan(); applyCurrentTransform(); }
+      });
+  
+      // Drag-to-pan
+      let isPanning = false;
+      let lastX = 0, lastY = 0;
+      viewport?.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        isPanning = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        viewport.setPointerCapture(e.pointerId);
+      });
+      viewport?.addEventListener('pointermove', (e) => {
+        if (!isPanning) return;
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        panX += dx;
+        panY += dy;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        clampPan();
+        applyCurrentTransform();
+      });
+      viewport?.addEventListener('pointerup', () => { isPanning = false; });
+      viewport?.addEventListener('pointercancel', () => { isPanning = false; });
+  
+      // Drag-to-resize the diagram pane
+      const resizeHandle = document.getElementById('diagramResizeHandle');
+      const diagramViewport = document.getElementById('diagramViewport');
+      let isResizing = false;
+      let lastResizeY = 0;
+      const MIN_HEIGHT = 200;
+      const MAX_HEIGHT = 800;
+  
+      resizeHandle?.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        e.stopPropagation(); // prevent viewport's pointerdown from capturing first
+        isResizing = true;
+        lastResizeY = e.clientY;
+        resizeHandle.setPointerCapture(e.pointerId);
+        document.body.style.cursor = 'ns-resize';
+        document.body.style.userSelect = 'none';
+      }, { capture: true });
+  
+      resizeHandle?.addEventListener('pointermove', (e) => {
+        if (!isResizing) return;
+        const dy = e.clientY - lastResizeY;
+        lastResizeY = e.clientY;
+        const currentHeight = diagramViewport.clientHeight;
+        const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, currentHeight + dy));
+        diagramViewport.style.height = newHeight + 'px';
+      }, { capture: true });
+  
+      resizeHandle?.addEventListener('pointerup', () => {
+        isResizing = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      });
+  
+      resizeHandle?.addEventListener('pointercancel', () => {
+        isResizing = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      });
+  
+      resizeHandle?.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          const currentHeight = diagramViewport.clientHeight;
+          diagramViewport.style.height = Math.min(MAX_HEIGHT, currentHeight + 40) + 'px';
+        }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const currentHeight = diagramViewport.clientHeight;
+          diagramViewport.style.height = Math.max(MIN_HEIGHT, currentHeight - 40) + 'px';
+        }
+      });
+  
+  const paletteSelect = document.getElementById('paletteSelect');
+      if (paletteSelect) {
+        const saved = localStorage.getItem('mermaid-palette');
+        if (saved) paletteSelect.value = saved;
+        paletteSelect.addEventListener('change', () => {
+          localStorage.setItem('mermaid-palette', paletteSelect.value);
+          renderMermaid(true);
+        });
+      }
+  
+  initMermaid();
+  renderMermaid();
+  // Re-render on theme toggle (fired from shared-scripts)
+  document.addEventListener('theme-toggle', () => { renderMermaid(true); });
+  
+  // Initialize all after modules and DOM are ready
+  initMermaid();
+  renderMermaid();
+  window.initTocToggle();
+</script>
+</body>
+</html>

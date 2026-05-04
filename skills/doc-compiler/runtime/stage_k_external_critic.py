@@ -124,7 +124,7 @@ def main() -> None:
     source_summary = summarize_source(source_model)
 
     # Extract key metrics from HTML
-    html_excerpt = html_content[:4000]  # first 4000 chars for context
+    html_excerpt = html_content[:40000]  # must cover full page since HTML is ~63KB
 
     steps_declared = len(source_model.get("steps", []))
     steps_found = html_content.count('class="step"')
@@ -157,7 +157,7 @@ def main() -> None:
             [
                 "claude", "--print",
                 "--model", "sonnet",
-                "--system", SYSTEM_PROMPT,
+                "--system-prompt", SYSTEM_PROMPT,
             ],
             input=user_prompt,
             capture_output=True,
@@ -166,10 +166,17 @@ def main() -> None:
         )
         output_text = result.stdout.strip()
 
+        # Fail closed: no output at all means the critic failed to run
+        if not output_text:
+            raise ValueError("critic produced empty output")
+
         # Parse JSON from output (may be wrapped in markdown code block)
         json_match = re.search(r'```json\s*(.*?)```', output_text, re.DOTALL)
         if json_match:
             output_text = json_match.group(1)
+
+        if not output_text:
+            raise ValueError("critic produced no parseable JSON")
 
         report = json.loads(output_text)
         report["stage"] = "K"

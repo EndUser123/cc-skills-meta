@@ -275,5 +275,9 @@
     }
   ],
   "gaps": [],
-  "ambiguities": []
+  "ambiguities": [],
+  "presentation": {
+    "style": "minimal",
+    "source": "cli"
+  }
 }

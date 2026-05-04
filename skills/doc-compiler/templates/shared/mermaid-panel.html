@@ -1,0 +1,32 @@
+<section id="diagram">
+        <h2>Diagram</h2>
+        <div class="diagram-shell">
+          <div class="diagram-toolbar">
+            <div class="diagram-meta">
+              <label for="paletteSelect" class="diagram-label">Palette</label>
+              <select id="paletteSelect" aria-label="Select Mermaid color palette">
+                <option value="tailwind-modern">Tailwind Modern</option>
+                <option value="github-dark">GitHub Dark</option>
+                <option value="nord">Nord</option>
+                <option value="one-dark-pro">One Dark Pro</option>
+                <option value="dracula">Dracula</option>
+                <option value="material-ocean">Material Ocean</option>
+              </select>
+            </div>
+            <div class="zoom-controls" aria-label="Zoom controls">
+              <button class="zoom-btn" id="zoomFit" title="Fit to view" aria-label="Fit to view">⟌</button>
+              <button class="zoom-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">−</button>
+              <span class="zoom-pct" id="zoomPct" aria-live="polite">100%</span>
+              <button class="zoom-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+              <button class="zoom-btn zoom-reset" id="zoomReset" title="Reset zoom" aria-label="Reset zoom">1:1</button>
+            </div>
+          </div>
+          <div class="diagram-viewport" id="diagramViewport" role="group" tabindex="0" aria-label="Diagram viewport">
+            <div class="diagram-error" id="diagramError" role="alert" aria-live="polite"></div>
+            <div class="diagram-stage" id="diagramStage">
+              <pre class="mermaid" id="mermaidSource">{{mermaid_source}}</pre>
+            </div>
+          </div>
+          <div class="diagram-resize-handle" id="diagramResizeHandle" role="separator" aria-orientation="horizontal" aria-label="Drag to resize diagram pane" tabindex="0" title="Drag to resize"></div>
+        </div>
+      </section>

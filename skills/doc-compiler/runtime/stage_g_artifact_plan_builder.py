@@ -15,7 +15,7 @@ from typing import Any
 BASE = Path("P:/packages/cc-skills-meta/skills/doc-compiler")
 DOC_MODEL = BASE / "doc-model.json"
 DIAGRAMS   = BASE / "diagrams.json"
-SOURCE     = BASE / "source-model.json"
+SOURCE     = Path(__file__).parent / "source-model.json"
 OUT        = BASE / "artifact-plan.json"
 
 
@@ -137,7 +137,8 @@ def main() -> None:
         "workflow_shape": doc_model.get("workflow_shape", "unknown"),
         "diagram_roles": doc_model.get("diagram_roles", []),
         "gaps": doc_model.get("content_hints", {}).get("gaps", []),
-        "ambiguities": doc_model.get("content_hints", {}).get("ambiguities", [])
+        "ambiguities": doc_model.get("content_hints", {}).get("ambiguities", []),
+        "presentation": source_model.get("presentation", {"style": "default", "source": "default"}),
     }
 
     OUT.write_text(json.dumps(plan, indent=2), encoding="utf-8")

@@ -1,12 +1,40 @@
 {
-  "stage": "K",
-  "passed": false,
-  "errors": [
-    "Could not parse critic JSON: Expecting value: line 1 column 1 (char 0)"
-  ],
   "gate_passed": false,
-  "failed_checks": [
-    "critic-json-parse-error"
+  "step_coverage": 1.0,
+  "decision_coverage": 0.0,
+  "route_out_coverage": 0.0,
+  "hallucination_detected": false,
+  "dom_issues": [
+    "All 12 step bodies have empty step-description paragraphs (no content extracted)",
+    "Missing gate-badge elements on steps 5 and 8 (proof shows 2 gates passed but no badge markup)",
+    "Missing gate-badge styling context for steps with gate decisions",
+    "Missing route-outs section entirely (source model has none, but DOM expects it via TOC link)",
+    "Missing terminal states section entirely",
+    "Proof summary shows browser=10/10 and gate counts but no corresponding DOM elements"
   ],
-  "raw_output": ""
+  "css_issues": [
+    "All custom properties from :root block missing (--doc-*, color variables, spacing, etc.)",
+    "Theme toggle handler truncated mid-execution in script",
+    "Mermaid rendering palette selection exists but localStorage integration incomplete"
+  ],
+  "failed_checks": [
+    "Step bodies are empty \u2014 no step descriptions rendered from source",
+    "Gate badges (S5, S8) referenced in proof but not present in DOM",
+    "Script block truncated \u2014 theme toggle incomplete",
+    "Route-outs section missing (TOC references it but section not rendered)",
+    "Terminal states section missing"
+  ],
+  "recommendations": [
+    "Populate step-description paragraphs with actual stage descriptions from source model",
+    "Add gate-badge span elements to steps with gate decisions (steps 5, 8 based on proof summary)",
+    "Complete or remove the truncated theme toggle handler in script block",
+    "Add route-outs section placeholder or remove from TOC if not applicable",
+    "Add terminal states section placeholder or remove from TOC if not applicable",
+    "Ensure all CSS custom properties are defined in :root or inherited",
+    "Fix diagram palette localStorage sync"
+  ],
+  "stage": "K",
+  "critic_model": "sonnet",
+  "stdout_excerpt": "\n\n```json\n{\n  \"gate_passed\": false,\n  \"step_coverage\": 1.0,\n  \"decision_coverage\": 0.0,\n  \"route_out_coverage\": 0.0,\n  \"hallucination_detected\": false,\n  \"dom_issues\": [\n    \"All 12 step bodies have empty step-description paragraphs (no content extracted)\",\n    \"Missing gate-badge elements on steps 5 and 8 (proof shows 2 gates passed but no badge markup)\",\n    \"Missing gate-badge styling context for steps with gate decisions\",\n    \"Missing route-outs section entirely (source model has none, but ",
+  "stderr_excerpt": ""
 }

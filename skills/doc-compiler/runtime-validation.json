@@ -2,13 +2,54 @@
   "stage": "J",
   "source_path": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html",
   "artifact_path": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\index.html",
-  "generated_at": "2026-05-03T15:22:06.851065",
+  "generated_at": "2026-05-03T23:13:09.003048",
   "coverage": {
     "steps_declared": 12,
-    "workflow_sections_rendered": 9,
-    "elements_present": 31
+    "workflow_sections_rendered": 12,
+    "elements_present": 46
   },
-  "verification_matrix": {},
+  "verification_matrix": {
+    "J0_boot_marker": {
+      "passed": true,
+      "reason": "boot marker found"
+    },
+    "J1_desktop_initial": {
+      "passed": true,
+      "reason": "tocToggle pos=fixed, main margin=0px"
+    },
+    "J2_toc_toggle": {
+      "passed": true,
+      "reason": "before_hidden=False, after_hidden=True"
+    },
+    "J3_theme_toggle": {
+      "passed": true,
+      "reason": "dark_mode=off"
+    },
+    "J4_accordion_toggle": {
+      "passed": true,
+      "reason": "12 step headers found"
+    },
+    "J5_search_filter": {
+      "passed": true,
+      "reason": "search input events fired"
+    },
+    "J6_mermaid_rendered": {
+      "passed": true,
+      "reason": "svg count=2"
+    },
+    "J7_palette_switch": {
+      "passed": true,
+      "reason": "palette selector changed"
+    },
+    "J8_zoom_controls": {
+      "passed": true,
+      "reason": "zoomIn clicked"
+    },
+    "J9_resize_handle": {
+      "passed": true,
+      "reason": "resize handle present"
+    }
+  },
   "toc_state": {
     "toc_present": true,
     "toc_toggle_present": true,
@@ -25,10 +66,11 @@
     "accordion_listener": true
   },
   "runtime_verification": {
-    "passed": 0,
-    "total": 0,
+    "passed": 10,
+    "total": 10,
     "all_passed": true,
     "snapshots": [],
-    "stdout": ""
+    "stdout": "__RESULTS__:{\"J0_boot_marker\": {\"passed\": true, \"reason\": \"boot marker found\"}, \"J1_desktop_initial\": {\"passed\": true, \"reason\": \"tocToggle pos=fixed, main margin=0px\"}, \"J2_toc_toggle\": {\"passed\": true, \"reason\": \"before_hidden=False, after_hidden=True\"}, \"J3_theme_toggle\": {\"passed\": true, \"reason\": \"dark_mode=off\"}, \"J4_accordion_toggle\": {\"passed\": true, \"reason\": \"12 step headers found\"}, \"J5_search_filter\": {\"passed\": true, \"reason\": \"search input events fired\"}, \"J6_mermaid_rendered\": {\"p",
+    "_fail_reason": null
   }
 }

@@ -1,28 +1,171 @@
 {
   "kind": "skill",
-  "name": "genius",
-  "version": "1.1.0",
-  "description": "",
-  "enforcement": "advisory",
-  "status": "stable",
+  "name": "doc-compiler",
+  "version": "3.0.0",
+  "description": "Compile skills, plugins, projects, and workflows into interactive, verified HTML documentation with Mermaid diagrams, TOC, proof metadata, and browser validation.",
+  "enforcement": "strict",
+  "status": "active",
   "triggers": [
-    "/genius"
+    "/doc-compiler",
+    "compile docs for",
+    "create interactive docs for"
   ],
   "steps": [
     {
-      "step_map": "Map the problem first \u2014 state what I think you're solving, the model I'm working with, key assumptions"
+      "id": "step-1",
+      "index": 1,
+      "name": "stage_a_source_extractor",
+      "display_name": "stage_a_source_extractor",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
     },
     {
-      "step_challenge": "Challenge the most critical premise \u2014 state what might be wrong and why it matters"
+      "id": "step-2",
+      "index": 2,
+      "name": "stage_b_artifact_plan_builder",
+      "display_name": "stage_b_artifact_plan_builder",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
     },
     {
-      "step_reframe": "Cross-domain synthesis \u2014 draw one analogy from physics/economics/biology/systems theory"
+      "id": "step-3",
+      "index": 3,
+      "name": "stage_c_mermaid_design",
+      "display_name": "stage_c_mermaid_design",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
     },
     {
-      "step_recommend": "Give a strong recommendation with why it wins and what would change it"
+      "id": "step-4",
+      "index": 4,
+      "name": "stage_d_mermaid_critic_review",
+      "display_name": "stage_d_mermaid_critic_review",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
     },
     {
-      "step_surface": "Surface 2 things you haven't considered"
+      "id": "step-5",
+      "index": 5,
+      "name": "stage_e1_loader",
+      "display_name": "stage_e1_loader",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
+    },
+    {
+      "id": "step-6",
+      "index": 6,
+      "name": "stage_e2_binder",
+      "display_name": "stage_e2_binder",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
+    },
+    {
+      "id": "step-7",
+      "index": 7,
+      "name": "stage_e3_assembler",
+      "display_name": "stage_e3_assembler",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
+    },
+    {
+      "id": "step-8",
+      "index": 8,
+      "name": "stage_e4_writer",
+      "display_name": "stage_e4_writer",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
+    },
+    {
+      "id": "step-9",
+      "index": 9,
+      "name": "stage_f_static_validator",
+      "display_name": "stage_f_static_validator",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
+    },
+    {
+      "id": "step-10",
+      "index": 10,
+      "name": "stage_g_artifact_proof",
+      "display_name": "stage_g_artifact_proof",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
+    },
+    {
+      "id": "step-11",
+      "index": 11,
+      "name": "stage_h_external_critic",
+      "display_name": "stage_h_external_critic",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
+    },
+    {
+      "id": "step-12",
+      "index": 12,
+      "name": "stage_i_emit_proof_metadata",
+      "display_name": "stage_i_emit_proof_metadata",
+      "description": "",
+      "kind": "step",
+      "conditions": [],
+      "inputs": [],
+      "outputs": [],
+      "routes_to": [],
+      "artifacts_emitted": []
     }
   ],
   "decision_points": [
@@ -31,59 +174,1456 @@
       "name": "check",
       "description": "check",
       "kind": "decision"
+    },
+    {
+      "id": "decision-2",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-3",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-4",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-5",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-6",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-7",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-8",
+      "name": "When emitting, the LLM must",
+      "description": "When emitting, the LLM must",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-9",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-10",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-11",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-12",
+      "name": "Check",
+      "description": "Check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-13",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-14",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-15",
+      "name": "Gate",
+      "description": "Gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-16",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-17",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-18",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-19",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-20",
+      "name": "decision point",
+      "description": "decision point",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-21",
+      "name": "GATE",
+      "description": "GATE",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-22",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-23",
+      "name": "decision point",
+      "description": "decision point",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-24",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-25",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-26",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-27",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-28",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-29",
+      "name": "Gate",
+      "description": "Gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-30",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-31",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-32",
+      "name": "MUST verify",
+      "description": "MUST verify",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-33",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-34",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-35",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-36",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-37",
+      "name": "Check",
+      "description": "Check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-38",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-39",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-40",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-41",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-42",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-43",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-44",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-45",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-46",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-47",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-48",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-49",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-50",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-51",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-52",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-53",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-54",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-55",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-56",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-57",
+      "name": "Gate",
+      "description": "Gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-58",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-59",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-60",
+      "name": "MUST pass",
+      "description": "MUST pass",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-61",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-62",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-63",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-64",
+      "name": "Gate",
+      "description": "Gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-65",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-66",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-67",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-68",
+      "name": "MUST pass",
+      "description": "MUST pass",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-69",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-70",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-71",
+      "name": "Check",
+      "description": "Check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-72",
+      "name": "check",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-73",
+      "name": "Output Requirements",
+      "description": "check",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-74",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-75",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-76",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
+    },
+    {
+      "id": "decision-77",
+      "name": "gate",
+      "description": "gate",
+      "kind": "decision"
     }
   ],
   "route_outs": [
     {
       "id": "route-1",
-      "target": "/economics",
-      "trigger": "/economics",
+      "target": "/doc",
+      "trigger": "/doc",
       "description": ""
     },
     {
       "id": "route-2",
-      "target": "/biology",
-      "trigger": "/biology",
+      "target": "/doc",
+      "trigger": "/doc",
       "description": ""
     },
     {
       "id": "route-3",
-      "target": "/systems theory",
-      "trigger": "/systems theory",
+      "target": "/doc",
+      "trigger": "/doc",
       "description": ""
     },
     {
       "id": "route-4",
-      "target": "/genius\nsuggest",
-      "trigger": "/genius\nsuggest",
+      "target": "/doc",
+      "trigger": "/doc",
       "description": ""
     },
     {
       "id": "route-5",
-      "target": "/reason",
-      "trigger": "/reason",
+      "target": "/skills",
+      "trigger": "/skills",
       "description": ""
     },
     {
       "id": "route-6",
-      "target": "/genius",
-      "trigger": "/genius",
+      "target": "/go",
+      "trigger": "/go",
+      "description": ""
+    },
+    {
+      "id": "route-7",
+      "target": "/SKILL",
+      "trigger": "/SKILL",
+      "description": ""
+    },
+    {
+      "id": "route-8",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-9",
+      "target": "/plugin",
+      "trigger": "/plugin",
+      "description": ""
+    },
+    {
+      "id": "route-10",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-11",
+      "target": "/my",
+      "trigger": "/my",
+      "description": ""
+    },
+    {
+      "id": "route-12",
+      "target": "/README",
+      "trigger": "/README",
+      "description": ""
+    },
+    {
+      "id": "route-13",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-14",
+      "target": "/workflows",
+      "trigger": "/workflows",
+      "description": ""
+    },
+    {
+      "id": "route-15",
+      "target": "/data",
+      "trigger": "/data",
+      "description": ""
+    },
+    {
+      "id": "route-16",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-17",
+      "target": "/skills",
+      "trigger": "/skills",
+      "description": ""
+    },
+    {
+      "id": "route-18",
+      "target": "/go",
+      "trigger": "/go",
+      "description": ""
+    },
+    {
+      "id": "route-19",
+      "target": "/SKILL",
+      "trigger": "/SKILL",
+      "description": ""
+    },
+    {
+      "id": "route-20",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-21",
+      "target": "/skills",
+      "trigger": "/skills",
+      "description": ""
+    },
+    {
+      "id": "route-22",
+      "target": "/go",
+      "trigger": "/go",
+      "description": ""
+    },
+    {
+      "id": "route-23",
+      "target": "/SKILL",
+      "trigger": "/SKILL",
+      "description": ""
+    },
+    {
+      "id": "route-24",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-25",
+      "target": "/skills",
+      "trigger": "/skills",
+      "description": ""
+    },
+    {
+      "id": "route-26",
+      "target": "/go",
+      "trigger": "/go",
+      "description": ""
+    },
+    {
+      "id": "route-27",
+      "target": "/SKILL",
+      "trigger": "/SKILL",
+      "description": ""
+    },
+    {
+      "id": "route-28",
+      "target": "/index",
+      "trigger": "/index",
+      "description": ""
+    },
+    {
+      "id": "route-29",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-30",
+      "target": "/artifact",
+      "trigger": "/artifact",
+      "description": ""
+    },
+    {
+      "id": "route-31",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-32",
+      "target": "/source",
+      "trigger": "/source",
+      "description": ""
+    },
+    {
+      "id": "route-33",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-34",
+      "target": "/diagram",
+      "trigger": "/diagram",
+      "description": ""
+    },
+    {
+      "id": "route-35",
+      "target": "/styles",
+      "trigger": "/styles",
+      "description": ""
+    },
+    {
+      "id": "route-36",
+      "target": "/gating questions",
+      "trigger": "/gating questions",
+      "description": ""
+    },
+    {
+      "id": "route-37",
+      "target": "route to",
+      "trigger": "route to",
+      "description": ""
+    },
+    {
+      "id": "route-38",
+      "target": "/planning",
+      "trigger": "/planning",
+      "description": ""
+    },
+    {
+      "id": "route-39",
+      "target": "delegate to",
+      "trigger": "delegate to",
+      "description": ""
+    },
+    {
+      "id": "route-40",
+      "target": "/code",
+      "trigger": "/code",
+      "description": ""
+    },
+    {
+      "id": "route-41",
+      "target": "/No path",
+      "trigger": "/No path",
+      "description": ""
+    },
+    {
+      "id": "route-42",
+      "target": "/End",
+      "trigger": "/End",
+      "description": ""
+    },
+    {
+      "id": "route-43",
+      "target": "/data",
+      "trigger": "/data",
+      "description": ""
+    },
+    {
+      "id": "route-44",
+      "target": "/analysis",
+      "trigger": "/analysis",
+      "description": ""
+    },
+    {
+      "id": "route-45",
+      "target": "/generate",
+      "trigger": "/generate",
+      "description": ""
+    },
+    {
+      "id": "route-46",
+      "target": "/emit",
+      "trigger": "/emit",
+      "description": ""
+    },
+    {
+      "id": "route-47",
+      "target": "/terminal",
+      "trigger": "/terminal",
+      "description": ""
+    },
+    {
+      "id": "route-48",
+      "target": "/critic points",
+      "trigger": "/critic points",
+      "description": ""
+    },
+    {
+      "id": "route-49",
+      "target": "/delegation\n\nEdge labels",
+      "trigger": "/delegation\n\nEdge labels",
+      "description": ""
+    },
+    {
+      "id": "route-50",
+      "target": "/pass has an explicit condition label\n  5",
+      "trigger": "/pass has an explicit condition label\n  5",
+      "description": ""
+    },
+    {
+      "id": "route-51",
+      "target": "/stroke",
+      "trigger": "/stroke",
+      "description": ""
+    },
+    {
+      "id": "route-52",
+      "target": "/base",
+      "trigger": "/base",
+      "description": ""
+    },
+    {
+      "id": "route-53",
+      "target": "/toc",
+      "trigger": "/toc",
+      "description": ""
+    },
+    {
+      "id": "route-54",
+      "target": "/hero",
+      "trigger": "/hero",
+      "description": ""
+    },
+    {
+      "id": "route-55",
+      "target": "/facts",
+      "trigger": "/facts",
+      "description": ""
+    },
+    {
+      "id": "route-56",
+      "target": "/mermaid",
+      "trigger": "/mermaid",
+      "description": ""
+    },
+    {
+      "id": "route-57",
+      "target": "/steps",
+      "trigger": "/steps",
+      "description": ""
+    },
+    {
+      "id": "route-58",
+      "target": "/route",
+      "trigger": "/route",
+      "description": ""
+    },
+    {
+      "id": "route-59",
+      "target": "/terminals",
+      "trigger": "/terminals",
+      "description": ""
+    },
+    {
+      "id": "route-60",
+      "target": "/artifacts",
+      "trigger": "/artifacts",
+      "description": ""
+    },
+    {
+      "id": "route-61",
+      "target": "/proof",
+      "trigger": "/proof",
+      "description": ""
+    },
+    {
+      "id": "route-62",
+      "target": "/shared",
+      "trigger": "/shared",
+      "description": ""
+    },
+    {
+      "id": "route-63",
+      "target": "/toc",
+      "trigger": "/toc",
+      "description": ""
+    },
+    {
+      "id": "route-64",
+      "target": "/section",
+      "trigger": "/section",
+      "description": ""
+    },
+    {
+      "id": "route-65",
+      "target": "/diagram",
+      "trigger": "/diagram",
+      "description": ""
+    },
+    {
+      "id": "route-66",
+      "target": "/shared",
+      "trigger": "/shared",
+      "description": ""
+    },
+    {
+      "id": "route-67",
+      "target": "/diagram",
+      "trigger": "/diagram",
+      "description": ""
+    },
+    {
+      "id": "route-68",
+      "target": "/pan",
+      "trigger": "/pan",
+      "description": ""
+    },
+    {
+      "id": "route-69",
+      "target": "/pan",
+      "trigger": "/pan",
+      "description": ""
+    },
+    {
+      "id": "route-70",
+      "target": "/reset controls per",
+      "trigger": "/reset controls per",
+      "description": ""
+    },
+    {
+      "id": "route-71",
+      "target": "/fail status",
+      "trigger": "/fail status",
+      "description": ""
+    },
+    {
+      "id": "route-72",
+      "target": "/pan",
+      "trigger": "/pan",
+      "description": ""
+    },
+    {
+      "id": "route-73",
+      "target": "/reset controls",
+      "trigger": "/reset controls",
+      "description": ""
+    },
+    {
+      "id": "route-74",
+      "target": "/div",
+      "trigger": "/div",
+      "description": ""
+    },
+    {
+      "id": "route-75",
+      "target": "/path blocks",
+      "trigger": "/path blocks",
+      "description": ""
+    },
+    {
+      "id": "route-76",
+      "target": "/catch",
+      "trigger": "/catch",
+      "description": ""
+    },
+    {
+      "id": "route-77",
+      "target": "/loop",
+      "trigger": "/loop",
+      "description": ""
+    },
+    {
+      "id": "route-78",
+      "target": "/touch event listeners use",
+      "trigger": "/touch event listeners use",
+      "description": ""
+    },
+    {
+      "id": "route-79",
+      "target": "/layout",
+      "trigger": "/layout",
+      "description": ""
+    },
+    {
+      "id": "route-80",
+      "target": "/emphasis",
+      "trigger": "/emphasis",
+      "description": ""
+    },
+    {
+      "id": "route-81",
+      "target": "/zoom changes",
+      "trigger": "/zoom changes",
+      "description": ""
+    },
+    {
+      "id": "route-82",
+      "target": "/timeout check",
+      "trigger": "/timeout check",
+      "description": ""
+    },
+    {
+      "id": "route-83",
+      "target": "/catch",
+      "trigger": "/catch",
+      "description": ""
+    },
+    {
+      "id": "route-84",
+      "target": "/close",
+      "trigger": "/close",
+      "description": ""
+    },
+    {
+      "id": "route-85",
+      "target": "/collapses",
+      "trigger": "/collapses",
+      "description": ""
+    },
+    {
+      "id": "route-86",
+      "target": "/closed state",
+      "trigger": "/closed state",
+      "description": ""
+    },
+    {
+      "id": "route-87",
+      "target": "/after screenshot",
+      "trigger": "/after screenshot",
+      "description": ""
+    },
+    {
+      "id": "route-88",
+      "target": "/closes without page jump",
+      "trigger": "/closes without page jump",
+      "description": ""
+    },
+    {
+      "id": "route-89",
+      "target": "/after screenshots",
+      "trigger": "/after screenshots",
+      "description": ""
+    },
+    {
+      "id": "route-90",
+      "target": "/pan state preserved",
+      "trigger": "/pan state preserved",
+      "description": ""
+    },
+    {
+      "id": "route-91",
+      "target": "/after SVG transform comparison",
+      "trigger": "/after SVG transform comparison",
+      "description": ""
+    },
+    {
+      "id": "route-92",
+      "target": "/after",
+      "trigger": "/after",
+      "description": ""
+    },
+    {
+      "id": "route-93",
+      "target": "/pan state before and after",
+      "trigger": "/pan state before and after",
+      "description": ""
+    },
+    {
+      "id": "route-94",
+      "target": "/state behavior",
+      "trigger": "/state behavior",
+      "description": ""
+    },
+    {
+      "id": "route-95",
+      "target": "/hover",
+      "trigger": "/hover",
+      "description": ""
+    },
+    {
+      "id": "route-96",
+      "target": "/layout",
+      "trigger": "/layout",
+      "description": ""
+    },
+    {
+      "id": "route-97",
+      "target": "/emphasis",
+      "trigger": "/emphasis",
+      "description": ""
+    },
+    {
+      "id": "route-98",
+      "target": "/buttons",
+      "trigger": "/buttons",
+      "description": ""
+    },
+    {
+      "id": "route-99",
+      "target": "/cdn",
+      "trigger": "/cdn",
+      "description": ""
+    },
+    {
+      "id": "route-100",
+      "target": "/npm",
+      "trigger": "/npm",
+      "description": ""
+    },
+    {
+      "id": "route-101",
+      "target": "/mermaid",
+      "trigger": "/mermaid",
+      "description": ""
+    },
+    {
+      "id": "route-102",
+      "target": "/dist",
+      "trigger": "/dist",
+      "description": ""
+    },
+    {
+      "id": "route-103",
+      "target": "/mermaid",
+      "trigger": "/mermaid",
+      "description": ""
+    },
+    {
+      "id": "route-104",
+      "target": "/script",
+      "trigger": "/script",
+      "description": ""
+    },
+    {
+      "id": "route-105",
+      "target": "/JS",
+      "trigger": "/JS",
+      "description": ""
+    },
+    {
+      "id": "route-106",
+      "target": "/DOM specification",
+      "trigger": "/DOM specification",
+      "description": ""
+    },
+    {
+      "id": "route-107",
+      "target": "/MUST NOT",
+      "trigger": "/MUST NOT",
+      "description": ""
+    },
+    {
+      "id": "route-108",
+      "target": "/button",
+      "trigger": "/button",
+      "description": ""
+    },
+    {
+      "id": "route-109",
+      "target": "/h2",
+      "trigger": "/h2",
+      "description": ""
+    },
+    {
+      "id": "route-110",
+      "target": "/button",
+      "trigger": "/button",
+      "description": ""
+    },
+    {
+      "id": "route-111",
+      "target": "/div",
+      "trigger": "/div",
+      "description": ""
+    },
+    {
+      "id": "route-112",
+      "target": "/div",
+      "trigger": "/div",
+      "description": ""
+    },
+    {
+      "id": "route-113",
+      "target": "/div",
+      "trigger": "/div",
+      "description": ""
+    },
+    {
+      "id": "route-114",
+      "target": "/nav",
+      "trigger": "/nav",
+      "description": ""
+    },
+    {
+      "id": "route-115",
+      "target": "/main",
+      "trigger": "/main",
+      "description": ""
+    },
+    {
+      "id": "route-116",
+      "target": "/div",
+      "trigger": "/div",
+      "description": ""
+    },
+    {
+      "id": "route-117",
+      "target": "/closed state of the nav\n4",
+      "trigger": "/closed state of the nav\n4",
+      "description": ""
+    },
+    {
+      "id": "route-118",
+      "target": "/pre blocks where practical\n\nMinimum behavior",
+      "trigger": "/pre blocks where practical\n\nMinimum behavior",
+      "description": ""
+    },
+    {
+      "id": "route-119",
+      "target": "/highlighting",
+      "trigger": "/highlighting",
+      "description": ""
+    },
+    {
+      "id": "route-120",
+      "target": "/catch",
+      "trigger": "/catch",
+      "description": ""
+    },
+    {
+      "id": "route-121",
+      "target": "/setInterval MUST be cleared on beforeunload or use AbortController",
+      "trigger": "/setInterval MUST be cleared on beforeunload or use AbortController",
+      "description": ""
+    },
+    {
+      "id": "route-122",
+      "target": "/mutate DOM nodes must use",
+      "trigger": "/mutate DOM nodes must use",
+      "description": ""
+    },
+    {
+      "id": "route-123",
+      "target": "/touch listeners MUST use",
+      "trigger": "/touch listeners MUST use",
+      "description": ""
+    },
+    {
+      "id": "route-124",
+      "target": "/Space keydown handlers",
+      "trigger": "/Space keydown handlers",
+      "description": ""
+    },
+    {
+      "id": "route-125",
+      "target": "/closed state",
+      "trigger": "/closed state",
+      "description": ""
+    },
+    {
+      "id": "route-126",
+      "target": "/MUST NOT",
+      "trigger": "/MUST NOT",
+      "description": ""
+    },
+    {
+      "id": "route-127",
+      "target": "/MUST NOT",
+      "trigger": "/MUST NOT",
+      "description": ""
+    },
+    {
+      "id": "route-128",
+      "target": "/fail boolean with a reason",
+      "trigger": "/fail boolean with a reason",
+      "description": ""
+    },
+    {
+      "id": "route-129",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-130",
+      "target": "/after screenshot",
+      "trigger": "/after screenshot",
+      "description": ""
+    },
+    {
+      "id": "route-131",
+      "target": "invoke",
+      "trigger": "invoke",
+      "description": ""
+    },
+    {
+      "id": "route-132",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-133",
+      "target": "/doc",
+      "trigger": "/doc",
+      "description": ""
+    },
+    {
+      "id": "route-134",
+      "target": "/doc",
+      "trigger": "/doc",
       "description": ""
     }
   ],
-  "terminal_states": [],
-  "artifacts": [
+  "terminal_states": [
     {
-      "name": "- An overly familiar \"buddy\" whose warmth substitutes for in",
-      "path": ".claude/.artifacts/{terminal_id}/- An overly familiar \"buddy\" whose warmth substitutes for in"
+      "id": "terminal-1",
+      "name": "Outputs:",
+      "description": "Outputs:"
     },
     {
-      "name": "### Standard response",
-      "path": ".claude/.artifacts/{terminal_id}/### Standard response"
+      "id": "terminal-2",
+      "name": "terminal state",
+      "description": "terminal state"
+    },
+    {
+      "id": "terminal-3",
+      "name": "artifacts emitted",
+      "description": "artifacts emitted"
+    },
+    {
+      "id": "terminal-4",
+      "name": "outputs\":",
+      "description": "outputs\":"
+    },
+    {
+      "id": "terminal-5",
+      "name": "artifacts_emitted",
+      "description": "artifacts_emitted"
+    },
+    {
+      "id": "terminal-6",
+      "name": "Terminal state",
+      "description": "Terminal state"
+    },
+    {
+      "id": "terminal-7",
+      "name": "end state",
+      "description": "end state"
+    },
+    {
+      "id": "terminal-8",
+      "name": "Terminal state",
+      "description": "Terminal state"
+    },
+    {
+      "id": "terminal-9",
+      "name": "terminal state",
+      "description": "terminal state"
+    },
+    {
+      "id": "terminal-10",
+      "name": "terminal state",
+      "description": "terminal state"
+    },
+    {
+      "id": "terminal-11",
+      "name": "terminal state",
+      "description": "terminal state"
+    },
+    {
+      "id": "terminal-12",
+      "name": "Terminal State",
+      "description": "Terminal State"
+    },
+    {
+      "id": "terminal-13",
+      "name": "Output `static-validation.json`:",
+      "description": "Output `static-validation.json`:"
+    },
+    {
+      "id": "terminal-14",
+      "name": "Output:** Write a `validation-report.json` to the ",
+      "description": "Output:** Write a `validation-report.json` to the artifacts directory with `{passed: boolean, failur"
+    },
+    {
+      "id": "terminal-15",
+      "name": "terminal state",
+      "description": "terminal state"
+    },
+    {
+      "id": "terminal-16",
+      "name": "output is needed:",
+      "description": "output is needed:"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "## Input Contract",
+      "path": ".claude/.artifacts/{terminal_id}/## Input Contract"
+    },
+    {
+      "name": "stage",
+      "path": ".claude/.artifacts/{terminal_id}/stage"
+    },
+    {
+      "name": "(never spec + implementation in the same file)",
+      "path": ".claude/.artifacts/{terminal_id}/(never spec + implementation in the same file)"
+    },
+    {
+      "name": "\u2014 only template-based HTML structure",
+      "path": ".claude/.artifacts/{terminal_id}/\u2014 only template-based HTML structure"
+    },
+    {
+      "name": "`presentation",
+      "path": ".claude/.artifacts/{terminal_id}/`presentation"
+    },
+    {
+      "name": "`source-model",
+      "path": ".claude/.artifacts/{terminal_id}/`source-model"
+    },
+    {
+      "name": "`artifact-plan",
+      "path": ".claude/.artifacts/{terminal_id}/`artifact-plan"
+    },
+    {
+      "name": "states, promises, or blocking outcomes, ensure they appear i",
+      "path": ".claude/.artifacts/{terminal_id}/states, promises, or blocking outcomes, ensure they appear i"
+    },
+    {
+      "name": "represented**",
+      "path": ".claude/.artifacts/{terminal_id}/represented**"
+    },
+    {
+      "name": "files, reports, JSON, or tokens, ensure those outputs are re",
+      "path": ".claude/.artifacts/{terminal_id}/files, reports, JSON, or tokens, ensure those outputs are re"
+    },
+    {
+      "name": "- `\u2705` or `\u2714\ufe0f` for success/terminal",
+      "path": ".claude/.artifacts/{terminal_id}/- `\u2705` or `\u2714\ufe0f` for success/terminal"
+    },
+    {
+      "name": "**Page structure (from `artifact-plan",
+      "path": ".claude/.artifacts/{terminal_id}/**Page structure (from `artifact-plan"
+    },
+    {
+      "name": "- No freeform HTML outside the known template structure",
+      "path": ".claude/.artifacts/{terminal_id}/- No freeform HTML outside the known template structure"
+    },
+    {
+      "name": "`static-validation",
+      "path": ".claude/.artifacts/{terminal_id}/`static-validation"
+    },
+    {
+      "name": "artifact-proof",
+      "path": ".claude/.artifacts/{terminal_id}/artifact-proof"
+    },
+    {
+      "name": "`validation-report",
+      "path": ".claude/.artifacts/{terminal_id}/`validation-report"
+    },
+    {
+      "name": "**Prerequisite:** All Stage E (Runtime Validator) and Stage ",
+      "path": ".claude/.artifacts/{terminal_id}/**Prerequisite:** All Stage E (Runtime Validator) and Stage "
+    },
+    {
+      "name": "stop",
+      "path": ".claude/.artifacts/{terminal_id}/stop"
+    },
+    {
+      "name": "artifact",
+      "path": ".claude/.artifacts/{terminal_id}/artifact"
+    },
+    {
+      "name": "artifact",
+      "path": ".claude/.artifacts/{terminal_id}/artifact"
+    },
+    {
+      "name": "| Consumed by |",
+      "path": ".claude/.artifacts/{terminal_id}/| Consumed by |"
+    },
+    {
+      "name": "output",
+      "path": ".claude/.artifacts/{terminal_id}/output"
+    },
+    {
+      "name": "`artifact-plan",
+      "path": ".claude/.artifacts/{terminal_id}/`artifact-plan"
+    },
+    {
+      "name": "needed:",
+      "path": ".claude/.artifacts/{terminal_id}/needed:"
     }
   ],
   "gaps": [],
   "ambiguities": [],
-  "source_path": "P:\\packages\\cc-skills-meta\\skills\\genius\\SKILL.md",
-  "generated_at": "2026-05-03T15:21:02.414093"
+  "source_path": "P:\\packages\\cc-skills-meta\\skills\\doc-compiler\\SKILL.md",
+  "presentation": {
+    "style": "minimal",
+    "source": "cli"
+  },
+  "generated_at": "2026-05-04T07:35:10.018605"
 }

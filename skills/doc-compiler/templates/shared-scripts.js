@@ -16,8 +16,7 @@ function isLightMode() {
       ).join('\n    ');
     }
 
-initMermaid();
-    renderMermaid();
+// initMermaid/renderMermaid called in diagram-scripts.js after mermaid import resolves
 
     // Re-render when OS theme changes
     window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
@@ -184,4 +183,4 @@ initMermaid();
       }
     });
 
-    initTocToggle();
+    // initTocToggle called in diagram-scripts.js after TOC structure is ready
